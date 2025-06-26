@@ -100,6 +100,250 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _showAddOnsModal(BuildContext context, Map<String, dynamic> item) {
+    List<Map<String, dynamic>> selectedAddOns = [];
+    double totalPrice = item['price'] as double;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      enableDrag: true,
+      isDismissible: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => Container(
+          height: MediaQuery.of(context).size.height * 0.7,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFD32D43).withAlpha((0.08 * 255).toInt()),
+                      spreadRadius: 1,
+                      blurRadius: 10,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Customize Your Order',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A1A),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close),
+                      color: const Color(0xFF1A1A1A),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Item details
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFD32D43), width: 1),
+                        ),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.asset(
+                                item['image'] ?? 'assets/placeholder.png',
+                                width: 80,
+                                height: 80,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 80,
+                                    height: 80,
+                                    color: Colors.grey[200],
+                                    child: const Icon(Icons.image_not_supported),
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item['name'] ?? 'Unknown Item',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color: Color(0xFF1A1A1A),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '₱${totalPrice.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                      color: Color(0xFF1A1A1A),
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Add-ons section
+                      const Text(
+                        'Add-ons',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A1A1A),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ...(_addOns[item['category']] ?? []).map((addOn) {
+                        bool isSelected = selectedAddOns.any((a) => a['name'] == addOn['name']);
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: CheckboxListTile(
+                            value: isSelected,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                if (value == true) {
+                                  selectedAddOns.add(addOn);
+                                  totalPrice += addOn['price'];
+                                } else {
+                                  selectedAddOns.removeWhere((a) => a['name'] == addOn['name']);
+                                  totalPrice -= addOn['price'];
+                                }
+                              });
+                            },
+                            title: Text(
+                              addOn['name'],
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF1A1A1A),
+                              ),
+                            ),
+                            subtitle: Text(
+                              '₱${addOn['price'].toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                color: Color(0xFF1A1A1A),
+                                fontSize: 12,
+                              ),
+                            ),
+                            activeColor: const Color(0xFFD32D43),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ],
+                  ),
+                ),
+              ),
+              // Bottom action bar
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 10,
+                      offset: const Offset(0, -1),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Total Price',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF1A1A1A),
+                            ),
+                          ),
+                          Text(
+                            '₱${totalPrice.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1A1A1A),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        addToCart(item, selectedAddOns);
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${item['name']} added to cart'),
+                            backgroundColor: const Color(0xFFD32D43),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFD32D43),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Add to Cart',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,32 +373,18 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         IconButton(
                           onPressed: () {
-                            Navigator.pushNamed(context, '/payment');
+                            Navigator.pushNamed(context, '/notifications');
                           },
-                          icon: const Icon(Icons.shopping_cart, color: Color(0xFF1A1A1A)),
+                          icon: const Icon(Icons.notifications_none, color: Color(0xFF1A1A1A)),
                         ),
                         if (cartItemCount > 0)
                           Positioned(
                             right: 8,
                             top: 8,
-                            child: Container(
-                              padding: const EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFD32D43),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              constraints: const BoxConstraints(
-                                minWidth: 16,
-                                minHeight: 16,
-                              ),
-                              child: Text(
-                                cartItemCount.toString(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
+                            child: Image.asset(
+                              'assets/notif.png',
+                              width: 24,
+                              height: 24,
                             ),
                           ),
                       ],
@@ -262,14 +492,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                         child: InkWell(
                           onTap: () {
-                            // Placeholder for modal functionality
-                            addToCart(item, []);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('${item['name']} added to cart'),
-                                backgroundColor: const Color(0xFFD32D43),
-                              ),
-                            );
+                            _showAddOnsModal(context, item);
                           },
                           borderRadius: BorderRadius.circular(12),
                           child: Column(
