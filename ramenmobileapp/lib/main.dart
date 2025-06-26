@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:ramenmobileapp/registration.dart';
 import 'homepage.dart' as home;
 import 'login_page.dart';
-
+import 'registration.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -140,7 +139,11 @@ class MyApp extends StatelessWidget {
         ),
       ),
       home: const LoginPage(),
-      routes: {'/home': (context) => const home.HomePage()},
+      routes: {
+        '/login': (context) => const LoginPage(),
+        '/signup': (context) => const SignupPage(),
+        '/home': (context) => const home.HomePage()
+      },
     );
   }
 }
