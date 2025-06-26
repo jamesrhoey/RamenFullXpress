@@ -138,8 +138,15 @@ class MyApp extends StatelessWidget {
           indicatorColor: Color(0xFFD32D43),
         ),
       ),
+<<<<<<< registration-page
       home: const SignupPage(),
       routes: {'/home': (context) => const home.Homepage()},
+=======
+      home: const home.HomePage(),
+      routes: {
+        '/home': (context) => const home.HomePage(),
+      },
+>>>>>>> week1
     );
   }
 }
