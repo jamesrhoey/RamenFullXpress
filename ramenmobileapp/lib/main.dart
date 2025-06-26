@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ramenmobileapp/registration.dart';
 import 'homepage.dart' as home;
 
 void main() {
@@ -73,7 +74,10 @@ class MyApp extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             borderSide: const BorderSide(color: Color(0xFFD32D43), width: 2),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
           prefixIconColor: const Color(0xFF1A1A1A),
           labelStyle: const TextStyle(color: Color(0xFF1A1A1A)),
           hintStyle: TextStyle(color: Colors.grey[700]),
@@ -134,10 +138,8 @@ class MyApp extends StatelessWidget {
           indicatorColor: Color(0xFFD32D43),
         ),
       ),
-      home: const LoginPage(),
-      routes: {
-        '/home': (context) => const home.homepage),
-      },
+      home: const SignupPage(),
+      routes: {'/home': (context) => const home.Homepage()},
     );
   }
-} 
+}
