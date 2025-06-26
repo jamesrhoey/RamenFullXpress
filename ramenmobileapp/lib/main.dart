@@ -134,9 +134,9 @@ class MyApp extends StatelessWidget {
           indicatorColor: Color(0xFFD32D43),
         ),
       ),
-      home: const LoginPage(),
+      home: const home.HomePage(),
       routes: {
-        '/home': (context) => const home.homepage),
+        '/home': (context) => const home.HomePage(),
       },
     );
   }
