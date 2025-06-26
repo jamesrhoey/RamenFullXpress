@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+<<<<<<< registration-page
+class Homepage extends StatelessWidget {
+  const Homepage({Key? key}) : super(key: key);
+=======
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -343,10 +347,18 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+>>>>>>> week1
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+<<<<<<< registration-page
+      appBar: AppBar(title: const Text('Home')),
+      body: const Center(child: Text('Welcome to RamenXpress!')),
+    );
+  }
+}
+=======
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -594,3 +606,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+>>>>>>> week1
