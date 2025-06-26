@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ramenmobileapp/registration.dart';
 import 'homepage.dart' as home;
+import 'login_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -138,15 +139,8 @@ class MyApp extends StatelessWidget {
           indicatorColor: Color(0xFFD32D43),
         ),
       ),
-<<<<<<< registration-page
-      home: const SignupPage(),
-      routes: {'/home': (context) => const home.Homepage()},
-=======
-      home: const home.HomePage(),
-      routes: {
-        '/home': (context) => const home.HomePage(),
-      },
->>>>>>> week1
+      home: const LoginPage(),
+      routes: {'/home': (context) => const home.HomePage()},
     );
   }
 }

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
+<<<<<<< login
+=======
 <<<<<<< registration-page
 class Homepage extends StatelessWidget {
   const Homepage({Key? key}) : super(key: key);
 =======
+>>>>>>> week1
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -12,6 +15,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+<<<<<<< login
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
+  }
+}
+=======
   String selectedCategory = 'All';
   final TextEditingController _searchController = TextEditingController();
   String searchQuery = '';
@@ -606,4 +616,5 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+>>>>>>> week1
 >>>>>>> week1
