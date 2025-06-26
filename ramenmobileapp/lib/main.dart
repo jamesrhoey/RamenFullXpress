@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'homepage.dart' as home;
+import 'login_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -73,7 +74,10 @@ class MyApp extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             borderSide: const BorderSide(color: Color(0xFFD32D43), width: 2),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
           prefixIconColor: const Color(0xFF1A1A1A),
           labelStyle: const TextStyle(color: Color(0xFF1A1A1A)),
           hintStyle: TextStyle(color: Colors.grey[700]),
@@ -135,9 +139,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       home: const LoginPage(),
-      routes: {
-        '/home': (context) => const home.homepage),
-      },
+      routes: {'/home': (context) => const home.HomePage()},
     );
   }
-} 
+}
