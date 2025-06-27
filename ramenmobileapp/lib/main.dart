@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'homepage.dart' as home;
 import 'login_page.dart';
 import 'registration.dart';
+import 'payment_page.dart';
+import 'order_history.dart';
+import 'invoice_page.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -142,7 +145,10 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignupPage(),
-        '/home': (context) => const home.HomePage()
+        '/home': (context) => const home.HomePage(),
+        '/payment': (context) => const PaymentPage(),
+        '/orderHistory': (context) => const OrderHistoryPage(),
+        '/invoice': (context) => const InvoicePage(),
       },
     );
   }
