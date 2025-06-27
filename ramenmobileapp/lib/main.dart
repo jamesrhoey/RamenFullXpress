@@ -148,7 +148,6 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const home.HomePage(),
         '/payment': (context) => const PaymentPage(),
         '/orderHistory': (context) => const OrderHistoryPage(),
-        '/invoice': (context) => const InvoicePage(),
       },
     );
   }
