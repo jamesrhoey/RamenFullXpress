@@ -21,6 +21,18 @@ class _PaymentPageState extends State<PaymentPage> {
       'quantity': 1,
     },
   ];
+
+    List<Map<String, dynamic>> deliveryAddresses = [
+    {
+      'id': '1',
+      'street': '123 Main Street',
+      'barangay': 'Barangay 1',
+      'municipality': 'Manila',
+      'province': 'Metro Manila',
+      'zipCode': '1000',
+      'isDefault': true,
+    },
+  ];
     void updateQuantity(String name, int change) {
     setState(() {
       final item = cartItems.firstWhere((item) => item['name'] == name);
@@ -195,5 +207,69 @@ class _PaymentPageState extends State<PaymentPage> {
                     );
                   }).toList(),
                   const SizedBox(height: 24),
+
+                  const Text(
+                    'Delivery Method',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment<String>(
+                        value: 'Pick Up',
+                        label: Text('Pick Up'),
+                        icon: Icon(Icons.store),
+                      ),
+                      ButtonSegment<String>(
+                        value: 'Delivery',
+                        label: Text('Delivery'),
+                        icon: Icon(Icons.delivery_dining),
+                      ),
+                    ],
+                    selected: {selectedDeliveryMethod},
+                    onSelectionChanged: (Set<String> selected) {
+                      setState(() {
+                        selectedDeliveryMethod = selected.first;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Delivery Address (if delivery is selected)
+                  if (selectedDeliveryMethod == 'Delivery') ...[
+                    const Text(
+                      'Delivery Address',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A1A),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    if (deliveryAddresses.isNotEmpty)
+                      ...deliveryAddresses.map((address) {
+                        return Card(
+                          child: ListTile(
+                            title: Text('${address['street']}, ${address['barangay']}'),
+                            subtitle: Text('${address['municipality']}, ${address['province']}'),
+                            trailing: address['isDefault'] == true
+                                ? const Chip(label: Text('Default'))
+                                : null,
+                            onTap: () {
+                              setState(() {
+                                selectedAddress = address;
+                              });
+                            },
+                          ),
+                        );
+                      }).toList()
+                    else
+                      const Text('No delivery addresses available'),
+                    const SizedBox(height: 24),
+                  ],
   }
 }
