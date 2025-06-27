@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
       title: 'RamenXpress',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        useMaterial3: true,
+        useMaterial3: false,
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFFD32D43), // True Red
           primary: const Color(0xFFD32D43),
@@ -147,7 +147,8 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => const SignupPage(),
         '/home': (context) => const home.HomePage(),
         '/payment': (context) => const PaymentPage(),
-        '/orderHistory': (context) => const OrderHistoryPage(),
+        '/order-history': (context) => const OrderHistoryPage(),
+        '/invoice': (context) => const InvoicePage(order: {}),
       },
     );
   }
