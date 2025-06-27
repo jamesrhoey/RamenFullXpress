@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'invoice_page.dart';
 
 class PaymentPage extends StatefulWidget {
   const PaymentPage({super.key});
@@ -303,7 +304,31 @@ class _PaymentPageState extends State<PaymentPage> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        // Implement checkout logic here
+                        // Gather order data
+                        final order = {
+                          'id': DateTime.now().millisecondsSinceEpoch % 100000, // simple unique id
+                          'status': 'Pending',
+                          'date': DateTime.now(),
+                          'deliveryMethod': selectedDeliveryMethod,
+                          'paymentMethod': 'GCash', // or selectedPaymentMethod['name'] if implemented
+                          'total': total,
+                          'items': cartItems.map((item) => {
+                            'name': item['name'],
+                            'price': item['price'],
+                            'quantity': item['quantity'],
+                            'addons': item['addons'] ?? [],
+                          }).toList(),
+                          'deliveryAddress': selectedDeliveryMethod == 'Delivery' && selectedAddress != null
+                              ? '${selectedAddress!['street']}, ${selectedAddress!['barangay']}, ${selectedAddress!['municipality']}, ${selectedAddress!['province']}, ${selectedAddress!['zipCode']}'
+                              : null,
+                          'notes': _notesController.text,
+                        };
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => InvoicePage(order: order),
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFD32D43),
