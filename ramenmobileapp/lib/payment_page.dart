@@ -368,15 +368,33 @@ class _PaymentPageState extends State<PaymentPage> {
         title: Text(name),
         subtitle: Text('₱${price.toStringAsFixed(2)}'),
         trailing: SizedBox(
-          width: 120,
+          width: 160,
           child: Row(
             children: [
-              IconButton(icon: const Icon(Icons.remove), onPressed: onDecrease),
-              Text(quantity),
-              IconButton(icon: const Icon(Icons.add), onPressed: onIncrease),
+              IconButton(
+                icon: const Icon(Icons.remove),
+                onPressed: onDecrease,
+                iconSize: 20,
+                padding: EdgeInsets.zero,
+              ),
+              Flexible(
+                child: Text(
+                  quantity,
+                  style: const TextStyle(fontSize: 14),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.add),
+                onPressed: onIncrease,
+                iconSize: 20,
+                padding: EdgeInsets.zero,
+              ),
               IconButton(
                 icon: const Icon(Icons.delete_outline),
                 onPressed: onRemove,
+                iconSize: 20,
+                padding: EdgeInsets.zero,
               ),
             ],
           ),
@@ -387,6 +405,7 @@ class _PaymentPageState extends State<PaymentPage> {
 
   Widget _buildAppBar() {
     return SliverAppBar(
+      automaticallyImplyLeading: false,
       floating: true,
       pinned: true,
       expandedHeight: 120,
@@ -398,7 +417,7 @@ class _PaymentPageState extends State<PaymentPage> {
           child: Row(
             children: [
               const Text(
-                'Your Cart',
+                'Payment',
                 style: TextStyle(
                   color: Color(0xFF1A1A1A),
                   fontSize: 24,
@@ -406,7 +425,7 @@ class _PaymentPageState extends State<PaymentPage> {
                 ),
               ),
               const Spacer(),
-              const CircleAvatar(
+              CircleAvatar(
                 backgroundImage: AssetImage('assets/adminPIC.png'),
                 radius: 20,
               ),

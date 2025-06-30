@@ -169,7 +169,20 @@ class _InvoicePageState extends State<InvoicePage> {
             if (order['deliveryAddress'] != null)
               _buildDetailRow('Address', order['deliveryAddress']),
             if (order['notes'] != null)
-              _buildDetailRow('Notes', order['notes']),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Notes', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(
+                      order['notes'],
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
@@ -268,7 +281,14 @@ class _InvoicePageState extends State<InvoicePage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(fontWeight: isTotal ? FontWeight.bold : FontWeight.normal)),
-          Text(value, style: TextStyle(fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, fontSize: isTotal ? 18 : 14)),
+          Flexible(
+            child: Text(
+              value,
+              style: TextStyle(fontWeight: isTotal ? FontWeight.bold : FontWeight.normal, fontSize: isTotal ? 18 : 14),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
         ],
       ),
     );

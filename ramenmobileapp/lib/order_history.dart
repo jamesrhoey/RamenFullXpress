@@ -87,6 +87,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
+            automaticallyImplyLeading: false,
             floating: true,
             pinned: true,
             expandedHeight: 120,
@@ -169,6 +170,8 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                           return Card(
                             margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
                             child: InkWell(
+                              splashColor: Color(0x1AD32D43),
+                              highlightColor: Colors.transparent,
                               onTap: () {
                                 // Debug: Print order data
                                 print('Navigating to invoice with order: $order');

@@ -351,6 +351,7 @@ class _HomePageState extends State<HomePage> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
+            automaticallyImplyLeading: false,
             floating: true,
             pinned: true,
             expandedHeight: 120,
@@ -492,6 +493,8 @@ class _HomePageState extends State<HomePage> {
                           side: BorderSide(color: Colors.grey[300]!),
                         ),
                         child: InkWell(
+                          splashColor: Color(0x1AD32D43),
+                          highlightColor: Colors.transparent,
                           onTap: () {
                             _showAddOnsModal(context, item);
                           },
