@@ -157,6 +157,9 @@ class MyApp extends StatelessWidget {
         '/invoice': (context) => const InvoicePage(order: {}),
         '/notifications': (context) => const NotificationPage(),
         '/profile': (context) => const ProfilePage(),
+        '/edit-profile': (context) => const EditprofilePage(),
+        '/payment-method': (context) => const PaymentmethodPage(),
+        '/address': (context) => const AddressPage(),
       },
     );
   }

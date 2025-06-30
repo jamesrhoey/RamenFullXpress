@@ -81,11 +81,6 @@ class _NotificationPageState extends State<NotificationPage> {
     return _notifications.where((notification) => !notification['isRead']).toList();
   }
 
-  void _toggleNotificationFilter() {
-    setState(() {
-      _showAllNotifications = !_showAllNotifications;
-    });
-  }
 
   void _markAsRead(String notificationId) {
     setState(() {
@@ -233,13 +228,13 @@ class _NotificationPageState extends State<NotificationPage> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isUnread 
-              ? const Color(0xFFD32D43).withOpacity(0.2)
+              ? const Color(0xFFD32D43).withValues(red: 211, green: 45, blue: 67, alpha: 20)
               : Colors.grey[200]!,
           width: isUnread ? 2 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(red: 0, green: 0, blue: 0, alpha: 5),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),

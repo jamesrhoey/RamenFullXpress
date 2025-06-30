@@ -173,9 +173,6 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                               splashColor: Color(0x1AD32D43),
                               highlightColor: Colors.transparent,
                               onTap: () {
-                                // Debug: Print order data
-                                print('Navigating to invoice with order: $order');
-                                
                                 // Navigate to invoice page with order details
                                 Navigator.push(
                                   context,
@@ -279,7 +276,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                               ),
                             ),
                           );
-                        }).toList(),
+                        }),
                       ],
                     ),
                   ),
@@ -291,7 +288,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(red: 128, green: 128, blue: 128, alpha: 10),
               spreadRadius: 1,
               blurRadius: 10,
               offset: const Offset(0, -1),
