@@ -1,35 +1,5 @@
 import 'package:flutter/material.dart';
-
-class DeliveryAddress {
-  final String fullName;
-  final String mobileNumber;
-  final String houseStreet;
-  final String barangay;
-  final String city;
-  final String province;
-  final String zipCode;
-  final String? instructions;
-  final String label;
-  final bool saveForFuture;
-
-  DeliveryAddress({
-    required this.fullName,
-    required this.mobileNumber,
-    required this.houseStreet,
-    required this.barangay,
-    required this.city,
-    required this.province,
-    required this.zipCode,
-    this.instructions,
-    required this.label,
-    required this.saveForFuture,
-  });
-
-  @override
-  String toString() {
-    return '[$label] $fullName\n$mobileNumber\n$houseStreet, $barangay\n$city, $province $zipCode${instructions != null && instructions!.isNotEmpty ? '\nInstructions: $instructions' : ''}${saveForFuture ? '\n(Saved for future orders)' : ''}';
-  }
-}
+import 'models/delivery_address.dart';
 
 class AddressPage extends StatefulWidget {
   const AddressPage({Key? key}) : super(key: key);
@@ -39,7 +9,18 @@ class AddressPage extends StatefulWidget {
 }
 
 class _AddressPageState extends State<AddressPage> {
-  final List<DeliveryAddress> _addresses = [];
+  // Sample delivery address data
+  final List<DeliveryAddress> _addresses = [
+    DeliveryAddress(
+      id: '1',
+      street: '#123 Marasigan St.',
+      barangay: 'Barangay Poblacion 5',
+      municipality: 'Calaca City',
+      province: 'Batangas',
+      zipCode: '4208',
+      isDefault: true,
+    ),
+  ];
 
   Future<void> _addAddress() async {
     final newAddress = await Navigator.of(context).push<DeliveryAddress>(
@@ -58,7 +39,11 @@ class _AddressPageState extends State<AddressPage> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/profile',
+            (route) => false,
+          ),
         ),
         title: const Text(
           'Delivery Addresses',
@@ -114,11 +99,7 @@ class _AddressPageState extends State<AddressPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
-                          address.label == 'Home'
-                              ? Icons.home
-                              : address.label == 'Work'
-                                  ? Icons.work
-                                  : Icons.location_on,
+                          Icons.location_on,
                           color: Colors.red,
                           size: 32,
                         ),
@@ -129,57 +110,41 @@ class _AddressPageState extends State<AddressPage> {
                             children: [
                               Row(
                                 children: [
-                                  Text(
-                                    address.label,
-                                    style: const TextStyle(
+                                  if (address.isDefault)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color.fromARGB(255, 255, 235, 235),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Text(
+                                        'Default',
+                                        style: TextStyle(
+                                          color: Colors.red,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Home',
+                                    style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
                                       color: Colors.red,
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    address.fullName,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
                                 ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                address.mobileNumber,
-                                style: const TextStyle(fontSize: 14, color: Colors.black87),
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                '${address.houseStreet}, ${address.barangay}',
+                                address.fullAddress,
                                 style: const TextStyle(fontSize: 15),
                               ),
-                              Text(
-                                '${address.city}, ${address.province} ${address.zipCode}',
-                                style: const TextStyle(fontSize: 15),
-                              ),
-                              if (address.instructions != null && address.instructions!.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 6),
-                                  child: Text(
-                                    'Instructions: ${address.instructions}',
-                                    style: const TextStyle(fontSize: 14, color: Colors.black54),
-                                  ),
-                                ),
-                              if (address.saveForFuture)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 6),
-                                  child: Row(
-                                    children: const [
-                                      Icon(Icons.check_circle, color: Colors.green, size: 16),
-                                      SizedBox(width: 4),
-                                      Text('Auto-save enabled', style: TextStyle(fontSize: 13, color: Colors.green)),
-                                    ],
-                                  ),
-                                ),
                             ],
                           ),
                         ),

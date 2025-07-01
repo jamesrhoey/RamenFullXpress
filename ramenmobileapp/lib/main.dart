@@ -157,10 +157,11 @@ class MyApp extends StatelessWidget {
         '/order-history': (context) => const OrderHistoryPage(),
         '/invoice': (context) => const InvoicePage(order: {}),
         '/notifications': (context) => const NotificationPage(),
-        '/profile': (context) => const EditPaymentMethodPage(),
+        '/profile': (context) => const ProfilePage(),
         '/edit-profile': (context) => const EditprofilePage(),
         '/payment-method': (context) => const PaymentmethodPage(),
         '/address': (context) => const AddressPage(),
+        '/edit-payment-method': (context) => const EditPaymentMethodPage(),
       },
     );
   }
