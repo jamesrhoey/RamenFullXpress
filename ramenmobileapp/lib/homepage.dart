@@ -309,31 +309,65 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                     ),
-                    ElevatedButton(
-                      onPressed: () {
-                        addToCart(item, selectedAddOns);
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${item['name']} added to cart'),
-                            backgroundColor: const Color(0xFFD32D43),
+                    TweenAnimationBuilder(
+                      tween: Tween<double>(begin: 1.0, end: 1.0),
+                      duration: const Duration(milliseconds: 100),
+                      builder: (context, scale, child) {
+                        return GestureDetector(
+                          onTapDown: (_) {
+                            // Animate scale down
+                            (context as Element).markNeedsBuild();
+                          },
+                          onTapUp: (_) {
+                            addToCart(item, selectedAddOns);
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('${item['name']} added to cart'),
+                                backgroundColor: const Color(0xFFD32D43),
+                              ),
+                            );
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 100),
+                            transform: Matrix4.identity()..scale(scale, scale),
+                            curve: Curves.easeInOut,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFD32D43), Color(0xFFFE6854)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFD32D43).withOpacity(0.2),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.shopping_cart, color: Colors.white, size: 22),
+                                const SizedBox(width: 10),
+                                const Text(
+                                  'Add to Cart',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    letterSpacing: 1.1,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD32D43),
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Add to Cart',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
                     ),
                   ],
                 ),

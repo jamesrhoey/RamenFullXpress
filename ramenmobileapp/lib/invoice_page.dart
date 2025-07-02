@@ -22,8 +22,25 @@ class _InvoicePageState extends State<InvoicePage> {
     dateFormat = DateFormat('MMM dd, yyyy hh:mm a');
   }
 
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return const Color.fromARGB(255, 88, 97, 255); // Blue
+      case 'preparing':
+        return const Color(0xFF1A1A1A); // Black
+      case 'ready':
+        return const Color.fromARGB(255, 185, 255, 73); // Green
+      case 'delivered':
+        return const Color.fromARGB(255, 10, 180, 10); // Green
+      case 'cancelled':
+        return const Color(0xFFD32D43); // Red
+      default:
+        return const Color.fromARGB(255, 175, 175, 175); // Grey
+    }
+  }
+
   Widget _buildStatusBadge(String status) {
-    Color color = const Color(0xFFD32D43); // orange-red
+    Color color = _getStatusColor(status);
     String label = status.toUpperCase();
     return Container(
       width: double.infinity,
@@ -52,27 +69,28 @@ class _InvoicePageState extends State<InvoicePage> {
 
   Widget _buildOrderProgress(String status) {
     final steps = [
-      'Order Placed',
-      'Order Confirmed',
+      'Pending',
       'Preparing',
       'Ready',
       'Delivered',
+      'Cancelled',
     ];
     final descriptions = [
       'Your order has been received',
-      "We've confirmed your order",
       'Your food is being prepared',
       'Your order is ready for pickup/delivery',
       'Order completed successfully',
+      'Order was cancelled',
     ];
     final statusMap = {
       'pending': 0,
-      'confirmed': 1,
-      'preparing': 2,
-      'ready': 3,
-      'delivered': 4,
+      'preparing': 1,
+      'ready': 2,
+      'delivered': 3,
+      'cancelled': 4,
     };
     int currentStep = statusMap[status.toLowerCase()] ?? 0;
+    bool isCancelled = status.toLowerCase() == 'cancelled';
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 16),
@@ -90,8 +108,9 @@ class _InvoicePageState extends State<InvoicePage> {
             const Text('Order Progress', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 12),
             ...List.generate(steps.length, (i) {
-              bool isActive = i <= currentStep;
-              bool isCurrent = i == currentStep;
+              bool isActive = isCancelled ? i == steps.length - 1 : i <= currentStep;
+              bool isCurrent = isCancelled ? i == steps.length - 1 : i == currentStep;
+              Color stepColor = _getStatusColor(steps[i]);
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -100,8 +119,8 @@ class _InvoicePageState extends State<InvoicePage> {
                     width: 22,
                     height: 22,
                     decoration: BoxDecoration(
-                      color: isActive ? const Color(0xFFD32D43) : Colors.white,
-                      border: Border.all(color: isActive ? const Color(0xFFD32D43) : Colors.grey, width: 2),
+                      color: isActive ? stepColor : Colors.white,
+                      border: Border.all(color: isActive ? stepColor : Colors.grey, width: 2),
                       shape: BoxShape.circle,
                     ),
                     child: isActive
@@ -117,7 +136,7 @@ class _InvoicePageState extends State<InvoicePage> {
                           steps[i],
                           style: TextStyle(
                             fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-                            color: isCurrent ? const Color(0xFFD32D43) : Colors.black,
+                            color: isCurrent ? stepColor : Colors.black,
                             fontSize: isCurrent ? 16 : 14,
                           ),
                         ),
@@ -127,10 +146,10 @@ class _InvoicePageState extends State<InvoicePage> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFFEBEE),
+                                color: stepColor.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Text('Current Status', style: TextStyle(color: Color(0xFFD32D43), fontSize: 12)),
+                              child: Text('Current Status', style: TextStyle(color: stepColor, fontSize: 12)),
                             ),
                           ),
                         Text(descriptions[i], style: const TextStyle(fontSize: 12)),
@@ -167,7 +186,25 @@ class _InvoicePageState extends State<InvoicePage> {
             _buildDetailRow('Date', dateFormat.format(order['date'])),
             _buildDetailRow('Delivery Method', order['deliveryMethod'] ?? '-'),
             if (order['deliveryAddress'] != null)
-              _buildDetailRow('Address', order['deliveryAddress']),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Address', style: TextStyle(fontWeight: FontWeight.normal)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        order['deliveryAddress'],
+                        style: const TextStyle(fontSize: 14),
+                        softWrap: true,
+                        overflow: TextOverflow.visible,
+                        textAlign: TextAlign.start,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             if (order['notes'] != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 2),

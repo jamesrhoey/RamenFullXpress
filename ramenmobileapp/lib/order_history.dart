@@ -59,22 +59,70 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       'deliveryAddress': null,
       'notes': 'Pick up at counter. Name: John Doe',
     },
+    {
+      'id': 3,
+      'status': 'Cancelled',
+      'date': DateTime.now().subtract(const Duration(days: 2)),
+      'deliveryMethod': 'Pick Up',
+      'paymentMethod': 'Maya',
+      'total': 350.0,
+      'items': [
+        {
+          'name': 'Shoyu Ramen',
+          'price': 200.0,
+          'quantity': 1,
+          'addons': ['Extra Noodles'],
+        },
+        {
+          'name': 'Gyoza',
+          'price': 150.0,
+          'quantity': 1,
+          'addons': null,
+        },
+      ],
+      'deliveryAddress': null,
+      'notes': 'Pick up at counter. Name: John Doe',
+    },
+    {
+      'id': 4,
+      'status': 'Preparing',
+      'date': DateTime.now().subtract(const Duration(days: 2)),
+      'deliveryMethod': 'Pick Up',
+      'paymentMethod': 'Maya',
+      'total': 350.0,
+      'items': [
+        {
+          'name': 'Shoyu Ramen',
+          'price': 200.0,
+          'quantity': 1,
+          'addons': ['Extra Noodles'],
+        },
+        {
+          'name': 'Gyoza',
+          'price': 150.0,
+          'quantity': 1,
+          'addons': null,
+        },
+      ],
+      'deliveryAddress': null,
+      'notes': 'Pick up at counter. Name: John Doe',
+    },
   ];
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'pending':
-        return const Color(0xFFD32D43); // Red
+        return const Color.fromARGB(255, 88, 97, 255); // Red
       case 'preparing':
         return const Color(0xFF1A1A1A); // Black
       case 'ready':
-        return const Color(0xFFD32D43); // Red
+        return const Color.fromARGB(255, 185, 255, 73); // Red
       case 'delivered':
-        return const Color(0xFF1A1A1A); // Black
+        return const Color.fromARGB(255, 10, 180, 10); // Black
       case 'cancelled':
         return const Color(0xFFD32D43); // Red
       default:
-        return const Color(0xFF1A1A1A); // Black
+        return const Color.fromARGB(255, 175, 175, 175); // Black
     }
   }
 
