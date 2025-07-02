@@ -9,6 +9,40 @@ class PaymentmethodPage extends StatefulWidget {
 }
 
 class _PaymentmethodPageState extends State<PaymentmethodPage> {
+  String defaultMethod = "GCash - Carla Ramos";
+
+  final List<Map<String, dynamic>> paymentMethods = [
+    {
+      "name": "GCash",
+      "icon": Icons.account_balance_wallet,
+      "holder": "Carla Ramos",
+    },
+    {
+      "name": "GCash",
+      "icon": Icons.account_balance_wallet,
+      "holder": "Kyla Cabungcal",
+    },
+    {
+      "name": "PayMaya",
+      "icon": Icons.account_balance,
+      "holder": "James Rhoey De Castro",
+    },
+    {
+      "name": "GCash",
+      "icon": Icons.account_balance_wallet,
+      "holder": "Thirdy Ornales",
+    },
+    {
+      "name": "PayMaya",
+      "icon": Icons.account_balance,
+      "holder": "Maybel Pesigan",
+    },
+  ];
+
+  String getDisplayName(Map<String, dynamic> method) {
+    return "${method['name']} - ${method['holder']}";
+  }
+
   // Sample payment method data
   final List<PaymentMethod> paymentMethods = [
     PaymentMethod(
@@ -27,124 +61,98 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
         title: const Text('Payment Methods'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
       ),
-      body: paymentMethods.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.credit_card, size: 80, color: Colors.grey),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'No payment methods added yet',
-                    style: TextStyle(fontSize: 16, color: Colors.black54),
+
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: paymentMethods.length,
+              itemBuilder: (context, index) {
+                final method = paymentMethods[index];
+                final isDefault = getDisplayName(method) == defaultMethod;
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/edit-payment-method');
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add Payment Method'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                  child: ListTile(
+                    leading: Icon(
+                      method['icon'],
+                      color: Colors.orange,
+                      size: 32,
                     ),
-                  ),
-                ],
-              ),
-            )
-          : Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: paymentMethods.length,
-                    itemBuilder: (context, index) {
-                      final paymentMethod = paymentMethods[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: ListTile(
-                          leading: Icon(
-                            paymentMethod.icon,
-                            color: Colors.orange,
-                            size: 32,
-                          ),
-                          title: Text(
-                            paymentMethod.displayName,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
+                    title: Row(
+                      children: [
+                        Text(
+                          method['name'],
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        if (isDefault)
+                          Container(
+                            margin: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.orange[100],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'Default',
+                              style: TextStyle(
+                                color: Colors.orange,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
-                          subtitle: Text(paymentMethod.title),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (paymentMethod.isDefault)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.orange.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Text(
-                                    'Default',
-                                    style: TextStyle(
-                                      color: Colors.orange,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.grey),
-                                onPressed: () {
-                                  Navigator.pushNamed(context, '/edit-payment-method');
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
+                      ],
+                    ),
+                    subtitle: Text(method['holder']),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.grey),
+                      onPressed: () {
+                        // Edit logic here
+                      },
+                    ),
+                    onTap: () {
+                      setState(() {
+                        defaultMethod = getDisplayName(method);
+                      });
                     },
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/edit-payment-method');
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add Payment Method'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  // Add payment method logic
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('Add Payment Method'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                   borderRadius: BorderRadius.circular(12),
+
                   ),
                 ),
               ],
-            ),
+           ),
     );
   }
 }
