@@ -10,6 +10,7 @@ import 'editProfile_page.dart';
 import 'paymentmethod_page.dart';
 import 'address_page.dart';
 import 'profile_page.dart';
+import 'edit_payment_method_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -160,6 +161,7 @@ class MyApp extends StatelessWidget {
         '/edit-profile': (context) => const EditprofilePage(),
         '/payment-method': (context) => const PaymentmethodPage(),
         '/address': (context) => const AddressPage(),
+        '/edit-payment-method': (context) => const EditPaymentMethodPage(),
       },
     );
   }
