@@ -32,6 +32,22 @@ class _PaymentPageState extends State<PaymentPage> {
           {'name': 'Chashu', 'price': 50.0},
         ],
     },
+    {
+      'name': 'Miso Ramen',
+      'price': 210.00,
+      'image': 'assets/ramen3.jpg',
+      'quantity': 2,
+        'addons': [
+          {'name': 'Extra Noodles', 'price': 30.0},
+          {'name': 'Chashu', 'price': 50.0},
+        ],
+    },
+    {
+      'name': 'Shoyu Ramen',
+      'price': 210.00,
+      'image': 'assets/ramen4.jpg',
+      'quantity': 1,
+    },
   ];
   }
 
@@ -98,6 +114,60 @@ class _PaymentPageState extends State<PaymentPage> {
                   ),
                   
                   // Header
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withValues(red: 128, green: 128, blue: 128, alpha: 10),
+                                spreadRadius: 1,
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.asset(
+                              item['image'],
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item['name'],
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1A1A1A),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '₱${item['price'].toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  color: Color(0xFFD32D43),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   Padding(
                     padding: const EdgeInsets.all(20),
                     child: Row(
@@ -229,6 +299,60 @@ class _PaymentPageState extends State<PaymentPage> {
                               ),
                             ),
                           ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withValues(red: 128, green: 128, blue: 128, alpha: 10),
+                                spreadRadius: 1,
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.asset(
+                              item['image'],
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item['name'],
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1A1A1A),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '₱${item['price'].toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  color: Color(0xFFD32D43),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
