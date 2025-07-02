@@ -9,50 +9,72 @@ class PaymentmethodPage extends StatefulWidget {
 }
 
 class _PaymentmethodPageState extends State<PaymentmethodPage> {
-  String defaultMethod = "GCash - Carla Ramos";
+  late List<PaymentMethod> paymentMethods;
+  late PaymentMethod defaultMethod;
 
-  final List<Map<String, dynamic>> paymentMethods = [
-    {
-      "name": "GCash",
-      "icon": Icons.account_balance_wallet,
-      "holder": "Carla Ramos",
-    },
-    {
-      "name": "GCash",
-      "icon": Icons.account_balance_wallet,
-      "holder": "Kyla Cabungcal",
-    },
-    {
-      "name": "PayMaya",
-      "icon": Icons.account_balance,
-      "holder": "James Rhoey De Castro",
-    },
-    {
-      "name": "GCash",
-      "icon": Icons.account_balance_wallet,
-      "holder": "Thirdy Ornales",
-    },
-    {
-      "name": "PayMaya",
-      "icon": Icons.account_balance,
-      "holder": "Maybel Pesigan",
-    },
-  ];
-
-  String getDisplayName(Map<String, dynamic> method) {
-    return "${method['name']} - ${method['holder']}";
+  @override
+  void initState() {
+    super.initState();
+    paymentMethods = [
+      PaymentMethod(
+        id: '1',
+        type: PaymentType.gcash,
+        title: 'Carla Ramos',
+        accountNumber: '09171234567',
+        isDefault: true,
+      ),
+      PaymentMethod(
+        id: '2',
+        type: PaymentType.gcash,
+        title: 'Kyla Cabungcal',
+        accountNumber: '09179876543',
+      ),
+      PaymentMethod(
+        id: '3',
+        type: PaymentType.maya,
+        title: 'James Rhoey De Castro',
+        accountNumber: '09175551234',
+      ),
+      PaymentMethod(
+        id: '4',
+        type: PaymentType.gcash,
+        title: 'Thirdy Ornales',
+        accountNumber: '09176667777',
+      ),
+      PaymentMethod(
+        id: '5',
+        type: PaymentType.maya,
+        title: 'Maybel Pesigan',
+        accountNumber: '09179998888',
+      ),
+    ];
+    defaultMethod = paymentMethods.firstWhere((m) => m.isDefault, orElse: () => paymentMethods[0]);
   }
 
-  // Sample payment method data
-  final List<PaymentMethod> paymentMethods = [
-    PaymentMethod(
-      id: '1',
-      type: PaymentType.gcash,
-      title: 'John Doe',
-      accountNumber: '09123456789',
-      isDefault: true,
-    ),
-  ];
+  void setDefaultMethod(PaymentMethod method) {
+    setState(() {
+      paymentMethods = paymentMethods.map((m) {
+        if (m.id == method.id) {
+          return PaymentMethod(
+            id: m.id,
+            type: m.type,
+            title: m.title,
+            accountNumber: m.accountNumber,
+            isDefault: true,
+          );
+        } else {
+          return PaymentMethod(
+            id: m.id,
+            type: m.type,
+            title: m.title,
+            accountNumber: m.accountNumber,
+            isDefault: false,
+          );
+        }
+      }).toList();
+      defaultMethod = method;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +96,7 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
               itemCount: paymentMethods.length,
               itemBuilder: (context, index) {
                 final method = paymentMethods[index];
-                final isDefault = getDisplayName(method) == defaultMethod;
+                final isDefault = method.isDefault;
 
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -84,14 +106,14 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
                   ),
                   child: ListTile(
                     leading: Icon(
-                      method['icon'],
+                      method.icon,
                       color: Colors.orange,
                       size: 32,
                     ),
                     title: Row(
                       children: [
                         Text(
-                          method['name'],
+                          method.displayName,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         if (isDefault)
@@ -115,7 +137,16 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
                           ),
                       ],
                     ),
-                    subtitle: Text(method['holder']),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(method.title),
+                        Text(
+                          method.accountNumber,
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ],
+                    ),
                     trailing: IconButton(
                       icon: const Icon(Icons.edit, color: Colors.grey),
                       onPressed: () {
@@ -123,9 +154,7 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
                       },
                     ),
                     onTap: () {
-                      setState(() {
-                        defaultMethod = getDisplayName(method);
-                      });
+                      setDefaultMethod(method);
                     },
                   ),
                 );
@@ -137,8 +166,36 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  // Add payment method logic
+                onPressed: () async {
+                  final result = await Navigator.pushNamed(
+                    context,
+                    '/edit-payment-method',
+                  );
+                  if (result != null && result is Map<String, dynamic>) {
+                    setState(() {
+                      // If set as default, unset all others
+                      if (result['isDefault'] == true) {
+                        paymentMethods = paymentMethods.map((m) => PaymentMethod(
+                          id: m.id,
+                          type: m.type,
+                          title: m.title,
+                          accountNumber: m.accountNumber,
+                          isDefault: false,
+                        )).toList();
+                      }
+                      final newMethod = PaymentMethod(
+                        id: DateTime.now().millisecondsSinceEpoch.toString(),
+                        type: result['type'],
+                        title: result['title'],
+                        accountNumber: result['accountNumber'],
+                        isDefault: result['isDefault'] ?? false,
+                      );
+                      paymentMethods.add(newMethod);
+                      if (newMethod.isDefault) {
+                        defaultMethod = newMethod;
+                      }
+                    });
+                  }
                 },
                 icon: const Icon(Icons.add),
                 label: const Text('Add Payment Method'),
@@ -151,8 +208,11 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
 
                   ),
                 ),
-              ],
-           ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

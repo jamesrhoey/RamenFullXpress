@@ -73,7 +73,7 @@ class _EditprofilePageState extends State<EditprofilePage> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: const Color.fromARGB(255, 119, 119, 119),
                     spreadRadius: 1,
                     blurRadius: 6,
                     offset: const Offset(0, 3),
@@ -111,7 +111,7 @@ class _EditprofilePageState extends State<EditprofilePage> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: const Color.fromARGB(255, 116, 116, 116),
                     spreadRadius: 1,
                     blurRadius: 6,
                     offset: const Offset(0, 3),
@@ -149,7 +149,7 @@ class _EditprofilePageState extends State<EditprofilePage> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: const Color.fromARGB(255, 119, 119, 119),
                     spreadRadius: 1,
                     blurRadius: 6,
                     offset: const Offset(0, 3),
