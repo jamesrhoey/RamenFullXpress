@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'models/payment_method.dart';
 
 class PaymentmethodPage extends StatefulWidget {
   const PaymentmethodPage({super.key});
@@ -42,6 +43,17 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
     return "${method['name']} - ${method['holder']}";
   }
 
+  // Sample payment method data
+  final List<PaymentMethod> paymentMethods = [
+    PaymentMethod(
+      id: '1',
+      type: PaymentType.gcash,
+      title: 'John Doe',
+      accountNumber: '09123456789',
+      isDefault: true,
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,6 +65,7 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
         ),
         centerTitle: true,
       ),
+
       body: Column(
         children: [
           Expanded(
@@ -134,14 +147,12 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                   borderRadius: BorderRadius.circular(12),
+
                   ),
                 ),
-              ),
-            ),
-          ),
-        ],
-      ),
+              ],
+           ),
     );
   }
 }
