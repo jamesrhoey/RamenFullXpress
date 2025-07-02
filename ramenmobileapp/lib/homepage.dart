@@ -419,18 +419,27 @@ class _HomePageState extends State<HomePage> {
                               borderRadius: BorderRadius.circular(30),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFFD32D43).withOpacity(0.2),
+                                  color: const Color(
+                                    0xFFD32D43,
+                                  ).withOpacity(0.2),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 16,
+                            ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.shopping_cart, color: Colors.white, size: 22),
+                                const Icon(
+                                  Icons.shopping_cart,
+                                  color: Colors.white,
+                                  size: 22,
+                                ),
                                 const SizedBox(width: 10),
                                 const Text(
                                   'Add to Cart',
@@ -446,16 +455,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         );
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD32D43),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
+
                       child: const Text(
                         'Add to Cart',
                         style: TextStyle(
