@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -48,6 +47,66 @@ class _HomePageState extends State<HomePage> {
       'image': 'assets/ramen5.jpg',
       'category': 'Ramen',
     },
+    {
+      'name': 'Vegetarian Ramen',
+      'price': 210.00,
+      'image': 'assets/ramen6.jpg',
+      'category': 'Ramen',
+    },
+    {
+      'name': 'Chicken Karaage',
+      'price': 160.00,
+      'image': 'assets/ricebowl.jpg',
+      'category': 'Rice Bowls',
+    },
+    {
+      'name': 'Chashu Don',
+      'price': 150.00,
+      'image': 'assets/ricebowl2.jpg',
+      'category': 'Rice Bowls',
+    },
+    {
+      'name': 'Tonkatsu',
+      'price': 170.00,
+      'image': 'assets/ricebowl3.jpg',
+      'category': 'Rice Bowls',
+    },
+    {
+      'name': 'Katsu Curry',
+      'price': 180.00,
+      'image': 'assets/ricebowl4.jpg',
+      'category': 'Rice Bowls',
+    },
+    {
+      'name': 'Gyoza (4 pcs)',
+      'price': 80.00,
+      'image': 'assets/side1.jpg',
+      'category': 'Sides',
+    },
+    {
+      'name': 'Tempura (4 pcs)',
+      'price': 150.00,
+      'image': 'assets/side2.jpg',
+      'category': 'Sides',
+    },
+    {
+      'name': 'Fried Tofu (8 pcs)',
+      'price': 75.00,
+      'image': 'assets/side3.jpg',
+      'category': 'Sides',
+    },
+    {
+      'name': 'Karaage Chicken',
+      'price': 145.00,
+      'image': 'assets/side4.jpg',
+      'category': 'Sides',
+    },
+    {
+      'name': 'Coke',
+      'price': 20.00,
+      'image': 'assets/coke.webp',
+      'category': 'Drinks',
+    },
   ];
 
   // Add-ons data
@@ -78,10 +137,15 @@ class _HomePageState extends State<HomePage> {
     if (selectedCategory == 'All') {
       return menuItems;
     }
-    return menuItems.where((item) => item['category'] == selectedCategory).toList();
+    return menuItems
+        .where((item) => item['category'] == selectedCategory)
+        .toList();
   }
 
-  void addToCart(Map<String, dynamic> item, List<Map<String, dynamic>> selectedAddOns) {
+  void addToCart(
+    Map<String, dynamic> item,
+    List<Map<String, dynamic>> selectedAddOns,
+  ) {
     setState(() {
       final existingItem = cartItems.firstWhere(
         (cartItem) => cartItem['name'] == item['name'],
@@ -91,11 +155,7 @@ class _HomePageState extends State<HomePage> {
       if (existingItem.isNotEmpty) {
         existingItem['quantity'] = (existingItem['quantity'] ?? 1) + 1;
       } else {
-        cartItems.add({
-          ...item,
-          'quantity': 1,
-          'addons': selectedAddOns,
-        });
+        cartItems.add({...item, 'quantity': 1, 'addons': selectedAddOns});
       }
       cartItemCount++;
     });
@@ -124,10 +184,14 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFD32D43).withAlpha((0.08 * 255).toInt()),
+                      color: const Color(
+                        0xFFD32D43,
+                      ).withAlpha((0.08 * 255).toInt()),
                       spreadRadius: 1,
                       blurRadius: 10,
                       offset: const Offset(0, 1),
@@ -165,7 +229,10 @@ class _HomePageState extends State<HomePage> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFD32D43), width: 1),
+                          border: Border.all(
+                            color: const Color(0xFFD32D43),
+                            width: 1,
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -181,7 +248,9 @@ class _HomePageState extends State<HomePage> {
                                     width: 80,
                                     height: 80,
                                     color: Colors.grey[200],
-                                    child: const Icon(Icons.image_not_supported),
+                                    child: const Icon(
+                                      Icons.image_not_supported,
+                                    ),
                                   );
                                 },
                               ),
@@ -225,7 +294,9 @@ class _HomePageState extends State<HomePage> {
                       ),
                       const SizedBox(height: 12),
                       ...(_addOns[item['category']] ?? []).map((addOn) {
-                        bool isSelected = selectedAddOns.any((a) => a['name'] == addOn['name']);
+                        bool isSelected = selectedAddOns.any(
+                          (a) => a['name'] == addOn['name'],
+                        );
                         return Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
@@ -240,7 +311,9 @@ class _HomePageState extends State<HomePage> {
                                   selectedAddOns.add(addOn);
                                   totalPrice += addOn['price'];
                                 } else {
-                                  selectedAddOns.removeWhere((a) => a['name'] == addOn['name']);
+                                  selectedAddOns.removeWhere(
+                                    (a) => a['name'] == addOn['name'],
+                                  );
                                   totalPrice -= addOn['price'];
                                 }
                               });
@@ -278,7 +351,12 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withValues(red: 128, green: 128, blue: 128, alpha: 10),
+                      color: Colors.grey.withValues(
+                        red: 128,
+                        green: 128,
+                        blue: 128,
+                        alpha: 10,
+                      ),
                       spreadRadius: 1,
                       blurRadius: 10,
                       offset: const Offset(0, -1),
@@ -341,18 +419,27 @@ class _HomePageState extends State<HomePage> {
                               borderRadius: BorderRadius.circular(30),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFFD32D43).withOpacity(0.2),
+                                  color: const Color(
+                                    0xFFD32D43,
+                                  ).withOpacity(0.2),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 16,
+                            ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.shopping_cart, color: Colors.white, size: 22),
+                                const Icon(
+                                  Icons.shopping_cart,
+                                  color: Colors.white,
+                                  size: 22,
+                                ),
                                 const SizedBox(width: 10),
                                 const Text(
                                   'Add to Cart',
@@ -368,6 +455,14 @@ class _HomePageState extends State<HomePage> {
                           ),
                         );
                       },
+
+                      child: const Text(
+                        'Add to Cart',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -411,7 +506,10 @@ class _HomePageState extends State<HomePage> {
                           onPressed: () {
                             Navigator.pushNamed(context, '/notifications');
                           },
-                          icon: const Icon(Icons.notifications_none, color: Color(0xFF1A1A1A)),
+                          icon: const Icon(
+                            Icons.notifications_none,
+                            color: Color(0xFF1A1A1A),
+                          ),
                         ),
                         if (cartItemCount > 0)
                           Positioned(
@@ -426,7 +524,7 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                     const SizedBox(width: 8),
-                     const CircleAvatar(
+                    const CircleAvatar(
                       backgroundImage: AssetImage('assets/adminPIC.png'),
                       radius: 20,
                     ),
@@ -474,26 +572,31 @@ class _HomePageState extends State<HomePage> {
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: ['All', 'Ramen', 'Rice Bowls', 'Sides', 'Drinks'].map((category) {
-                        bool isSelected = selectedCategory == category;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 12),
-                          child: FilterChip(
-                            label: Text(category),
-                            selected: isSelected,
-                            onSelected: (selected) {
-                              setState(() {
-                                selectedCategory = category;
-                              });
+                      children:
+                          ['All', 'Ramen', 'Rice Bowls', 'Sides', 'Drinks'].map(
+                            (category) {
+                              bool isSelected = selectedCategory == category;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 12),
+                                child: FilterChip(
+                                  label: Text(category),
+                                  selected: isSelected,
+                                  onSelected: (selected) {
+                                    setState(() {
+                                      selectedCategory = category;
+                                    });
+                                  },
+                                  selectedColor: const Color(0xFFD32D43),
+                                  checkmarkColor: Colors.white,
+                                  labelStyle: TextStyle(
+                                    color: isSelected
+                                        ? Colors.white
+                                        : const Color(0xFF1A1A1A),
+                                  ),
+                                ),
+                              );
                             },
-                            selectedColor: const Color(0xFFD32D43),
-                            checkmarkColor: Colors.white,
-                            labelStyle: TextStyle(
-                              color: isSelected ? Colors.white : const Color(0xFF1A1A1A),
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                          ).toList(),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -511,12 +614,13 @@ class _HomePageState extends State<HomePage> {
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.8,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.8,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                        ),
                     itemCount: filteredMenuItems.length,
                     itemBuilder: (context, index) {
                       final item = filteredMenuItems[index];
@@ -538,7 +642,9 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               Expanded(
                                 child: ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(12),
+                                  ),
                                   child: Image.asset(
                                     item['image'],
                                     width: double.infinity,
@@ -590,7 +696,12 @@ class _HomePageState extends State<HomePage> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withValues(red: 128, green: 128, blue: 128, alpha: 10),
+              color: Colors.grey.withValues(
+                red: 128,
+                green: 128,
+                blue: 128,
+                alpha: 10,
+              ),
               spreadRadius: 1,
               blurRadius: 10,
               offset: const Offset(0, -1),
