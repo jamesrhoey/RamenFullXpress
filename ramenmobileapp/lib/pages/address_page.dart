@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'models/delivery_address.dart';
+import '../models/delivery_address.dart';
 
 class AddressPage extends StatefulWidget {
-  const AddressPage({Key? key}) : super(key: key);
+  const AddressPage({super.key});
 
   @override
   State<AddressPage> createState() => _AddressPageState();
@@ -169,8 +169,8 @@ class _AddressPageState extends State<AddressPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _addAddress,
         backgroundColor: Colors.red,
-        child: const Icon(Icons.add, color: Colors.white),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       backgroundColor: Colors.white,
@@ -179,7 +179,7 @@ class _AddressPageState extends State<AddressPage> {
 }
 
 class AddAddressPage extends StatefulWidget {
-  const AddAddressPage({Key? key}) : super(key: key);
+  const AddAddressPage({super.key});
 
   @override
   State<AddAddressPage> createState() => _AddAddressPageState();

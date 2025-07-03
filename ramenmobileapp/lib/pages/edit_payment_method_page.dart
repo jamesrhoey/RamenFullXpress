@@ -94,18 +94,18 @@ class _EditPaymentMethodPageState extends State<EditPaymentMethodPage> {
                   });
                 },
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.resolveWith<Color>((
-                    Set<MaterialState> states,
+                  backgroundColor: WidgetStateProperty.resolveWith<Color>((
+                    Set<WidgetState> states,
                   ) {
-                    if (states.contains(MaterialState.selected)) {
+                    if (states.contains(WidgetState.selected)) {
                       return Colors.deepOrange.withAlpha((0.08 * 255).toInt());
                     }
                     return Colors.grey[50]!;
                   }),
-                  foregroundColor: MaterialStateProperty.resolveWith<Color>((
-                    Set<MaterialState> states,
+                  foregroundColor: WidgetStateProperty.resolveWith<Color>((
+                    Set<WidgetState> states,
                   ) {
-                    if (states.contains(MaterialState.selected)) {
+                    if (states.contains(WidgetState.selected)) {
                       return Colors.deepOrange;
                     }
                     return Colors.grey;
@@ -162,16 +162,16 @@ class _EditPaymentMethodPageState extends State<EditPaymentMethodPage> {
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _savePaymentMethod,
-                child: Text(
-                  widget.paymentMethod == null
-                      ? 'Add Payment Method'
-                      : 'Save Changes',
-                ),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
+                ),
+                child: Text(
+                  widget.paymentMethod == null
+                      ? 'Add Payment Method'
+                      : 'Save Changes',
                 ),
               ),
             ],

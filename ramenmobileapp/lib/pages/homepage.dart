@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-
+import '../services/cart_service.dart';
+import '../services/menu_service.dart';
+import '../models/menu_item.dart';
+import '../models/cart_item.dart';
+import 'payment_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,97 +17,63 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _searchController = TextEditingController();
   String searchQuery = '';
 
+  // Services
+  final CartService _cartService = CartService();
+  final MenuService _menuService = MenuService();
+
   // Local cart state
-  List<Map<String, dynamic>> cartItems = [];
   int cartItemCount = 0;
 
-  final List<Map<String, dynamic>> menuItems = [
-    {
-      'name': 'Tonkotsu Ramen',
-      'price': 210.00,
-      'image': 'assets/ramen1.jpg',
-      'category': 'Ramen',
-    },
-    {
-      'name': 'Karaage Ramen',
-      'price': 210.00,
-      'image': 'assets/ramen2.jpg',
-      'category': 'Ramen',
-    },
-    {
-      'name': 'Miso Ramen',
-      'price': 210.00,
-      'image': 'assets/ramen3.jpg',
-      'category': 'Ramen',
-    },
-    {
-      'name': 'Shoyu Ramen',
-      'price': 210.00,
-      'image': 'assets/ramen4.jpg',
-      'category': 'Ramen',
-    },
-    {
-      'name': 'Spicy Ramen',
-      'price': 210.00,
-      'image': 'assets/ramen5.jpg',
-      'category': 'Ramen',
-    },
-  ];
-
-  // Add-ons data
-  final Map<String, List<Map<String, dynamic>>> _addOns = {
-    'Ramen': [
-      {'name': 'Extra Noodles', 'price': 30.0},
-      {'name': 'Extra Chashu', 'price': 50.0},
-      {'name': 'Extra Egg', 'price': 20.0},
-      {'name': 'Extra Vegetables', 'price': 25.0},
-    ],
-    'Rice Bowls': [
-      {'name': 'Extra Rice', 'price': 15.0},
-      {'name': 'Extra Meat', 'price': 40.0},
-      {'name': 'Extra Egg', 'price': 20.0},
-      {'name': 'Extra Sauce', 'price': 10.0},
-    ],
-    'Sides': [
-      {'name': 'Extra Sauce', 'price': 10.0},
-      {'name': 'Extra Portion', 'price': 30.0},
-    ],
-    'Drinks': [
-      {'name': 'Extra Ice', 'price': 0.0},
-      {'name': 'Extra Shot', 'price': 15.0},
-    ],
-  };
-
-  List<Map<String, dynamic>> get filteredMenuItems {
-    if (selectedCategory == 'All') {
-      return menuItems;
-    }
-    return menuItems.where((item) => item['category'] == selectedCategory).toList();
+  @override
+  void initState() {
+    super.initState();
+    _loadCart();
   }
 
-  void addToCart(Map<String, dynamic> item, List<Map<String, dynamic>> selectedAddOns) {
+  Future<void> _loadCart() async {
+    await _cartService.loadCart();
     setState(() {
-      final existingItem = cartItems.firstWhere(
-        (cartItem) => cartItem['name'] == item['name'],
-        orElse: () => <String, dynamic>{},
-      );
-
-      if (existingItem.isNotEmpty) {
-        existingItem['quantity'] = (existingItem['quantity'] ?? 1) + 1;
-      } else {
-        cartItems.add({
-          ...item,
-          'quantity': 1,
-          'addons': selectedAddOns,
-        });
-      }
-      cartItemCount++;
+      cartItemCount = _cartService.itemCount;
     });
   }
 
-  void _showAddOnsModal(BuildContext context, Map<String, dynamic> item) {
+
+
+  List<MenuItem> get filteredMenuItems {
+    var items = _menuService.getMenuItemsByCategory(selectedCategory);
+    if (searchQuery.isNotEmpty) {
+      items = _menuService.searchMenuItems(searchQuery)
+          .where((item) => selectedCategory == 'All' || item.category == selectedCategory)
+          .toList();
+    }
+    return items;
+  }
+
+  Future<void> addToCart(
+    Map<String, dynamic> item,
+    List<Map<String, dynamic>> selectedAddOns,
+  ) async {
+    // Convert to MenuItem and AddOn objects
+    final menuItem = MenuItem(
+      name: item['name'],
+      price: item['price'].toDouble(),
+      image: item['image'],
+      category: item['category'],
+    );
+    
+    final addOns = selectedAddOns.map((addon) => 
+      AddOn(name: addon['name'], price: addon['price'].toDouble())
+    ).toList();
+    
+    await _cartService.addToCart(menuItem, addOns);
+    setState(() {
+      cartItemCount = _cartService.itemCount;
+    });
+  }
+
+  void _showAddOnsModal(BuildContext context, MenuItem item) {
     List<Map<String, dynamic>> selectedAddOns = [];
-    double totalPrice = item['price'] as double;
+    double totalPrice = item.price;
 
     showModalBottomSheet(
       context: context,
@@ -124,10 +94,14 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFD32D43).withAlpha((0.08 * 255).toInt()),
+                      color: const Color(
+                        0xFFD32D43,
+                      ).withAlpha((0.08 * 255).toInt()),
                       spreadRadius: 1,
                       blurRadius: 10,
                       offset: const Offset(0, 1),
@@ -165,14 +139,17 @@ class _HomePageState extends State<HomePage> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFD32D43), width: 1),
+                          border: Border.all(
+                            color: const Color(0xFFD32D43),
+                            width: 1,
+                          ),
                         ),
                         child: Row(
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: Image.asset(
-                                item['image'] ?? 'assets/placeholder.png',
+                                item.image,
                                 width: 80,
                                 height: 80,
                                 fit: BoxFit.cover,
@@ -181,7 +158,9 @@ class _HomePageState extends State<HomePage> {
                                     width: 80,
                                     height: 80,
                                     color: Colors.grey[200],
-                                    child: const Icon(Icons.image_not_supported),
+                                    child: const Icon(
+                                      Icons.image_not_supported,
+                                    ),
                                   );
                                 },
                               ),
@@ -192,7 +171,7 @@ class _HomePageState extends State<HomePage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    item['name'] ?? 'Unknown Item',
+                                    item.name,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
@@ -224,8 +203,10 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      ...(_addOns[item['category']] ?? []).map((addOn) {
-                        bool isSelected = selectedAddOns.any((a) => a['name'] == addOn['name']);
+                      ...(item.availableAddOns).map((addOn) {
+                        bool isSelected = selectedAddOns.any(
+                          (a) => a['name'] == addOn.name,
+                        );
                         return Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
@@ -237,16 +218,21 @@ class _HomePageState extends State<HomePage> {
                             onChanged: (bool? value) {
                               setState(() {
                                 if (value == true) {
-                                  selectedAddOns.add(addOn);
-                                  totalPrice += addOn['price'];
+                                  selectedAddOns.add({
+                                    'name': addOn.name,
+                                    'price': addOn.price,
+                                  });
+                                  totalPrice += addOn.price;
                                 } else {
-                                  selectedAddOns.removeWhere((a) => a['name'] == addOn['name']);
-                                  totalPrice -= addOn['price'];
+                                  selectedAddOns.removeWhere(
+                                    (a) => a['name'] == addOn.name,
+                                  );
+                                  totalPrice -= addOn.price;
                                 }
                               });
                             },
                             title: Text(
-                              addOn['name'],
+                              addOn.name,
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
@@ -254,7 +240,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             subtitle: Text(
-                              '₱${addOn['price'].toStringAsFixed(2)}',
+                              '₱${addOn.price.toStringAsFixed(2)}',
                               style: const TextStyle(
                                 color: Color(0xFF1A1A1A),
                                 fontSize: 12,
@@ -278,7 +264,12 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withValues(red: 128, green: 128, blue: 128, alpha: 10),
+                      color: Colors.grey.withValues(
+                        red: 128,
+                        green: 128,
+                        blue: 128,
+                        alpha: 10,
+                      ),
                       spreadRadius: 1,
                       blurRadius: 10,
                       offset: const Offset(0, -1),
@@ -318,12 +309,17 @@ class _HomePageState extends State<HomePage> {
                             // Animate scale down
                             (context as Element).markNeedsBuild();
                           },
-                          onTapUp: (_) {
-                            addToCart(item, selectedAddOns);
+                          onTapUp: (_) async {
+                            await addToCart({
+                              'name': item.name,
+                              'price': item.price,
+                              'image': item.image,
+                              'category': item.category,
+                            }, selectedAddOns);
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('${item['name']} added to cart'),
+                                content: Text('${item.name} added to cart'),
                                 backgroundColor: const Color(0xFFD32D43),
                               ),
                             );
@@ -341,18 +337,25 @@ class _HomePageState extends State<HomePage> {
                               borderRadius: BorderRadius.circular(30),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFFD32D43).withOpacity(0.2),
+                                  color: const Color.fromARGB(255, 255, 208, 214),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 16,
+                            ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.shopping_cart, color: Colors.white, size: 22),
+                                const Icon(
+                                  Icons.shopping_cart,
+                                  color: Colors.white,
+                                  size: 22,
+                                ),
                                 const SizedBox(width: 10),
                                 const Text(
                                   'Add to Cart',
@@ -368,6 +371,14 @@ class _HomePageState extends State<HomePage> {
                           ),
                         );
                       },
+
+                      child: const Text(
+                        'Add to Cart',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -411,7 +422,10 @@ class _HomePageState extends State<HomePage> {
                           onPressed: () {
                             Navigator.pushNamed(context, '/notifications');
                           },
-                          icon: const Icon(Icons.notifications_none, color: Color(0xFF1A1A1A)),
+                          icon: const Icon(
+                            Icons.notifications_none,
+                            color: Color(0xFF1A1A1A),
+                          ),
                         ),
                         if (cartItemCount > 0)
                           Positioned(
@@ -426,7 +440,7 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                     const SizedBox(width: 8),
-                     const CircleAvatar(
+                    const CircleAvatar(
                       backgroundImage: AssetImage('assets/adminPIC.png'),
                       radius: 20,
                     ),
@@ -474,26 +488,31 @@ class _HomePageState extends State<HomePage> {
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: ['All', 'Ramen', 'Rice Bowls', 'Sides', 'Drinks'].map((category) {
-                        bool isSelected = selectedCategory == category;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 12),
-                          child: FilterChip(
-                            label: Text(category),
-                            selected: isSelected,
-                            onSelected: (selected) {
-                              setState(() {
-                                selectedCategory = category;
-                              });
+                      children:
+                          _menuService.categories.map(
+                            (category) {
+                              bool isSelected = selectedCategory == category;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 12),
+                                child: FilterChip(
+                                  label: Text(category),
+                                  selected: isSelected,
+                                  onSelected: (selected) {
+                                    setState(() {
+                                      selectedCategory = category;
+                                    });
+                                  },
+                                  selectedColor: const Color(0xFFD32D43),
+                                  checkmarkColor: Colors.white,
+                                  labelStyle: TextStyle(
+                                    color: isSelected
+                                        ? Colors.white
+                                        : const Color(0xFF1A1A1A),
+                                  ),
+                                ),
+                              );
                             },
-                            selectedColor: const Color(0xFFD32D43),
-                            checkmarkColor: Colors.white,
-                            labelStyle: TextStyle(
-                              color: isSelected ? Colors.white : const Color(0xFF1A1A1A),
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                          ).toList(),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -511,12 +530,13 @@ class _HomePageState extends State<HomePage> {
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.8,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.8,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                        ),
                     itemCount: filteredMenuItems.length,
                     itemBuilder: (context, index) {
                       final item = filteredMenuItems[index];
@@ -538,9 +558,11 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               Expanded(
                                 child: ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(12),
+                                  ),
                                   child: Image.asset(
-                                    item['image'],
+                                    item.image,
                                     width: double.infinity,
                                     fit: BoxFit.cover,
                                   ),
@@ -552,7 +574,7 @@ class _HomePageState extends State<HomePage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      item['name'],
+                                      item.name,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 14,
@@ -563,7 +585,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      '₱${item['price'].toStringAsFixed(2)}',
+                                      '₱${item.price.toStringAsFixed(2)}',
                                       style: const TextStyle(
                                         color: Color(0xFFD32D43),
                                         fontSize: 16,
@@ -590,7 +612,12 @@ class _HomePageState extends State<HomePage> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withValues(red: 128, green: 128, blue: 128, alpha: 10),
+              color: Colors.grey.withValues(
+                red: 128,
+                green: 128,
+                blue: 128,
+                alpha: 10,
+              ),
               spreadRadius: 1,
               blurRadius: 10,
               offset: const Offset(0, -1),
@@ -605,7 +632,10 @@ class _HomePageState extends State<HomePage> {
                 // Already on home page
                 break;
               case 1:
-                Navigator.pushNamed(context, '/payment');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PaymentPage()),
+                );
                 break;
               case 2:
                 Navigator.pushNamed(context, '/order-history');

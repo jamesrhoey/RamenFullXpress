@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'homepage.dart' as home;
-import 'login_page.dart';
-import 'registration.dart';
-import 'payment_page.dart';
-import 'order_history.dart';
-import 'invoice_page.dart';
-import 'notification_page.dart';
-import 'editProfile_page.dart';
-import 'paymentmethod_page.dart';
-import 'address_page.dart';
-import 'profile_page.dart';
-import 'edit_payment_method_page.dart';
+import 'pages/homepage.dart' as home;
+import 'pages/login_page.dart';
+import 'pages/registration.dart';
+import 'pages/payment_page.dart';
+import 'pages/order_history.dart';
+import 'pages/invoice_page.dart';
+import 'pages/notification_page.dart';
+import 'pages/edit_profile_page.dart';
+import 'pages/paymentmethod_page.dart';
+import 'pages/address_page.dart';
+import 'pages/profile_page.dart';
+import 'pages/edit_payment_method_page.dart';
 
 void main() {
   runApp(const MyApp());
