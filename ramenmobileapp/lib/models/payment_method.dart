@@ -21,11 +21,14 @@ class PaymentMethod {
   });
 
   String get displayName {
+    String lastDigits = accountNumber.length >= 4
+        ? accountNumber.substring(accountNumber.length - 4)
+        : accountNumber;
     switch (type) {
       case PaymentType.gcash:
-        return 'GCash •••• ${accountNumber.substring(accountNumber.length - 4)}';
+        return 'GCash •••• ' + lastDigits;
       case PaymentType.maya:
-        return 'Maya •••• ${accountNumber.substring(accountNumber.length - 4)}';
+        return 'Maya •••• ' + lastDigits;
     }
   }
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-enum PaymentType { gcash, maya }
+import 'models/payment_method.dart';
 
 class EditPaymentMethodPage extends StatefulWidget {
   final Map<String, dynamic>? paymentMethod;
@@ -94,6 +93,7 @@ class _EditPaymentMethodPageState extends State<EditPaymentMethodPage> {
                   });
                 },
                 style: ButtonStyle(
+<<<<<<< HEAD:ramenmobileapp/lib/pages/edit_payment_method_page.dart
                   backgroundColor: WidgetStateProperty.resolveWith<Color>((
                     Set<WidgetState> states,
                   ) {
@@ -110,6 +110,24 @@ class _EditPaymentMethodPageState extends State<EditPaymentMethodPage> {
                     }
                     return Colors.grey;
                   }),
+=======
+                  backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                    (Set<MaterialState> states) {
+                      if (states.contains(MaterialState.selected)) {
+                        return Colors.deepOrange.withAlpha((0.08 * 255).toInt());
+                      }
+                      return Colors.grey[50]!;
+                    },
+                  ),
+                  foregroundColor: MaterialStateProperty.resolveWith<Color>(
+                    (Set<MaterialState> states) {
+                      if (states.contains(MaterialState.selected)) {
+                        return Colors.deepOrange;
+                      }
+                      return Colors.grey;
+                    },
+                  ),
+>>>>>>> 0a4c4c3839f2a0c8acc3bf1c25f9a7305ddf466b:ramenmobileapp/lib/edit_payment_method_page.dart
                 ),
               ),
               const SizedBox(height: 24),
@@ -137,9 +155,6 @@ class _EditPaymentMethodPageState extends State<EditPaymentMethodPage> {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter account number';
-                  }
-                  if (!RegExp(r'^\d{11}$').hasMatch(value)) {
-                    return 'Please enter a valid 11-digit account number';
                   }
                   return null;
                 },
