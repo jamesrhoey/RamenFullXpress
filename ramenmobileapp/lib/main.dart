@@ -158,7 +158,14 @@ class MyApp extends StatelessWidget {
         '/invoice': (context) => const InvoicePage(order: {}),
         '/notifications': (context) => const NotificationPage(),
         '/profile': (context) => const ProfilePage(),
-        '/edit-profile': (context) => const EditprofilePage(),
+        '/edit-profile': (context) => EditprofilePage(
+          initialProfile: {
+            'name': 'Minami',
+            'email': 'minami@gmail.com',
+            'phone': '+63 912 420 6969',
+            'profileImage': 'assets/profilesgg.png',
+          },
+        ),
         '/payment-method': (context) => const PaymentmethodPage(),
         '/address': (context) => const AddressPage(),
         '/edit-payment-method': (context) => const EditPaymentMethodPage(),
