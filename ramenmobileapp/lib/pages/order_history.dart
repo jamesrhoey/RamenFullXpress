@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'pages/invoice_page.dart';
-import '../services/order_service.dart';
-import '../models/order.dart';
+import 'invoice_page.dart';
 
 class OrderHistoryPage extends StatefulWidget {
   const OrderHistoryPage({super.key});
@@ -12,42 +10,119 @@ class OrderHistoryPage extends StatefulWidget {
 }
 
 class _OrderHistoryPageState extends State<OrderHistoryPage> {
-  final OrderService _orderService = OrderService();
-  List<Order> orders = [];
+  List<Map<String, dynamic>> orders = [
+    {
+      'id': 1,
+      'status': 'Delivered',
+      'date': DateTime.now().subtract(const Duration(days: 1)),
+      'deliveryMethod': 'Delivery',
+      'paymentMethod': 'GCash',
+      'total': 500.0,
+      'items': [
+        {
+          'name': 'Tonkotsu Ramen',
+          'price': 250.0,
+          'quantity': 1,
+          'addons': ['Extra Noodles', 'Soft Boiled Egg'],
+        },
+        {
+          'name': 'Miso Ramen',
+          'price': 250.0,
+          'quantity': 1,
+          'addons': ['Chashu Pork'],
+        },
+      ],
+      'deliveryAddress': '123 Main Street, Quezon City, Metro Manila',
+      'notes': 'Please deliver to the front gate. Call when arriving.',
+    },
+    {
+      'id': 2,
+      'status': 'Pending',
+      'date': DateTime.now().subtract(const Duration(days: 2)),
+      'deliveryMethod': 'Pick Up',
+      'paymentMethod': 'Maya',
+      'total': 350.0,
+      'items': [
+        {
+          'name': 'Shoyu Ramen',
+          'price': 200.0,
+          'quantity': 1,
+          'addons': ['Extra Noodles'],
+        },
+        {
+          'name': 'Gyoza',
+          'price': 150.0,
+          'quantity': 1,
+          'addons': null,
+        },
+      ],
+      'deliveryAddress': null,
+      'notes': 'Pick up at counter. Name: John Doe',
+    },
+    {
+      'id': 3,
+      'status': 'Cancelled',
+      'date': DateTime.now().subtract(const Duration(days: 2)),
+      'deliveryMethod': 'Pick Up',
+      'paymentMethod': 'Maya',
+      'total': 350.0,
+      'items': [
+        {
+          'name': 'Shoyu Ramen',
+          'price': 200.0,
+          'quantity': 1,
+          'addons': ['Extra Noodles'],
+        },
+        {
+          'name': 'Gyoza',
+          'price': 150.0,
+          'quantity': 1,
+          'addons': null,
+        },
+      ],
+      'deliveryAddress': null,
+      'notes': 'Pick up at counter. Name: John Doe',
+    },
+    {
+      'id': 4,
+      'status': 'Preparing',
+      'date': DateTime.now().subtract(const Duration(days: 2)),
+      'deliveryMethod': 'Pick Up',
+      'paymentMethod': 'Maya',
+      'total': 350.0,
+      'items': [
+        {
+          'name': 'Shoyu Ramen',
+          'price': 200.0,
+          'quantity': 1,
+          'addons': ['Extra Noodles'],
+        },
+        {
+          'name': 'Gyoza',
+          'price': 150.0,
+          'quantity': 1,
+          'addons': null,
+        },
+      ],
+      'deliveryAddress': null,
+      'notes': 'Pick up at counter. Name: John Doe',
+    },
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    _loadOrders();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _loadOrders(); // Refresh orders when dependencies change (like when navigating back)
-  }
-
-  Future<void> _loadOrders() async {
-    await _orderService.loadOrders();
-    setState(() {
-      orders = _orderService.orders;
-    });
-  }
-
-
-
-  Color _getStatusColor(OrderStatus status) {
-    switch (status) {
-      case OrderStatus.pending:
-        return const Color.fromARGB(255, 88, 97, 255);
-      case OrderStatus.preparing:
-        return const Color(0xFF1A1A1A);
-      case OrderStatus.ready:
-        return const Color.fromARGB(255, 185, 255, 73);
-      case OrderStatus.delivered:
-        return const Color.fromARGB(255, 10, 180, 10);
-      case OrderStatus.cancelled:
-        return const Color(0xFFD32D43);
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return const Color.fromARGB(255, 88, 97, 255); // Red
+      case 'preparing':
+        return const Color(0xFF1A1A1A); // Black
+      case 'ready':
+        return const Color.fromARGB(255, 185, 255, 73); // Red
+      case 'delivered':
+        return const Color.fromARGB(255, 10, 180, 10); // Black
+      case 'cancelled':
+        return const Color(0xFFD32D43); // Red
+      default:
+        return const Color.fromARGB(255, 175, 175, 175); // Black
     }
   }
 
@@ -139,17 +214,18 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                           ),
                         ),
                         ...orders.map((order) {
-                          final orderId = order.id.padLeft(4, '0');
+                          final orderId = order['id'].toString().padLeft(4, '0');
                           return Card(
                             margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
                             child: InkWell(
                               splashColor: Color(0x1AD32D43),
                               highlightColor: Colors.transparent,
                               onTap: () {
+                                // Navigate to invoice page with order details
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => InvoicePage(order: order.toJson()),
+                                    builder: (context) => InvoicePage(order: order),
                                   ),
                                 );
                               },
@@ -177,13 +253,13 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                           decoration: BoxDecoration(
-                                            color: _getStatusColor(order.status).withAlpha((0.08 * 255).toInt()),
+                                            color: _getStatusColor(order['status']).withAlpha((0.08 * 255).toInt()),
                                             borderRadius: BorderRadius.circular(20),
                                           ),
-                                                                                      child: Text(
-                                              order.status.name,
-                                              style: TextStyle(
-                                                color: _getStatusColor(order.status),
+                                          child: Text(
+                                            order['status'],
+                                            style: TextStyle(
+                                              color: _getStatusColor(order['status']),
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
@@ -192,7 +268,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                                     ),
                                     const SizedBox(height: 12),
                                     Text(
-                                                                                  dateFormat.format(order.orderDate),
+                                      dateFormat.format(order['date']),
                                       style: TextStyle(
                                         color: Color(0xFF1A1A1A),
                                         fontSize: 14,
@@ -208,7 +284,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                'Delivery: ${order.deliveryMethod}',
+                                                'Delivery: ${order['deliveryMethod']}',
                                                 style: TextStyle(
                                                   color: Color(0xFF1A1A1A),
                                                   fontSize: 12,
@@ -217,7 +293,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                                               ),
                                               const SizedBox(height: 4),
                                               Text(
-                                                'Payment: ${order.paymentMethod}',
+                                                'Payment: ${order['paymentMethod']}',
                                                 style: TextStyle(
                                                   color: Color(0xFF1A1A1A),
                                                   fontSize: 12,
@@ -231,7 +307,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                                         SizedBox(
                                           width: MediaQuery.of(context).size.width * 0.25,
                                           child: Text(
-                                            currencyFormat.format(order.total),
+                                            currencyFormat.format(order['total']),
                                             style: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               fontSize: 16,

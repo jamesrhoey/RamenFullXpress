@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import '../services/cart_service.dart';
+import '../services/menu_service.dart';
+import '../models/menu_item.dart';
+import '../models/cart_item.dart';
+import 'payment_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,158 +17,63 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _searchController = TextEditingController();
   String searchQuery = '';
 
+  // Services
+  final CartService _cartService = CartService();
+  final MenuService _menuService = MenuService();
+
   // Local cart state
-  List<Map<String, dynamic>> cartItems = [];
   int cartItemCount = 0;
 
-  final List<Map<String, dynamic>> menuItems = [
-    {
-      'name': 'Tonkotsu Ramen',
-      'price': 210.00,
-      'image': 'assets/ramen1.jpg',
-      'category': 'Ramen',
-    },
-    {
-      'name': 'Karaage Ramen',
-      'price': 210.00,
-      'image': 'assets/ramen2.jpg',
-      'category': 'Ramen',
-    },
-    {
-      'name': 'Miso Ramen',
-      'price': 210.00,
-      'image': 'assets/ramen3.jpg',
-      'category': 'Ramen',
-    },
-    {
-      'name': 'Shoyu Ramen',
-      'price': 210.00,
-      'image': 'assets/ramen4.jpg',
-      'category': 'Ramen',
-    },
-    {
-      'name': 'Spicy Ramen',
-      'price': 210.00,
-      'image': 'assets/ramen5.jpg',
-      'category': 'Ramen',
-    },
-    {
-      'name': 'Vegetarian Ramen',
-      'price': 210.00,
-      'image': 'assets/ramen6.jpg',
-      'category': 'Ramen',
-    },
-    {
-      'name': 'Chicken Karaage',
-      'price': 160.00,
-      'image': 'assets/ricebowl.jpg',
-      'category': 'Rice Bowls',
-    },
-    {
-      'name': 'Chashu Don',
-      'price': 150.00,
-      'image': 'assets/ricebowl2.jpg',
-      'category': 'Rice Bowls',
-    },
-    {
-      'name': 'Tonkatsu',
-      'price': 170.00,
-      'image': 'assets/ricebowl3.jpg',
-      'category': 'Rice Bowls',
-    },
-    {
-      'name': 'Katsu Curry',
-      'price': 180.00,
-      'image': 'assets/ricebowl4.jpg',
-      'category': 'Rice Bowls',
-    },
-    {
-      'name': 'Gyoza (4 pcs)',
-      'price': 80.00,
-      'image': 'assets/side1.jpg',
-      'category': 'Sides',
-    },
-    {
-      'name': 'Tempura (4 pcs)',
-      'price': 150.00,
-      'image': 'assets/side2.jpg',
-      'category': 'Sides',
-    },
-    {
-      'name': 'Fried Tofu (8 pcs)',
-      'price': 75.00,
-      'image': 'assets/side3.jpg',
-      'category': 'Sides',
-    },
-    {
-      'name': 'Karaage Chicken',
-      'price': 145.00,
-      'image': 'assets/side4.jpg',
-      'category': 'Sides',
-    },
-    {
-      'name': 'Coke',
-      'price': 20.00,
-      'image': 'assets/coke.webp',
-      'category': 'Drinks',
-    },
-  ];
-
-  // Add-ons data
-  final Map<String, List<Map<String, dynamic>>> _addOns = {
-    'Ramen': [
-      {'name': 'Extra Noodles', 'price': 30.0},
-      {'name': 'Extra Chashu', 'price': 50.0},
-      {'name': 'Extra Egg', 'price': 20.0},
-      {'name': 'Extra Vegetables', 'price': 25.0},
-    ],
-    'Rice Bowls': [
-      {'name': 'Extra Rice', 'price': 15.0},
-      {'name': 'Extra Meat', 'price': 40.0},
-      {'name': 'Extra Egg', 'price': 20.0},
-      {'name': 'Extra Sauce', 'price': 10.0},
-    ],
-    'Sides': [
-      {'name': 'Extra Sauce', 'price': 10.0},
-      {'name': 'Extra Portion', 'price': 30.0},
-    ],
-    'Drinks': [
-      {'name': 'Extra Ice', 'price': 0.0},
-      {'name': 'Extra Shot', 'price': 15.0},
-    ],
-  };
-
-  List<Map<String, dynamic>> get filteredMenuItems {
-    if (selectedCategory == 'All') {
-      return menuItems;
-    }
-    return menuItems
-        .where((item) => item['category'] == selectedCategory)
-        .toList();
+  @override
+  void initState() {
+    super.initState();
+    _loadCart();
   }
 
-  void addToCart(
-    Map<String, dynamic> item,
-    List<Map<String, dynamic>> selectedAddOns,
-  ) {
+  Future<void> _loadCart() async {
+    await _cartService.loadCart();
     setState(() {
-      final existingItem = cartItems.firstWhere(
-        (cartItem) => cartItem['name'] == item['name'],
-        orElse: () => <String, dynamic>{},
-      );
-
-      if (existingItem.isNotEmpty) {
-        existingItem['quantity'] = (existingItem['quantity'] ?? 1) + 1;
-      } else {
-        cartItems.add({...item, 'quantity': 1, 'addons': selectedAddOns});
-      }
-      cartItemCount++;
+      cartItemCount = _cartService.itemCount;
     });
   }
 
-  void _showAddOnsModal(BuildContext context, Map<String, dynamic> item) {
+
+
+  List<MenuItem> get filteredMenuItems {
+    var items = _menuService.getMenuItemsByCategory(selectedCategory);
+    if (searchQuery.isNotEmpty) {
+      items = _menuService.searchMenuItems(searchQuery)
+          .where((item) => selectedCategory == 'All' || item.category == selectedCategory)
+          .toList();
+    }
+    return items;
+  }
+
+  Future<void> addToCart(
+    Map<String, dynamic> item,
+    List<Map<String, dynamic>> selectedAddOns,
+  ) async {
+    // Convert to MenuItem and AddOn objects
+    final menuItem = MenuItem(
+      name: item['name'],
+      price: item['price'].toDouble(),
+      image: item['image'],
+      category: item['category'],
+    );
+    
+    final addOns = selectedAddOns.map((addon) => 
+      AddOn(name: addon['name'], price: addon['price'].toDouble())
+    ).toList();
+    
+    await _cartService.addToCart(menuItem, addOns);
+    setState(() {
+      cartItemCount = _cartService.itemCount;
+    });
+  }
+
+  void _showAddOnsModal(BuildContext context, MenuItem item) {
     List<Map<String, dynamic>> selectedAddOns = [];
-    double totalPrice = item['price'] as double;
+    double totalPrice = item.price;
 
     showModalBottomSheet(
       context: context,
@@ -239,7 +149,7 @@ class _HomePageState extends State<HomePage> {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: Image.asset(
-                                item['image'] ?? 'assets/placeholder.png',
+                                item.image,
                                 width: 80,
                                 height: 80,
                                 fit: BoxFit.cover,
@@ -261,7 +171,7 @@ class _HomePageState extends State<HomePage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    item['name'] ?? 'Unknown Item',
+                                    item.name,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
@@ -293,9 +203,9 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      ...(_addOns[item['category']] ?? []).map((addOn) {
+                      ...(item.availableAddOns).map((addOn) {
                         bool isSelected = selectedAddOns.any(
-                          (a) => a['name'] == addOn['name'],
+                          (a) => a['name'] == addOn.name,
                         );
                         return Container(
                           margin: const EdgeInsets.only(bottom: 8),
@@ -308,18 +218,21 @@ class _HomePageState extends State<HomePage> {
                             onChanged: (bool? value) {
                               setState(() {
                                 if (value == true) {
-                                  selectedAddOns.add(addOn);
-                                  totalPrice += addOn['price'];
+                                  selectedAddOns.add({
+                                    'name': addOn.name,
+                                    'price': addOn.price,
+                                  });
+                                  totalPrice += addOn.price;
                                 } else {
                                   selectedAddOns.removeWhere(
-                                    (a) => a['name'] == addOn['name'],
+                                    (a) => a['name'] == addOn.name,
                                   );
-                                  totalPrice -= addOn['price'];
+                                  totalPrice -= addOn.price;
                                 }
                               });
                             },
                             title: Text(
-                              addOn['name'],
+                              addOn.name,
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
@@ -327,7 +240,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             subtitle: Text(
-                              '₱${addOn['price'].toStringAsFixed(2)}',
+                              '₱${addOn.price.toStringAsFixed(2)}',
                               style: const TextStyle(
                                 color: Color(0xFF1A1A1A),
                                 fontSize: 12,
@@ -396,12 +309,17 @@ class _HomePageState extends State<HomePage> {
                             // Animate scale down
                             (context as Element).markNeedsBuild();
                           },
-                          onTapUp: (_) {
-                            addToCart(item, selectedAddOns);
+                          onTapUp: (_) async {
+                            await addToCart({
+                              'name': item.name,
+                              'price': item.price,
+                              'image': item.image,
+                              'category': item.category,
+                            }, selectedAddOns);
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('${item['name']} added to cart'),
+                                content: Text('${item.name} added to cart'),
                                 backgroundColor: const Color(0xFFD32D43),
                               ),
                             );
@@ -571,7 +489,7 @@ class _HomePageState extends State<HomePage> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children:
-                          ['All', 'Ramen', 'Rice Bowls', 'Sides', 'Drinks'].map(
+                          _menuService.categories.map(
                             (category) {
                               bool isSelected = selectedCategory == category;
                               return Padding(
@@ -644,7 +562,7 @@ class _HomePageState extends State<HomePage> {
                                     top: Radius.circular(12),
                                   ),
                                   child: Image.asset(
-                                    item['image'],
+                                    item.image,
                                     width: double.infinity,
                                     fit: BoxFit.cover,
                                   ),
@@ -656,7 +574,7 @@ class _HomePageState extends State<HomePage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      item['name'],
+                                      item.name,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 14,
@@ -667,7 +585,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      '₱${item['price'].toStringAsFixed(2)}',
+                                      '₱${item.price.toStringAsFixed(2)}',
                                       style: const TextStyle(
                                         color: Color(0xFFD32D43),
                                         fontSize: 16,
@@ -714,7 +632,10 @@ class _HomePageState extends State<HomePage> {
                 // Already on home page
                 break;
               case 1:
-                Navigator.pushNamed(context, '/payment');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PaymentPage()),
+                );
                 break;
               case 2:
                 Navigator.pushNamed(context, '/order-history');
