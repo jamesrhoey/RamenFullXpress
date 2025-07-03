@@ -20,6 +20,33 @@ class _AddressPageState extends State<AddressPage> {
       zipCode: '4208',
       isDefault: true,
     ),
+    DeliveryAddress(
+      id: '2',
+      street: 'Purok 5',
+      barangay: 'Barangay 9',
+      municipality: 'Balayan',
+      province: 'Batangas',
+      zipCode: '4213',
+      isDefault: false,
+    ),
+    DeliveryAddress(
+      id: '3',
+      street: 'Purok 5',
+      barangay: 'Sinisian',
+      municipality: 'Calaca City',
+      province: 'Batangas',
+      zipCode: '4208',
+      isDefault: false,
+    ),
+    DeliveryAddress(
+      id: '4',
+      street: 'Purok 1',
+      barangay: 'Pooc',
+      municipality: 'Balayan',
+      province: 'Batangas',
+      zipCode: '4213',
+      isDefault: false,
+    ),
   ];
 
   Future<void> _addAddress() async {
