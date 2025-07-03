@@ -20,6 +20,33 @@ class _AddressPageState extends State<AddressPage> {
       zipCode: '4208',
       isDefault: true,
     ),
+    DeliveryAddress(
+      id: '2',
+      street: 'Purok 5',
+      barangay: 'Barangay 9',
+      municipality: 'Balayan',
+      province: 'Batangas',
+      zipCode: '4213',
+      isDefault: false,
+    ),
+    DeliveryAddress(
+      id: '3',
+      street: 'Purok 5',
+      barangay: 'Sinisian',
+      municipality: 'Calaca City',
+      province: 'Batangas',
+      zipCode: '4208',
+      isDefault: false,
+    ),
+    DeliveryAddress(
+      id: '4',
+      street: 'Purok 1',
+      barangay: 'Pooc',
+      municipality: 'Balayan',
+      province: 'Batangas',
+      zipCode: '4213',
+      isDefault: false,
+    ),
   ];
 
   Future<void> _addAddress() async {
@@ -28,9 +55,91 @@ class _AddressPageState extends State<AddressPage> {
     );
     if (newAddress != null) {
       setState(() {
-        _addresses.add(newAddress);
+        // Create a new address with generated ID
+        final addressWithId = DeliveryAddress(
+          id: (_addresses.length + 1).toString(),
+          street: newAddress.street,
+          barangay: newAddress.barangay,
+          municipality: newAddress.municipality,
+          province: newAddress.province,
+          zipCode: newAddress.zipCode,
+          isDefault: newAddress.isDefault,
+        );
+        _addresses.add(addressWithId);
       });
     }
+  }
+
+  Future<void> _editAddress(DeliveryAddress address) async {
+    final editedAddress = await Navigator.of(context).push<DeliveryAddress>(
+      MaterialPageRoute(
+        builder: (context) => EditAddressPage(address: address),
+      ),
+    );
+    if (editedAddress != null) {
+      setState(() {
+        final index = _addresses.indexWhere((a) => a.id == address.id);
+        if (index != -1) {
+          _addresses[index] = editedAddress;
+        }
+      });
+    }
+  }
+
+  Future<void> _deleteAddress(DeliveryAddress address) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Address'),
+        content: Text('Are you sure you want to delete this address?\n\n${address.fullAddress}'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() {
+        _addresses.removeWhere((a) => a.id == address.id);
+        // If we deleted the default address and there are other addresses, make the first one default
+        if (address.isDefault && _addresses.isNotEmpty) {
+          _addresses.first.isDefault = true;
+        }
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Address deleted successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
+  void _setDefaultAddress(DeliveryAddress address) {
+    setState(() {
+      // Remove default from all addresses
+      for (var addr in _addresses) {
+        addr.isDefault = false;
+      }
+      // Set the selected address as default
+      address.isDefault = true;
+    });
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Default address updated'),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   @override
@@ -93,74 +202,87 @@ class _AddressPageState extends State<AddressPage> {
                 return Card(
                   elevation: 3,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          Icons.location_on,
-                          color: Colors.red,
-                          size: 32,
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  if (address.isDefault)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color.fromARGB(255, 255, 235, 235),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Text(
-                                        'Default',
-                                        style: TextStyle(
-                                          color: Colors.red,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
+                  child: InkWell(
+                    onTap: () => _setDefaultAddress(address),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.location_on,
+                            color: Colors.red,
+                            size: 32,
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    if (address.isDefault)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color.fromARGB(255, 255, 235, 235),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: const Text(
+                                          'Default',
+                                          style: TextStyle(
+                                            color: Colors.red,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
                                       ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      'Home',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: Colors.red,
+                                      ),
                                     ),
-                                  const SizedBox(width: 8),
-                                  const Text(
-                                    'Home',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color: Colors.red,
-                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  address.fullAddress,
+                                  style: const TextStyle(fontSize: 15),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Tap to set as default',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                    fontStyle: FontStyle.italic,
                                   ),
-                                ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.grey),
+                                onPressed: () => _editAddress(address),
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                address.fullAddress,
-                                style: const TextStyle(fontSize: 15),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.grey),
+                                onPressed: () => _deleteAddress(address),
                               ),
                             ],
                           ),
-                        ),
-                        Column(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.grey),
-                              onPressed: () {}, // Edit action placeholder
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.grey),
-                              onPressed: () {}, // Delete action placeholder
-                            ),
-                          ],
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -415,30 +537,199 @@ class _AddAddressPageState extends State<AddAddressPage> {
                     ),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        // final newAddress = DeliveryAddress(
-                        //   fullName: fullNameController.text.trim(),
-                        //   mobileNumber: mobileController.text.trim(),
-                        //   houseStreet: houseStreetController.text.trim(),
-                        //   barangay: barangayController.text.trim(),
-                        //   city: cityController.text.trim(),
-                        //   province: provinceController.text.trim(),
-                        //   zipCode: zipController.text.trim(),
-                        //   instructions: instructionsController.text.trim(),
-                        //   label: label,
-                        //   saveForFuture: saveForFuture,
-                        // );
-                        // Navigator.of(context).pop(newAddress);
-
-                        // Show a message instead
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('bukas pa pagaganahin ang save'),
-                            backgroundColor: Colors.red,
-                          ),
+                        final newAddress = DeliveryAddress(
+                          id: '', // Will be set by parent
+                          street: houseStreetController.text.trim(),
+                          barangay: barangayController.text.trim(),
+                          municipality: cityController.text.trim(),
+                          province: provinceController.text.trim(),
+                          zipCode: zipController.text.trim(),
+                          isDefault: false,
                         );
+                        Navigator.of(context).pop(newAddress);
                       }
                     },
                     child: const Text('Save', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      backgroundColor: Colors.white,
+    );
+  }
+}
+
+class EditAddressPage extends StatefulWidget {
+  final DeliveryAddress address;
+  
+  const EditAddressPage({Key? key, required this.address}) : super(key: key);
+
+  @override
+  State<EditAddressPage> createState() => _EditAddressPageState();
+}
+
+class _EditAddressPageState extends State<EditAddressPage> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController streetController;
+  late final TextEditingController barangayController;
+  late final TextEditingController municipalityController;
+  late final TextEditingController provinceController;
+  late final TextEditingController zipController;
+
+  @override
+  void initState() {
+    super.initState();
+    streetController = TextEditingController(text: widget.address.street);
+    barangayController = TextEditingController(text: widget.address.barangay);
+    municipalityController = TextEditingController(text: widget.address.municipality);
+    provinceController = TextEditingController(text: widget.address.province);
+    zipController = TextEditingController(text: widget.address.zipCode);
+  }
+
+  @override
+  void dispose() {
+    streetController.dispose();
+    barangayController.dispose();
+    municipalityController.dispose();
+    provinceController.dispose();
+    zipController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Edit Address'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // House/Building Number & Street Name
+                TextFormField(
+                  controller: streetController,
+                  decoration: InputDecoration(
+                    labelText: 'House/Building Number & Street Name',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'House/Building & Street is required';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 14),
+
+                // Barangay/Subdivision
+                TextFormField(
+                  controller: barangayController,
+                  decoration: InputDecoration(
+                    labelText: 'Barangay/Subdivision',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Barangay/Subdivision is required';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 14),
+
+                // City/Municipality
+                TextFormField(
+                  controller: municipalityController,
+                  decoration: InputDecoration(
+                    labelText: 'City/Municipality',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'City/Municipality is required';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 14),
+
+                // Province
+                TextFormField(
+                  controller: provinceController,
+                  decoration: InputDecoration(
+                    labelText: 'Province',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Province is required';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 14),
+
+                // ZIP/Postal Code
+                TextFormField(
+                  controller: zipController,
+                  decoration: InputDecoration(
+                    labelText: 'ZIP/Postal Code',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'ZIP/Postal Code is required';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        final editedAddress = DeliveryAddress(
+                          id: widget.address.id,
+                          street: streetController.text.trim(),
+                          barangay: barangayController.text.trim(),
+                          municipality: municipalityController.text.trim(),
+                          province: provinceController.text.trim(),
+                          zipCode: zipController.text.trim(),
+                          isDefault: widget.address.isDefault,
+                        );
+                        Navigator.of(context).pop(editedAddress);
+                      }
+                    },
+                    child: const Text('Save Changes', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
