@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'models/payment_method.dart';
+import 'edit_payment_method_page.dart';
 
 class PaymentmethodPage extends StatefulWidget {
   const PaymentmethodPage({super.key});
@@ -9,50 +10,131 @@ class PaymentmethodPage extends StatefulWidget {
 }
 
 class _PaymentmethodPageState extends State<PaymentmethodPage> {
-  String defaultMethod = "GCash - Carla Ramos";
-
-  final List<Map<String, dynamic>> paymentMethods = [
-    {
-      "name": "GCash",
-      "icon": Icons.account_balance_wallet,
-      "holder": "Carla Ramos",
-    },
-    {
-      "name": "GCash",
-      "icon": Icons.account_balance_wallet,
-      "holder": "Kyla Cabungcal",
-    },
-    {
-      "name": "PayMaya",
-      "icon": Icons.account_balance,
-      "holder": "James Rhoey De Castro",
-    },
-    {
-      "name": "GCash",
-      "icon": Icons.account_balance_wallet,
-      "holder": "Thirdy Ornales",
-    },
-    {
-      "name": "PayMaya",
-      "icon": Icons.account_balance,
-      "holder": "Maybel Pesigan",
-    },
-  ];
-
-  String getDisplayName(Map<String, dynamic> method) {
-    return "${method['name']} - ${method['holder']}";
-  }
-
-  // Sample payment method data
-  final List<PaymentMethod> paymentMethods = [
+  List<PaymentMethod> paymentMethods = [
     PaymentMethod(
       id: '1',
       type: PaymentType.gcash,
-      title: 'John Doe',
+      title: 'Carla Ramos',
       accountNumber: '09123456789',
       isDefault: true,
     ),
+    PaymentMethod(
+      id: '2',
+      type: PaymentType.gcash,
+      title: 'Kyla Cabungcal',
+      accountNumber: '09987654321',
+      isDefault: false,
+    ),
+    PaymentMethod(
+      id: '3',
+      type: PaymentType.maya,
+      title: 'James Rhoey De Castro',
+      accountNumber: '09112223333',
+      isDefault: false,
+    ),
+    PaymentMethod(
+      id: '4',
+      type: PaymentType.gcash,
+      title: 'Thirdy Ornales',
+      accountNumber: '09223334444',
+      isDefault: false,
+    ),
+    PaymentMethod(
+      id: '5',
+      type: PaymentType.maya,
+      title: 'Maybel Pesigan',
+      accountNumber: '09334445555',
+      isDefault: false,
+    ),
   ];
+
+  void _setDefaultMethod(int index) {
+    setState(() {
+      for (int i = 0; i < paymentMethods.length; i++) {
+        paymentMethods[i] = PaymentMethod(
+          id: paymentMethods[i].id,
+          type: paymentMethods[i].type,
+          title: paymentMethods[i].title,
+          accountNumber: paymentMethods[i].accountNumber,
+          isDefault: i == index,
+        );
+      }
+    });
+  }
+
+  Future<void> _addPaymentMethod() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const EditPaymentMethodPage(),
+      ),
+    );
+    if (result != null && result is Map<String, dynamic>) {
+      setState(() {
+        // If set as default, unset all others
+        if (result['isDefault'] == true) {
+          for (int i = 0; i < paymentMethods.length; i++) {
+            paymentMethods[i] = PaymentMethod(
+              id: paymentMethods[i].id,
+              type: paymentMethods[i].type,
+              title: paymentMethods[i].title,
+              accountNumber: paymentMethods[i].accountNumber,
+              isDefault: false,
+            );
+          }
+        }
+        paymentMethods.add(
+          PaymentMethod(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            type: result['type'],
+            title: result['title'],
+            accountNumber: result['accountNumber'],
+            isDefault: result['isDefault'] ?? false,
+          ),
+        );
+      });
+    }
+  }
+
+  Future<void> _editPaymentMethod(int index) async {
+    final method = paymentMethods[index];
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditPaymentMethodPage(
+          paymentMethod: {
+            'type': method.type,
+            'title': method.title,
+            'accountNumber': method.accountNumber,
+            'isDefault': method.isDefault,
+          },
+        ),
+      ),
+    );
+    if (result != null && result is Map<String, dynamic>) {
+      setState(() {
+        // If set as default, unset all others
+        if (result['isDefault'] == true) {
+          for (int i = 0; i < paymentMethods.length; i++) {
+            paymentMethods[i] = PaymentMethod(
+              id: paymentMethods[i].id,
+              type: paymentMethods[i].type,
+              title: paymentMethods[i].title,
+              accountNumber: paymentMethods[i].accountNumber,
+              isDefault: false,
+            );
+          }
+        }
+        paymentMethods[index] = PaymentMethod(
+          id: method.id,
+          type: result['type'],
+          title: result['title'],
+          accountNumber: result['accountNumber'],
+          isDefault: result['isDefault'] ?? false,
+        );
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +147,6 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
         ),
         centerTitle: true,
       ),
-
       body: Column(
         children: [
           Expanded(
@@ -74,8 +155,6 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
               itemCount: paymentMethods.length,
               itemBuilder: (context, index) {
                 final method = paymentMethods[index];
-                final isDefault = getDisplayName(method) == defaultMethod;
-
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   elevation: 2,
@@ -84,17 +163,17 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
                   ),
                   child: ListTile(
                     leading: Icon(
-                      method['icon'],
+                      method.icon,
                       color: Colors.orange,
                       size: 32,
                     ),
                     title: Row(
                       children: [
                         Text(
-                          method['name'],
+                          method.displayName,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        if (isDefault)
+                        if (method.isDefault)
                           Container(
                             margin: const EdgeInsets.only(left: 8),
                             padding: const EdgeInsets.symmetric(
@@ -115,17 +194,15 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
                           ),
                       ],
                     ),
-                    subtitle: Text(method['holder']),
+                    subtitle: Text(method.title),
                     trailing: IconButton(
                       icon: const Icon(Icons.edit, color: Colors.grey),
                       onPressed: () {
-                        // Edit logic here
+                        _editPaymentMethod(index);
                       },
                     ),
                     onTap: () {
-                      setState(() {
-                        defaultMethod = getDisplayName(method);
-                      });
+                      _setDefaultMethod(index);
                     },
                   ),
                 );
@@ -137,9 +214,7 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  // Add payment method logic
-                },
+                onPressed: _addPaymentMethod,
                 icon: const Icon(Icons.add),
                 label: const Text('Add Payment Method'),
                 style: ElevatedButton.styleFrom(
@@ -147,12 +222,14 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                   borderRadius: BorderRadius.circular(12),
-
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-              ],
-           ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
