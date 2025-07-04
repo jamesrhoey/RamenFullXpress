@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RamenXpress Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CSS & FontAwesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="../css/dashboard.css" rel="stylesheet">
+
+</head>
+<body class="bg-light">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-danger sticky-top w-100">
+    <div class="container-fluid">
+      <button class="navbar-toggler" type="button" id="sidebarToggle">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <a class="navbar-brand d-flex align-items-center" href="#">
+        <img src="../assets/logo.png" alt="Logo" class="rounded-circle me-2" style="height: 40px; width: 40px;">
+        Ramen App
+      </a>
+      <div class="d-flex align-items-center ms-auto">
+        <img src="../assets/notif.png" alt="notif" class="rounded-circle me-2" style="height: 40px; width: 40px;">
+        <div class="dropdown">
+          <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="adminDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="../assets/adminPIC.png" alt="admin" class="rounded-circle me-2" style="height: 40px; width: 40px;">
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
+            <li>
+              <button class="dropdown-item" onclick="window.location.href='../login.html'">Logout</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row min-vh-100">
+      <!-- Sidebar -->
+      <div class="sidebar col-md-3 col-lg-2 d-md-block bg-dark text-white p-3 position-fixed h-100">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 class="fw-bold mb-0">Menu</h4>
+          <button class="btn-close btn-close-white d-md-none" id="closeSidebar"></button>
+        </div>
+        <ul class="nav flex-column">
+          <li class="nav-item mb-2">
+            <a href="#" class="nav-link text-white active bg-danger rounded">
+              <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item mb-2">
+            <a href="../html/inventory.html" class="nav-link text-white">
+              <i class="fas fa-shopping-cart me-2"></i> Inventory
+            </a>
+          </li>
+          <li class="nav-item mb-2">
+            <a href="../html/reports.html" class="nav-link text-white">
+              <i class="fas fa-users me-2"></i> Reports
+            </a>
+          </li>
+        </ul>
+      </div>
+</body>
+</html>
