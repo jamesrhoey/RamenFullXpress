@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'invoice_page.dart';
+import '../services/cart_service.dart';
+import '../services/order_service.dart';
+import '../models/cart_item.dart';
+import '../models/order.dart';
+import '../models/menu_item.dart';
 
 class PaymentPage extends StatefulWidget {
-  final Map<String, dynamic>? orderData; // Add order data parameter
+  final Map<String, dynamic>? orderData;
   
   const PaymentPage({super.key, this.orderData});
 
@@ -15,40 +20,28 @@ class _PaymentPageState extends State<PaymentPage> {
   Map<String, dynamic>? selectedPaymentMethod;
   Map<String, dynamic>? selectedAddress;
   final TextEditingController _notesController = TextEditingController();
+  
+  // Services
+  final CartService _cartService = CartService();
+  final OrderService _orderService = OrderService();
 
-  // Use order data if provided, otherwise use default cart
+  // Use order data if provided, otherwise use cart service
   List<Map<String, dynamic>> get cartItems {
     if (widget.orderData != null && widget.orderData!['items'] != null) {
       return List<Map<String, dynamic>>.from(widget.orderData!['items']);
     }
-    return [
-    {
-      'name': 'Tonkotsu Ramen',
-      'price': 210.00,
-      'image': 'assets/ramen1.jpg',
-      'quantity': 1,
-        'addons': [
-          {'name': 'Extra Egg', 'price': 30.0},
-          {'name': 'Chashu', 'price': 50.0},
-        ],
-    },
-    {
-      'name': 'Miso Ramen',
-      'price': 210.00,
-      'image': 'assets/ramen3.jpg',
-      'quantity': 2,
-        'addons': [
-          {'name': 'Extra Noodles', 'price': 30.0},
-          {'name': 'Chashu', 'price': 50.0},
-        ],
-    },
-    {
-      'name': 'Shoyu Ramen',
-      'price': 210.00,
-      'image': 'assets/ramen4.jpg',
-      'quantity': 1,
-    },
-  ];
+    
+    // Convert CartService items to the format expected by the UI
+    return _cartService.cartItems.map((cartItem) => {
+      'name': cartItem.menuItem.name,
+      'price': cartItem.menuItem.price,
+      'image': cartItem.menuItem.image,
+      'quantity': cartItem.quantity,
+      'addons': cartItem.selectedAddOns.map((addon) => {
+        'name': addon.name,
+        'price': addon.price,
+      }).toList(),
+    }).toList();
   }
 
   List<Map<String, dynamic>> deliveryAddresses = [
@@ -63,7 +56,6 @@ class _PaymentPageState extends State<PaymentPage> {
     },
   ];
 
-  // Define available add-ons
   final List<Map<String, dynamic>> availableAddons = [
     {'name': 'Extra Egg', 'price': 30.0},
     {'name': 'Extra Noodles', 'price': 40.0},
@@ -73,8 +65,19 @@ class _PaymentPageState extends State<PaymentPage> {
 
   void removeItem(String name) {
     setState(() {
-        cartItems.removeWhere((item) => item['name'] == name);
+      _cartService.removeFromCart(name);
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCart();
+  }
+
+  Future<void> _loadCart() async {
+    await _cartService.loadCart();
+    setState(() {});
   }
 
   void showEditItemModal(Map<String, dynamic> item) {
@@ -102,7 +105,6 @@ class _PaymentPageState extends State<PaymentPage> {
               ),
               child: Column(
                 children: [
-                  // Handle bar
                   Container(
                     margin: const EdgeInsets.only(top: 12),
                     width: 40,
@@ -113,61 +115,6 @@ class _PaymentPageState extends State<PaymentPage> {
                     ),
                   ),
                   
-                  // Header
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withValues(red: 128, green: 128, blue: 128, alpha: 10),
-                                spreadRadius: 1,
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.asset(
-                              item['image'],
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item['name'],
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1A1A1A),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '₱${item['price'].toStringAsFixed(2)}',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Color(0xFFD32D43),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                   Padding(
                     padding: const EdgeInsets.all(20),
                     child: Row(
@@ -225,7 +172,6 @@ class _PaymentPageState extends State<PaymentPage> {
                   
                   const Divider(height: 1),
                   
-                  // Quantity Section
                   Padding(
                     padding: const EdgeInsets.all(20),
                     child: Column(
@@ -303,64 +249,9 @@ class _PaymentPageState extends State<PaymentPage> {
                       ],
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withValues(red: 128, green: 128, blue: 128, alpha: 10),
-                                spreadRadius: 1,
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.asset(
-                              item['image'],
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item['name'],
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1A1A1A),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '₱${item['price'].toStringAsFixed(2)}',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Color(0xFFD32D43),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                   
                   const Divider(height: 1),
                   
-                  // Add-ons Section
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(20),
@@ -448,7 +339,6 @@ class _PaymentPageState extends State<PaymentPage> {
                   
                   const Divider(height: 1),
                   
-                  // Total and Actions
                   Padding(
                     padding: const EdgeInsets.all(20),
                     child: Column(
@@ -480,9 +370,7 @@ class _PaymentPageState extends State<PaymentPage> {
                             Expanded(
                               child: OutlinedButton(
                                 onPressed: () {
-                                  setState(() {
-                                    cartItems.removeWhere((i) => i['name'] == item['name']);
-                                  });
+                                  removeItem(item['name']);
                                   Navigator.pop(context);
                                 },
                                 style: OutlinedButton.styleFrom(
@@ -505,13 +393,6 @@ class _PaymentPageState extends State<PaymentPage> {
                             Expanded(
                               child: ElevatedButton(
                                 onPressed: () {
-                                  setState(() {
-                                    final index = cartItems.indexWhere((i) => i['name'] == item['name']);
-                                    if (index != -1) {
-                                      cartItems[index]['quantity'] = tempQuantity;
-                                      cartItems[index]['addons'] = tempAddons;
-                                    }
-                                  });
                                   Navigator.pop(context);
                                 },
                                 style: ElevatedButton.styleFrom(
@@ -675,8 +556,8 @@ class _PaymentPageState extends State<PaymentPage> {
                               ),
                             ),
                             const SizedBox(width: 12),
-                  const Text(
-                    'Delivery Method',
+                            const Text(
+                              'Delivery Method',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -684,7 +565,7 @@ class _PaymentPageState extends State<PaymentPage> {
                               ),
                             ),
                           ],
-                  ),
+                        ),
                         const SizedBox(height: 16),
                         Row(
                           children: [
@@ -733,7 +614,7 @@ class _PaymentPageState extends State<PaymentPage> {
                                         color: selectedDeliveryMethod == 'Pick Up'
                                             ? Colors.white
                                             : const Color(0xFFD32D43),
-                      ),
+                                      ),
                                       const SizedBox(height: 4),
                                       Text(
                                         'Pick Up',
@@ -888,29 +769,29 @@ class _PaymentPageState extends State<PaymentPage> {
                               ),
                             ),
                             const SizedBox(width: 12),
-                  const Text(
-                    'Payment Method',
+                            const Text(
+                              'Payment Method',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF1A1A1A),
-                  ),
+                              ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
-                  Container(
-                    decoration: BoxDecoration(
+                        Container(
+                          decoration: BoxDecoration(
                             color: const Color(0xFFF8F9FA),
-                      borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: const Color(0xFFE9ECEF),
                               width: 1,
-                    ),
-                    ),
+                            ),
+                          ),
                           padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
+                          child: Row(
+                            children: [
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
@@ -923,8 +804,8 @@ class _PaymentPageState extends State<PaymentPage> {
                                   size: 24,
                                 ),
                               ),
-                        const SizedBox(width: 12),
-                        const Expanded(
+                              const SizedBox(width: 12),
+                              const Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -944,28 +825,28 @@ class _PaymentPageState extends State<PaymentPage> {
                                       ),
                                     ),
                                   ],
-                          ),
-                        ),
-                        IconButton(
+                                ),
+                              ),
+                              IconButton(
                                 icon: const Icon(
                                   Icons.edit,
                                   color: Color(0xFFD32D43),
                                 ),
-                          onPressed: () {
-                            // Add edit functionality if needed
-                          },
+                                onPressed: () {
+                                  // Add edit functionality if needed
+                                },
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextButton.icon(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/edit-payment-method');
-                    },
+                        const SizedBox(height: 12),
+                        TextButton.icon(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/edit-payment-method');
+                          },
                           icon: const Icon(Icons.add, color: Color(0xFFD32D43)),
-                    label: const Text(
-                      'Add New Payment Method',
+                          label: const Text(
+                            'Add New Payment Method',
                             style: TextStyle(color: Color(0xFFD32D43)),
                           ),
                         ),
@@ -1034,9 +915,9 @@ class _PaymentPageState extends State<PaymentPage> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
                             const Text(
                               'Subtotal',
                               style: TextStyle(
@@ -1052,12 +933,12 @@ class _PaymentPageState extends State<PaymentPage> {
                                 color: Color(0xFF1A1A1A),
                               ),
                             ),
-                    ],
-                  ),
+                          ],
+                        ),
                         const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
                             const Text(
                               'Shipping Fee',
                               style: TextStyle(
@@ -1073,29 +954,29 @@ class _PaymentPageState extends State<PaymentPage> {
                                 color: Color(0xFF1A1A1A),
                               ),
                             ),
-                    ],
-                  ),
+                          ],
+                        ),
                         const Divider(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Total',
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Total',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF1A1A1A),
                               ),
-                      ),
-                      Text(
-                        '₱${total.toStringAsFixed(2)}',
+                            ),
+                            Text(
+                              '₱${total.toStringAsFixed(2)}',
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFFD32D43),
                               ),
-                      ),
-                    ],
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -1123,32 +1004,61 @@ class _PaymentPageState extends State<PaymentPage> {
                       ],
                     ),
                     child: ElevatedButton(
-                      onPressed: () {
-                        // Gather order data
-                        final order = {
-                          'id': DateTime.now().millisecondsSinceEpoch % 100000, // simple unique id
-                          'status': 'Pending',
-                          'date': DateTime.now(),
-                          'deliveryMethod': selectedDeliveryMethod,
-                          'paymentMethod': 'GCash', // or selectedPaymentMethod['name'] if implemented
-                          'total': total,
-                          'items': cartItems.map((item) => {
-                            'name': item['name'],
-                            'price': item['price'],
-                            'quantity': item['quantity'],
-                            'addons': item['addons'] ?? [],
-                          }).toList(),
-                          'deliveryAddress': selectedDeliveryMethod == 'Delivery' && selectedAddress != null
-                              ? '${selectedAddress!['street']}, ${selectedAddress!['barangay']}, ${selectedAddress!['municipality']}, ${selectedAddress!['province']}, ${selectedAddress!['zipCode']}'
-                              : null,
-                          'notes': _notesController.text,
-                        };
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => InvoicePage(order: order),
-                          ),
-                        );
+                      onPressed: () async {
+                        try {
+                          // Convert cart items to CartItem objects for OrderService
+                          final cartItemObjects = cartItems.map((item) {
+                            final menuItem = MenuItem(
+                              name: item['name'],
+                              price: item['price'].toDouble(),
+                              image: item['image'],
+                              category: 'Unknown', // We don't have category in cart items
+                            );
+                            
+                            final addOns = (item['addons'] as List<dynamic>?)?.map((addon) => 
+                              AddOn(name: addon['name'], price: addon['price'].toDouble())
+                            ).toList() ?? [];
+                            
+                            return CartItem(
+                              menuItem: menuItem,
+                              quantity: item['quantity'],
+                              selectedAddOns: addOns,
+                            );
+                          }).toList();
+
+                          // Create order using OrderService
+                          final order = await _orderService.createOrder(
+                            items: cartItemObjects,
+                            deliveryMethod: selectedDeliveryMethod,
+                            deliveryAddress: selectedDeliveryMethod == 'Delivery' && selectedAddress != null
+                                ? '${selectedAddress!['street']}, ${selectedAddress!['barangay']}, ${selectedAddress!['municipality']}, ${selectedAddress!['province']}, ${selectedAddress!['zipCode']}'
+                                : null,
+                            paymentMethod: 'GCash',
+                            notes: _notesController.text,
+                          );
+
+                          // Clear cart after successful order
+                          await _cartService.clearCart();
+
+                          // Navigate to invoice page
+                          if (mounted) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => InvoicePage(order: order.toJson()),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error processing order: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
@@ -1167,7 +1077,7 @@ class _PaymentPageState extends State<PaymentPage> {
                           ),
                           SizedBox(width: 8),
                           Text(
-                        'Proceed to Payment',
+                            'Proceed to Payment',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -1218,7 +1128,6 @@ class _PaymentPageState extends State<PaymentPage> {
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
-                // Food image
                 Container(
                   width: 80,
                   height: 80,
@@ -1242,7 +1151,6 @@ class _PaymentPageState extends State<PaymentPage> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                // Food details
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1283,7 +1191,6 @@ class _PaymentPageState extends State<PaymentPage> {
                     ],
                   ),
                 ),
-                // Total price and edit button
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -1329,7 +1236,6 @@ class _PaymentPageState extends State<PaymentPage> {
               ],
             ),
           ),
-          // Display selected add-ons
           if (addons.isNotEmpty)
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -1474,5 +1380,4 @@ class _PaymentPageState extends State<PaymentPage> {
       ),
     );
   }
-}
-
+} 

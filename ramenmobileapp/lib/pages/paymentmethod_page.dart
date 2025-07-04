@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'models/payment_method.dart';
+import '../models/payment_method.dart';
 
 class PaymentmethodPage extends StatefulWidget {
   const PaymentmethodPage({super.key});

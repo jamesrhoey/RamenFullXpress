@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'pages/invoice_page.dart';
+import 'invoice_page.dart';
 import '../services/order_service.dart';
 import '../models/order.dart';
 
@@ -19,12 +19,6 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   void initState() {
     super.initState();
     _loadOrders();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _loadOrders(); // Refresh orders when dependencies change (like when navigating back)
   }
 
   Future<void> _loadOrders() async {

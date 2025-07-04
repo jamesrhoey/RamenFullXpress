@@ -182,8 +182,8 @@ class _InvoicePageState extends State<InvoicePage> {
           children: [
             const Text('Order Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
-            _buildDetailRow('Order ID', order['id'].toString()),
-            _buildDetailRow('Date', dateFormat.format(order['date'])),
+            _buildDetailRow('Order ID', 'Order #${order['id']}'),
+            _buildDetailRow('Date', dateFormat.format(DateTime.parse(order['orderDate']))),
             _buildDetailRow('Delivery Method', order['deliveryMethod'] ?? '-'),
             if (order['deliveryAddress'] != null)
               Padding(
@@ -255,10 +255,13 @@ class _InvoicePageState extends State<InvoicePage> {
             const Text('Order Items', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
             ...items.map((item) {
-              final name = item['name'] ?? '-';
-              final price = item['price'] ?? 0.0;
+              final menuItem = item['menuItem'] as Map<String, dynamic>;
+              final name = menuItem['name'] ?? '-';
+              final price = (menuItem['price'] ?? 0.0).toDouble();
               final quantity = item['quantity'] ?? 1;
-              final addons = item['addons'] as List<dynamic>?;
+              final addons = item['selectedAddOns'] as List<dynamic>? ?? [];
+              final addonNames = addons.map((addon) => addon['name']).toList();
+              
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(12),
@@ -275,12 +278,12 @@ class _InvoicePageState extends State<InvoicePage> {
                         children: [
                           Text('$name', style: const TextStyle(fontWeight: FontWeight.bold)),
                           Text('${currencyFormat.format(price)} x $quantity'),
-                          if (addons != null && addons.isNotEmpty)
-                            Text('Add-ons: ${addons.join(', ')}', style: const TextStyle(fontSize: 12)),
+                          if (addonNames.isNotEmpty)
+                            Text('Add-ons: ${addonNames.join(', ')}', style: const TextStyle(fontSize: 12)),
                         ],
                       ),
                     ),
-                    Text(currencyFormat.format(price)),
+                    Text(currencyFormat.format(price * quantity)),
                   ],
                 ),
               );
@@ -371,8 +374,8 @@ class _InvoicePageState extends State<InvoicePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildStatusBadge(order['status'] ?? 'Pending'),
-            _buildOrderProgress(order['status'] ?? 'Pending'),
+            _buildStatusBadge(order['status'] ?? 'pending'),
+            _buildOrderProgress(order['status'] ?? 'pending'),
             _buildOrderDetails(),
             _buildPaymentDetails(),
             _buildOrderItems(),
@@ -386,7 +389,7 @@ class _InvoicePageState extends State<InvoicePage> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pushReplacementNamed(context, '/order-history'),
                 child: const Text('Back to Order History', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
