@@ -1042,12 +1042,14 @@ class _PaymentPageState extends State<PaymentPage> {
 
                           // Navigate to invoice page
                           if (mounted) {
-                            Navigator.push(
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => InvoicePage(order: order.toJson()),
                               ),
                             );
+                            // Refresh the page to show updated cart
+                            setState(() {});
                           }
                         } catch (e) {
                           if (mounted) {

@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-<<<<<<<< HEAD:ramenmobileapp/lib/pages/paymentmethod_page.dart
 import '../models/payment_method.dart';
-========
-import 'models/payment_method.dart';
 import 'edit_payment_method_page.dart';
->>>>>>>> ef35f8968aef1801a1bff1d584db6cefeb23dcfc:ramenmobileapp/lib/paymentmethod_page.dart
 
 class PaymentmethodPage extends StatefulWidget {
   const PaymentmethodPage({super.key});

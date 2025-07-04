@@ -76,7 +76,7 @@ class _EditprofilePageState extends State<EditprofilePage> {
               children: [
                 const CircleAvatar(
                   radius: 55,
-                  backgroundImage: AssetImage('assets/profile.jpg'),
+                  backgroundImage: AssetImage('assets/profilesgg.png'),
                 ),
                 Container(
                   decoration: const BoxDecoration(
