@@ -8,7 +8,12 @@ const Mongoose_URI = process.env.Mongoose_URI;
 
 const app = express();
 
+app.use(express.json());
+
 const mapper = '/api/v1/';
+
+const authRoutes = require('./routes/authRoutes');
+app.use(mapper + 'auth', authRoutes);
 
 mongoose.connect(Mongoose_URI)
   .then(() => console.log('MongoDB Connected'))
