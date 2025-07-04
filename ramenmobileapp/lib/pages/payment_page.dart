@@ -3,7 +3,6 @@ import 'invoice_page.dart';
 import '../services/cart_service.dart';
 import '../services/order_service.dart';
 import '../models/cart_item.dart';
-import '../models/order.dart';
 import '../models/menu_item.dart';
 
 class PaymentPage extends StatefulWidget {
@@ -1041,18 +1040,19 @@ class _PaymentPageState extends State<PaymentPage> {
                           await _cartService.clearCart();
 
                           // Navigate to invoice page
+                          if (!context.mounted) return;
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => InvoicePage(order: order.toJson()),
+                            ),
+                          );
+                          // Refresh the page to show updated cart
                           if (mounted) {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => InvoicePage(order: order.toJson()),
-                              ),
-                            );
-                            // Refresh the page to show updated cart
                             setState(() {});
                           }
                         } catch (e) {
-                          if (mounted) {
+                          if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('Error processing order: $e'),

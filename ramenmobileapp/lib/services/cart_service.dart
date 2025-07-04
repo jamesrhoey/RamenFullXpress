@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/cart_item.dart';
 import '../models/menu_item.dart';
@@ -35,7 +36,7 @@ class CartService {
         _cartItems = cartList.map((item) => CartItem.fromJson(item)).toList();
       }
     } catch (e) {
-      print('Error loading cart: $e');
+      developer.log('Error loading cart: $e', name: 'CartService');
       _cartItems = [];
     }
   }
@@ -48,7 +49,7 @@ class CartService {
       );
       await prefs.setString(_cartKey, cartJson);
     } catch (e) {
-      print('Error saving cart: $e');
+      developer.log('Error saving cart: $e', name: 'CartService');
     }
   }
 
