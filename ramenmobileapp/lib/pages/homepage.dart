@@ -316,13 +316,15 @@ class _HomePageState extends State<HomePage> {
                               'image': item.image,
                               'category': item.category,
                             }, selectedAddOns);
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('${item.name} added to cart'),
-                                backgroundColor: const Color(0xFFD32D43),
-                              ),
-                            );
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('${item.name} added to cart'),
+                                  backgroundColor: const Color(0xFFD32D43),
+                                ),
+                              );
+                            }
                           },
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 100),

@@ -26,9 +26,9 @@ class PaymentMethod {
         : accountNumber;
     switch (type) {
       case PaymentType.gcash:
-        return 'GCash •••• ' + lastDigits;
+        return 'GCash •••• $lastDigits';
       case PaymentType.maya:
-        return 'Maya •••• ' + lastDigits;
+        return 'Maya •••• $lastDigits';
     }
   }
 
