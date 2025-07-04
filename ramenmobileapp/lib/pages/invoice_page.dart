@@ -22,6 +22,26 @@ class _InvoicePageState extends State<InvoicePage> {
     dateFormat = DateFormat('MMM dd, yyyy hh:mm a');
   }
 
+  String _formatDate(dynamic dateValue) {
+    if (dateValue == null) {
+      return dateFormat.format(DateTime.now());
+    }
+    
+    if (dateValue is DateTime) {
+      return dateFormat.format(dateValue);
+    }
+    
+    if (dateValue is String) {
+      try {
+        return dateFormat.format(DateTime.parse(dateValue));
+      } catch (e) {
+        return dateFormat.format(DateTime.now());
+      }
+    }
+    
+    return dateFormat.format(DateTime.now());
+  }
+
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'pending':
@@ -146,7 +166,7 @@ class _InvoicePageState extends State<InvoicePage> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
-                                color: stepColor.withOpacity(0.1),
+                                color: stepColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text('Current Status', style: TextStyle(color: stepColor, fontSize: 12)),
@@ -182,10 +202,10 @@ class _InvoicePageState extends State<InvoicePage> {
           children: [
             const Text('Order Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
-            _buildDetailRow('Order ID', order['id'].toString()),
-            _buildDetailRow('Date', dateFormat.format(order['date'])),
+            _buildDetailRow('Order ID', 'Order #${order['id']}'),
+            _buildDetailRow('Date', _formatDate(order['date'] ?? order['orderDate'])),
             _buildDetailRow('Delivery Method', order['deliveryMethod'] ?? '-'),
-            if (order['deliveryAddress'] != null)
+            if (order['deliveryAddress'] != null && order['deliveryAddress'].toString().isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 2),
                 child: Row(
@@ -195,7 +215,7 @@ class _InvoicePageState extends State<InvoicePage> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        order['deliveryAddress'],
+                        order['deliveryAddress'].toString(),
                         style: const TextStyle(fontSize: 14),
                         softWrap: true,
                         overflow: TextOverflow.visible,
@@ -205,7 +225,7 @@ class _InvoicePageState extends State<InvoicePage> {
                   ],
                 ),
               ),
-            if (order['notes'] != null)
+            if (order['notes'] != null && order['notes'].toString().isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 2),
                 child: Column(
@@ -214,7 +234,7 @@ class _InvoicePageState extends State<InvoicePage> {
                     const Text('Notes', style: TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
                     Text(
-                      order['notes'],
+                      order['notes'].toString(),
                       style: const TextStyle(fontSize: 14),
                     ),
                   ],
@@ -255,10 +275,29 @@ class _InvoicePageState extends State<InvoicePage> {
             const Text('Order Items', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
             ...items.map((item) {
-              final name = item['name'] ?? '-';
-              final price = item['price'] ?? 0.0;
-              final quantity = item['quantity'] ?? 1;
-              final addons = item['addons'] as List<dynamic>?;
+              // Handle both CartItem structure and simple item structure
+              String name;
+              double price;
+              int quantity;
+              List<String> addonNames;
+              
+              if (item['menuItem'] != null) {
+                // CartItem structure
+                final menuItem = item['menuItem'] as Map<String, dynamic>;
+                name = menuItem['name'] ?? '-';
+                price = (menuItem['price'] ?? 0.0).toDouble();
+                quantity = item['quantity'] ?? 1;
+                final addons = item['selectedAddOns'] as List<dynamic>? ?? [];
+                addonNames = addons.map((addon) => addon['name']?.toString() ?? '').where((name) => name.isNotEmpty).toList();
+              } else {
+                // Simple item structure (from order history)
+                name = item['name'] ?? '-';
+                price = (item['price'] ?? 0.0).toDouble();
+                quantity = item['quantity'] ?? 1;
+                final addons = item['addons'] as List<dynamic>? ?? [];
+                addonNames = addons.where((addon) => addon != null).map((addon) => addon.toString()).toList();
+              }
+              
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(12),
@@ -275,12 +314,12 @@ class _InvoicePageState extends State<InvoicePage> {
                         children: [
                           Text('$name', style: const TextStyle(fontWeight: FontWeight.bold)),
                           Text('${currencyFormat.format(price)} x $quantity'),
-                          if (addons != null && addons.isNotEmpty)
-                            Text('Add-ons: ${addons.join(', ')}', style: const TextStyle(fontSize: 12)),
+                          if (addonNames.isNotEmpty)
+                            Text('Add-ons: ${addonNames.join(', ')}', style: const TextStyle(fontSize: 12)),
                         ],
                       ),
                     ),
-                    Text(currencyFormat.format(price)),
+                    Text(currencyFormat.format(price * quantity)),
                   ],
                 ),
               );
@@ -371,8 +410,8 @@ class _InvoicePageState extends State<InvoicePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildStatusBadge(order['status'] ?? 'Pending'),
-            _buildOrderProgress(order['status'] ?? 'Pending'),
+            _buildStatusBadge(order['status'] ?? 'pending'),
+            _buildOrderProgress(order['status'] ?? 'pending'),
             _buildOrderDetails(),
             _buildPaymentDetails(),
             _buildOrderItems(),
@@ -386,7 +425,9 @@ class _InvoicePageState extends State<InvoicePage> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, '/order-history');
+                },
                 child: const Text('Back to Order History', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),

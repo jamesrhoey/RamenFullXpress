@@ -1,17 +1,43 @@
 import 'package:flutter/material.dart';
 
 class EditprofilePage extends StatefulWidget {
-  const EditprofilePage({super.key});
+  final Map<String, String> initialProfile;
+  const EditprofilePage({super.key, required this.initialProfile});
 
   @override
   State<EditprofilePage> createState() => _EditprofilePageState();
 }
 
 class _EditprofilePageState extends State<EditprofilePage> {
-  // Walang laman ang mga field sa simula
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
+  late TextEditingController nameController;
+  late TextEditingController emailController;
+  late TextEditingController phoneController;
+
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController(text: widget.initialProfile['name'] ?? '');
+    emailController = TextEditingController(text: widget.initialProfile['email'] ?? '');
+    phoneController = TextEditingController(text: widget.initialProfile['phone'] ?? '');
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+    super.dispose();
+  }
+
+  void _saveProfile() {
+    final updatedProfile = {
+      'name': nameController.text,
+      'email': emailController.text,
+      'phone': phoneController.text,
+      'profileImage': widget.initialProfile['profileImage'] ?? '',
+    };
+    Navigator.pop(context, updatedProfile);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,11 +54,12 @@ class _EditprofilePageState extends State<EditprofilePage> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
-            child: Center(
+            child: GestureDetector(
+              onTap: _saveProfile,
               child: Text(
                 "Save",
                 style: TextStyle(
-                  color: Colors.red.shade300, // Light red to indicate inactive
+                  color: Colors.red.shade300,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -49,7 +76,7 @@ class _EditprofilePageState extends State<EditprofilePage> {
               children: [
                 const CircleAvatar(
                   radius: 55,
-                  backgroundImage: AssetImage('assets/profile.jpg'),
+                  backgroundImage: AssetImage('assets/profilesgg.png'),
                 ),
                 Container(
                   decoration: const BoxDecoration(
@@ -81,6 +108,7 @@ class _EditprofilePageState extends State<EditprofilePage> {
                 ],
               ),
               child: TextFormField(
+                controller: nameController,
                 decoration: InputDecoration(
                   labelText: 'Full Name',
                   labelStyle: const TextStyle(color: Colors.black),
@@ -94,16 +122,8 @@ class _EditprofilePageState extends State<EditprofilePage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please add an amount';
-                  }
-                  return null;
-                },
               ),
             ),
-
-            // Size Field
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
@@ -119,6 +139,7 @@ class _EditprofilePageState extends State<EditprofilePage> {
                 ],
               ),
               child: TextFormField(
+                controller: emailController,
                 decoration: InputDecoration(
                   labelText: 'Email',
                   labelStyle: const TextStyle(color: Colors.black),
@@ -132,16 +153,8 @@ class _EditprofilePageState extends State<EditprofilePage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please add an amount';
-                  }
-                  return null;
-                },
               ),
             ),
-
-            // Amount Field
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
@@ -157,6 +170,7 @@ class _EditprofilePageState extends State<EditprofilePage> {
                 ],
               ),
               child: TextFormField(
+                controller: phoneController,
                 decoration: InputDecoration(
                   labelText: 'Phone Number',
                   labelStyle: const TextStyle(color: Colors.black),
@@ -170,12 +184,6 @@ class _EditprofilePageState extends State<EditprofilePage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please add an amount';
-                  }
-                  return null;
-                },
               ),
             ),
           ],

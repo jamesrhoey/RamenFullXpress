@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-enum PaymentType { gcash, maya }
+import '../models/payment_method.dart';
 
 class EditPaymentMethodPage extends StatefulWidget {
   final Map<String, dynamic>? paymentMethod;
@@ -94,22 +93,22 @@ class _EditPaymentMethodPageState extends State<EditPaymentMethodPage> {
                   });
                 },
                 style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.resolveWith<Color>((
-                    Set<WidgetState> states,
-                  ) {
-                    if (states.contains(WidgetState.selected)) {
-                      return Colors.deepOrange.withAlpha((0.08 * 255).toInt());
-                    }
-                    return Colors.grey[50]!;
-                  }),
-                  foregroundColor: WidgetStateProperty.resolveWith<Color>((
-                    Set<WidgetState> states,
-                  ) {
-                    if (states.contains(WidgetState.selected)) {
-                      return Colors.deepOrange;
-                    }
-                    return Colors.grey;
-                  }),
+                  backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                    (Set<WidgetState> states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return Colors.deepOrange.withAlpha((0.08 * 255).toInt());
+                      }
+                      return Colors.grey[50]!;
+                    },
+                  ),
+                  foregroundColor: WidgetStateProperty.resolveWith<Color>(
+                    (Set<WidgetState> states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return Colors.deepOrange;
+                      }
+                      return Colors.grey;
+                    },
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -137,9 +136,6 @@ class _EditPaymentMethodPageState extends State<EditPaymentMethodPage> {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter account number';
-                  }
-                  if (!RegExp(r'^\d{11}$').hasMatch(value)) {
-                    return 'Please enter a valid 11-digit account number';
                   }
                   return null;
                 },

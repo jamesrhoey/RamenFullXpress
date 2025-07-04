@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/cart_service.dart';
 import '../services/menu_service.dart';
 import '../models/menu_item.dart';
-import '../models/cart_item.dart';
+
 import 'payment_page.dart';
 
 class HomePage extends StatefulWidget {

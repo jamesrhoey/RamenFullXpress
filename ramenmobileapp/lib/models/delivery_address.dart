@@ -1,11 +1,11 @@
 class DeliveryAddress {
-  final String id;
+  String id;
   final String street;
   final String barangay;
   final String municipality;
   final String province;
   final String zipCode;
-  final bool isDefault;
+  bool isDefault;
 
   DeliveryAddress({
     required this.id,

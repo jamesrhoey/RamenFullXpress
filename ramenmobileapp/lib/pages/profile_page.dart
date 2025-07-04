@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'edit_profile_page.dart';
 
 
 class ProfilePage extends StatefulWidget {
@@ -152,8 +153,18 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               const SizedBox(height: 8),
                               OutlinedButton(
-                                onPressed: () {
-                                  Navigator.pushNamed(context, '/edit-profile');
+                                onPressed: () async {
+                                  final updatedProfile = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EditprofilePage(initialProfile: profile),
+                                    ),
+                                  );
+                                  if (updatedProfile != null) {
+                                    setState(() {
+                                      profile = Map<String, String>.from(updatedProfile);
+                                    });
+                                  }
                                 },
                                 style: OutlinedButton.styleFrom(
                                   side: const BorderSide(color: Color(0xFFD32D43)),
@@ -181,8 +192,18 @@ class _ProfilePageState extends State<ProfilePage> {
                       _buildMenuItem(
                         Icons.person_outline,
                         'Personal Information',
-                        () {
-                          Navigator.pushNamed(context, '/edit-profile');
+                        () async {
+                          final updatedProfile = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditprofilePage(initialProfile: profile),
+                            ),
+                          );
+                          if (updatedProfile != null) {
+                            setState(() {
+                              profile = Map<String, String>.from(updatedProfile);
+                            });
+                          }
                         },
                       ),
                       _buildMenuItem(
