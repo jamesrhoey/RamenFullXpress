@@ -14,7 +14,6 @@ class CartService {
   CartService._internal();
 
   List<CartItem> _cartItems = [];
-
   List<CartItem> get cartItems => List.unmodifiable(_cartItems);
 
   int get itemCount {
@@ -44,7 +43,9 @@ class CartService {
   Future<void> saveCart() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final cartJson = json.encode(_cartItems.map((item) => item.toJson()).toList());
+      final cartJson = json.encode(
+        _cartItems.map((item) => item.toJson()).toList(),
+      );
       await prefs.setString(_cartKey, cartJson);
     } catch (e) {
       print('Error saving cart: $e');
@@ -53,7 +54,8 @@ class CartService {
 
   Future<void> addToCart(MenuItem menuItem, List<AddOn> selectedAddOns) async {
     final existingIndex = _cartItems.indexWhere(
-      (item) => item.menuItem.name == menuItem.name &&
+      (item) =>
+          item.menuItem.name == menuItem.name &&
           _areAddOnsEqual(item.selectedAddOns, selectedAddOns),
     );
 
@@ -62,11 +64,13 @@ class CartService {
         quantity: _cartItems[existingIndex].quantity + 1,
       );
     } else {
-      _cartItems.add(CartItem(
-        menuItem: menuItem,
-        quantity: 1,
-        selectedAddOns: selectedAddOns,
-      ));
+      _cartItems.add(
+        CartItem(
+          menuItem: menuItem,
+          quantity: 1,
+          selectedAddOns: selectedAddOns,
+        ),
+      );
     }
     await saveCart();
   }
@@ -96,10 +100,11 @@ class CartService {
   bool _areAddOnsEqual(List<AddOn> addOns1, List<AddOn> addOns2) {
     if (addOns1.length != addOns2.length) return false;
     for (int i = 0; i < addOns1.length; i++) {
-      if (addOns1[i].name != addOns2[i].name || addOns1[i].price != addOns2[i].price) {
+      if (addOns1[i].name != addOns2[i].name ||
+          addOns1[i].price != addOns2[i].price) {
         return false;
       }
     }
     return true;
   }
-} 
+}

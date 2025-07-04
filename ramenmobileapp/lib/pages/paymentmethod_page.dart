@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+<<<<<<<< HEAD:ramenmobileapp/lib/pages/paymentmethod_page.dart
 import '../models/payment_method.dart';
+========
+import 'models/payment_method.dart';
+import 'edit_payment_method_page.dart';
+>>>>>>>> ef35f8968aef1801a1bff1d584db6cefeb23dcfc:ramenmobileapp/lib/paymentmethod_page.dart
 
 class PaymentmethodPage extends StatefulWidget {
   const PaymentmethodPage({super.key});
@@ -9,71 +14,130 @@ class PaymentmethodPage extends StatefulWidget {
 }
 
 class _PaymentmethodPageState extends State<PaymentmethodPage> {
-  late List<PaymentMethod> paymentMethods;
-  late PaymentMethod defaultMethod;
+  List<PaymentMethod> paymentMethods = [
+    PaymentMethod(
+      id: '1',
+      type: PaymentType.gcash,
+      title: 'Carla Ramos',
+      accountNumber: '09123456789',
+      isDefault: true,
+    ),
+    PaymentMethod(
+      id: '2',
+      type: PaymentType.gcash,
+      title: 'Kyla Cabungcal',
+      accountNumber: '09987654321',
+      isDefault: false,
+    ),
+    PaymentMethod(
+      id: '3',
+      type: PaymentType.maya,
+      title: 'James Rhoey De Castro',
+      accountNumber: '09112223333',
+      isDefault: false,
+    ),
+    PaymentMethod(
+      id: '4',
+      type: PaymentType.gcash,
+      title: 'Thirdy Ornales',
+      accountNumber: '09223334444',
+      isDefault: false,
+    ),
+    PaymentMethod(
+      id: '5',
+      type: PaymentType.maya,
+      title: 'Maybel Pesigan',
+      accountNumber: '09334445555',
+      isDefault: false,
+    ),
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    paymentMethods = [
-      PaymentMethod(
-        id: '1',
-        type: PaymentType.gcash,
-        title: 'Carla Ramos',
-        accountNumber: '09171234567',
-        isDefault: true,
-      ),
-      PaymentMethod(
-        id: '2',
-        type: PaymentType.gcash,
-        title: 'Kyla Cabungcal',
-        accountNumber: '09179876543',
-      ),
-      PaymentMethod(
-        id: '3',
-        type: PaymentType.maya,
-        title: 'James Rhoey De Castro',
-        accountNumber: '09175551234',
-      ),
-      PaymentMethod(
-        id: '4',
-        type: PaymentType.gcash,
-        title: 'Thirdy Ornales',
-        accountNumber: '09176667777',
-      ),
-      PaymentMethod(
-        id: '5',
-        type: PaymentType.maya,
-        title: 'Maybel Pesigan',
-        accountNumber: '09179998888',
-      ),
-    ];
-    defaultMethod = paymentMethods.firstWhere((m) => m.isDefault, orElse: () => paymentMethods[0]);
+  void _setDefaultMethod(int index) {
+    setState(() {
+      for (int i = 0; i < paymentMethods.length; i++) {
+        paymentMethods[i] = PaymentMethod(
+          id: paymentMethods[i].id,
+          type: paymentMethods[i].type,
+          title: paymentMethods[i].title,
+          accountNumber: paymentMethods[i].accountNumber,
+          isDefault: i == index,
+        );
+      }
+    });
   }
 
-  void setDefaultMethod(PaymentMethod method) {
-    setState(() {
-      paymentMethods = paymentMethods.map((m) {
-        if (m.id == method.id) {
-          return PaymentMethod(
-            id: m.id,
-            type: m.type,
-            title: m.title,
-            accountNumber: m.accountNumber,
-            isDefault: true,
-          );
-        } else {
-          return PaymentMethod(
-            id: m.id,
-            type: m.type,
-            title: m.title,
-            accountNumber: m.accountNumber,
-            isDefault: false,
-          );
+  Future<void> _addPaymentMethod() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const EditPaymentMethodPage(),
+      ),
+    );
+    if (result != null && result is Map<String, dynamic>) {
+      setState(() {
+        // If set as default, unset all others
+        if (result['isDefault'] == true) {
+          for (int i = 0; i < paymentMethods.length; i++) {
+            paymentMethods[i] = PaymentMethod(
+              id: paymentMethods[i].id,
+              type: paymentMethods[i].type,
+              title: paymentMethods[i].title,
+              accountNumber: paymentMethods[i].accountNumber,
+              isDefault: false,
+            );
+          }
         }
-      }).toList();
-      defaultMethod = method;
-    });
+        paymentMethods.add(
+          PaymentMethod(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            type: result['type'],
+            title: result['title'],
+            accountNumber: result['accountNumber'],
+            isDefault: result['isDefault'] ?? false,
+          ),
+        );
+      });
+    }
+  }
+
+  Future<void> _editPaymentMethod(int index) async {
+    final method = paymentMethods[index];
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditPaymentMethodPage(
+          paymentMethod: {
+            'type': method.type,
+            'title': method.title,
+            'accountNumber': method.accountNumber,
+            'isDefault': method.isDefault,
+          },
+        ),
+      ),
+    );
+    if (result != null && result is Map<String, dynamic>) {
+      setState(() {
+        // If set as default, unset all others
+        if (result['isDefault'] == true) {
+          for (int i = 0; i < paymentMethods.length; i++) {
+            paymentMethods[i] = PaymentMethod(
+              id: paymentMethods[i].id,
+              type: paymentMethods[i].type,
+              title: paymentMethods[i].title,
+              accountNumber: paymentMethods[i].accountNumber,
+              isDefault: false,
+            );
+          }
+        }
+        paymentMethods[index] = PaymentMethod(
+          id: method.id,
+          type: result['type'],
+          title: result['title'],
+          accountNumber: result['accountNumber'],
+          isDefault: result['isDefault'] ?? false,
+        );
+      });
+    }
   }
 
   @override
@@ -87,7 +151,6 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
         ),
         centerTitle: true,
       ),
-
       body: Column(
         children: [
           Expanded(
@@ -96,8 +159,6 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
               itemCount: paymentMethods.length,
               itemBuilder: (context, index) {
                 final method = paymentMethods[index];
-                final isDefault = method.isDefault;
-
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   elevation: 2,
@@ -116,7 +177,7 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
                           method.displayName,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        if (isDefault)
+                        if (method.isDefault)
                           Container(
                             margin: const EdgeInsets.only(left: 8),
                             padding: const EdgeInsets.symmetric(
@@ -137,24 +198,15 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
                           ),
                       ],
                     ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(method.title),
-                        Text(
-                          method.accountNumber,
-                          style: const TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                      ],
-                    ),
+                    subtitle: Text(method.title),
                     trailing: IconButton(
                       icon: const Icon(Icons.edit, color: Colors.grey),
                       onPressed: () {
-                        // Edit logic here
+                        _editPaymentMethod(index);
                       },
                     ),
                     onTap: () {
-                      setDefaultMethod(method);
+                      _setDefaultMethod(index);
                     },
                   ),
                 );
@@ -166,37 +218,7 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () async {
-                  final result = await Navigator.pushNamed(
-                    context,
-                    '/edit-payment-method',
-                  );
-                  if (result != null && result is Map<String, dynamic>) {
-                    setState(() {
-                      // If set as default, unset all others
-                      if (result['isDefault'] == true) {
-                        paymentMethods = paymentMethods.map((m) => PaymentMethod(
-                          id: m.id,
-                          type: m.type,
-                          title: m.title,
-                          accountNumber: m.accountNumber,
-                          isDefault: false,
-                        )).toList();
-                      }
-                      final newMethod = PaymentMethod(
-                        id: DateTime.now().millisecondsSinceEpoch.toString(),
-                        type: result['type'],
-                        title: result['title'],
-                        accountNumber: result['accountNumber'],
-                        isDefault: result['isDefault'] ?? false,
-                      );
-                      paymentMethods.add(newMethod);
-                      if (newMethod.isDefault) {
-                        defaultMethod = newMethod;
-                      }
-                    });
-                  }
-                },
+                onPressed: _addPaymentMethod,
                 icon: const Icon(Icons.add),
                 label: const Text('Add Payment Method'),
                 style: ElevatedButton.styleFrom(
@@ -204,8 +226,7 @@ class _PaymentmethodPageState extends State<PaymentmethodPage> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                   borderRadius: BorderRadius.circular(12),
-
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),

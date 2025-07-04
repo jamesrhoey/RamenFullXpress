@@ -35,7 +35,9 @@ class OrderService {
   Future<void> saveOrders() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final ordersJson = json.encode(_orders.map((order) => order.toJson()).toList());
+      final ordersJson = json.encode(
+        _orders.map((order) => order.toJson()).toList(),
+      );
       await prefs.setString(_ordersKey, ordersJson);
     } catch (e) {
       print('Error saving orders: $e');
@@ -103,4 +105,4 @@ class OrderService {
     final randomNum = random.nextInt(10000);
     return 'INV${timestamp}${randomNum.toString().padLeft(4, '0')}';
   }
-} 
+}

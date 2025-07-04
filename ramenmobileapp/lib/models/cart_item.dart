@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'menu_item.dart';
 
 class CartItem {
@@ -8,35 +9,17 @@ class CartItem {
   CartItem({
     required this.menuItem,
     required this.quantity,
-    this.selectedAddOns = const [],
+    required this.selectedAddOns,
   });
 
   double get totalPrice {
-    double basePrice = menuItem.price * quantity;
-    double addOnsPrice = selectedAddOns.fold(0.0, (sum, addon) => sum + addon.price) * quantity;
-    return basePrice + addOnsPrice;
+    double addOnsPrice = selectedAddOns.fold(0.0, (sum, addOn) => sum + addOn.price);
+    return (menuItem.price + addOnsPrice) * quantity;
   }
 
   double get unitPrice {
-    return menuItem.price + selectedAddOns.fold(0.0, (sum, addon) => sum + addon.price);
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'menuItem': menuItem.toJson(),
-      'quantity': quantity,
-      'selectedAddOns': selectedAddOns.map((addon) => addon.toJson()).toList(),
-    };
-  }
-
-  factory CartItem.fromJson(Map<String, dynamic> json) {
-    return CartItem(
-      menuItem: MenuItem.fromJson(json['menuItem']),
-      quantity: json['quantity'],
-      selectedAddOns: (json['selectedAddOns'] as List?)
-          ?.map((addon) => AddOn.fromJson(addon))
-          .toList() ?? [],
-    );
+    return menuItem.price +
+        selectedAddOns.fold(0.0, (sum, addon) => sum + addon.price);
   }
 
   CartItem copyWith({
@@ -50,4 +33,22 @@ class CartItem {
       selectedAddOns: selectedAddOns ?? this.selectedAddOns,
     );
   }
-} 
+
+  Map<String, dynamic> toJson() {
+    return {
+      'menuItem': menuItem.toJson(),
+      'quantity': quantity,
+      'selectedAddOns': selectedAddOns.map((addOn) => addOn.toJson()).toList(),
+    };
+  }
+
+  factory CartItem.fromJson(Map<String, dynamic> json) {
+    return CartItem(
+      menuItem: MenuItem.fromJson(json['menuItem']),
+      quantity: json['quantity'],
+      selectedAddOns: (json['selectedAddOns'] as List)
+          .map((addOnJson) => AddOn.fromJson(addOnJson))
+          .toList(),
+    );
+  }
+}
