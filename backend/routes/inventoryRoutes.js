@@ -7,14 +7,14 @@ const authMiddleware = require('../middleware/authMiddleware');
 router.use(authMiddleware, authMiddleware.isAdmin);
 
 // Get all inventory items
-router.get('/', inventoryController.getAllInventory);
+router.get('/all', inventoryController.getAllInventory);
 // Get a single inventory item by ID
 router.get('/:id', inventoryController.getInventoryById);
 // Create a new inventory item
-router.post('/', inventoryController.createInventory);
+router.post('/create', inventoryController.createInventory);
 // Update an inventory item
-router.put('/:id', inventoryController.updateInventory);
+router.put('/update/:id', inventoryController.updateInventory);
 // Delete an inventory item
-router.delete('/:id', inventoryController.deleteInventory);
+router.delete('/delete/:id', inventoryController.deleteInventory);
 
 module.exports = router; 

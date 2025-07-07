@@ -16,12 +16,7 @@ const inventorySchema = new mongoose.Schema({
   },
   restocked: {
     type: Date,
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ['in stock', 'low stock', 'out of stock'],
-    required: true
+    default: Date.now
   }
 });
 
