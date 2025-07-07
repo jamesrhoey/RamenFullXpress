@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/delivery_address.dart';
 
 class AddressPage extends StatefulWidget {
-  const AddressPage({Key? key}) : super(key: key);
+  const AddressPage({super.key});
 
   @override
   State<AddressPage> createState() => _AddressPageState();
@@ -53,7 +53,7 @@ class _AddressPageState extends State<AddressPage> {
     final newAddress = await Navigator.of(context).push<DeliveryAddress>(
       MaterialPageRoute(builder: (context) => const AddAddressPage()),
     );
-    if (newAddress != null) {
+    if (newAddress != null && context.mounted) {
       setState(() {
         // Create a new address with generated ID
         final addressWithId = DeliveryAddress(
@@ -76,7 +76,7 @@ class _AddressPageState extends State<AddressPage> {
         builder: (context) => EditAddressPage(address: address),
       ),
     );
-    if (editedAddress != null) {
+    if (editedAddress != null && context.mounted) {
       setState(() {
         final index = _addresses.indexWhere((a) => a.id == address.id);
         if (index != -1) {
@@ -87,6 +87,7 @@ class _AddressPageState extends State<AddressPage> {
   }
 
   Future<void> _deleteAddress(DeliveryAddress address) async {
+    if (!context.mounted) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -106,7 +107,7 @@ class _AddressPageState extends State<AddressPage> {
       ),
     );
 
-    if (confirmed == true) {
+    if (confirmed == true && context.mounted) {
       setState(() {
         _addresses.removeWhere((a) => a.id == address.id);
         // If we deleted the default address and there are other addresses, make the first one default
@@ -115,12 +116,14 @@ class _AddressPageState extends State<AddressPage> {
         }
       });
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Address deleted successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Address deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     }
   }
 
@@ -291,8 +294,8 @@ class _AddressPageState extends State<AddressPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _addAddress,
         backgroundColor: Colors.red,
-        child: const Icon(Icons.add, color: Colors.white),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       backgroundColor: Colors.white,
@@ -301,7 +304,7 @@ class _AddressPageState extends State<AddressPage> {
 }
 
 class AddAddressPage extends StatefulWidget {
-  const AddAddressPage({Key? key}) : super(key: key);
+  const AddAddressPage({super.key});
 
   @override
   State<AddAddressPage> createState() => _AddAddressPageState();
@@ -565,7 +568,7 @@ class _AddAddressPageState extends State<AddAddressPage> {
 class EditAddressPage extends StatefulWidget {
   final DeliveryAddress address;
   
-  const EditAddressPage({Key? key, required this.address}) : super(key: key);
+  const EditAddressPage({super.key, required this.address});
 
   @override
   State<EditAddressPage> createState() => _EditAddressPageState();

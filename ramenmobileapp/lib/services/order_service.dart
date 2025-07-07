@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:developer' as developer;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/order.dart';
 import '../models/cart_item.dart';
@@ -27,7 +28,7 @@ class OrderService {
         _orders = ordersList.map((order) => Order.fromJson(order)).toList();
       }
     } catch (e) {
-      print('Error loading orders: $e');
+      developer.log('Error loading orders: $e', name: 'OrderService');
       _orders = [];
     }
   }
@@ -40,7 +41,7 @@ class OrderService {
       );
       await prefs.setString(_ordersKey, ordersJson);
     } catch (e) {
-      print('Error saving orders: $e');
+      developer.log('Error saving orders: $e', name: 'OrderService');
     }
   }
 
@@ -103,6 +104,6 @@ class OrderService {
     final random = Random();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final randomNum = random.nextInt(10000);
-    return 'INV${timestamp}${randomNum.toString().padLeft(4, '0')}';
+    return 'INV$timestamp${randomNum.toString().padLeft(4, '0')}';
   }
 }

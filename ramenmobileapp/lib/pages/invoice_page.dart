@@ -312,7 +312,7 @@ class _InvoicePageState extends State<InvoicePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('$name', style: const TextStyle(fontWeight: FontWeight.bold)),
+                          Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
                           Text('${currencyFormat.format(price)} x $quantity'),
                           if (addonNames.isNotEmpty)
                             Text('Add-ons: ${addonNames.join(', ')}', style: const TextStyle(fontSize: 12)),
