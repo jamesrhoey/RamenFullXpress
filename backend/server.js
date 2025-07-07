@@ -13,7 +13,9 @@ app.use(express.json());
 const mapper = '/api/v1/';
 
 const authRoutes = require('./routes/authRoutes');
+const inventoryRoutes = require('./routes/inventoryRoutes');
 app.use(mapper + 'auth', authRoutes);
+app.use(mapper + 'inventory', inventoryRoutes);
 
 mongoose.connect(Mongoose_URI)
   .then(() => console.log('MongoDB Connected'))
