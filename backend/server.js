@@ -14,7 +14,10 @@ app.use(express.json());
 
 const mapper = '/api/v1/';
 
-app.use(mapper + 'auth', authRoutes);
+
+const authRoutes = require('./routes/authRoutes');
+const inventoryRoutes = require('./routes/inventoryRoutes');
+
 
 
 
