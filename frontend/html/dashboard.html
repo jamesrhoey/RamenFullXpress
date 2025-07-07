@@ -8,14 +8,13 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link href="../css/dashboard.css" rel="stylesheet">
-
 </head>
 <body class="bg-light">
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-danger sticky-top w-100">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-danger sticky-top">
     <div class="container-fluid">
-      <button class="navbar-toggler" type="button" id="sidebarToggle">
-        <span class="navbar-toggler-icon"></span>
+      <button class="btn text-white d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
+        <i class="fas fa-bars"></i>
       </button>
       <a class="navbar-brand d-flex align-items-center" href="#">
         <img src="../assets/logo.png" alt="Logo" class="rounded-circle me-2" style="height: 40px; width: 40px;">
@@ -24,27 +23,49 @@
       <div class="d-flex align-items-center ms-auto">
         <img src="../assets/notif.png" alt="notif" class="rounded-circle me-2" style="height: 40px; width: 40px;">
         <div class="dropdown">
-          <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="adminDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="adminDropdown" data-bs-toggle="dropdown">
             <img src="../assets/adminPIC.png" alt="admin" class="rounded-circle me-2" style="height: 40px; width: 40px;">
           </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
-            <li>
-              <button class="dropdown-item" onclick="window.location.href='../login.html'">Logout</button>
-            </li>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><button class="dropdown-item" onclick="window.location.href='../login.html'">Logout</button></li>
           </ul>
         </div>
       </div>
     </div>
   </nav>
 
+  <!-- Sidebar Offcanvas for Small Screens -->
+  <div class="offcanvas offcanvas-start text-bg-dark" id="sidebarOffcanvas">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title">Menu</h5>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+      <ul class="nav flex-column">
+        <li class="nav-item mb-2">
+          <a href="#" class="nav-link text-white active bg-danger rounded">
+            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+          </a>
+        </li>
+        <li class="nav-item mb-2">
+          <a href="../html/inventory.html" class="nav-link text-white">
+            <i class="fas fa-shopping-cart me-2"></i> Inventory
+          </a>
+        </li>
+        <li class="nav-item mb-2">
+          <a href="../html/reports.html" class="nav-link text-white">
+            <i class="fas fa-users me-2"></i> Reports
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
   <div class="container-fluid">
-    <div class="row min-vh-100">
-      <!-- Sidebar -->
-      <div class="sidebar col-md-3 col-lg-2 d-md-block bg-dark text-white p-3 position-fixed h-100">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h4 class="fw-bold mb-0">Menu</h4>
-          <button class="btn-close btn-close-white d-md-none" id="closeSidebar"></button>
-        </div>
+    <div class="row">
+      <!-- Sidebar for Large Screens -->
+      <div class="col-md-3 col-lg-2 d-none d-md-block bg-dark text-white p-3 vh-100 position-fixed">
+        <h4 class="fw-bold mb-4">Menu</h4>
         <ul class="nav flex-column">
           <li class="nav-item mb-2">
             <a href="#" class="nav-link text-white active bg-danger rounded">
@@ -63,5 +84,70 @@
           </li>
         </ul>
       </div>
+
+      <!-- Main Content -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 offset-md-3 px-3 mt-4">
+        <div class="row g-3">
+          <!-- Profit Card -->
+          <div class="col-12 col-md-4">
+            <div class="card shadow-sm p-4">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="text-muted">Profit</h6>
+                  <h3>40,689</h3>
+                  <span class="text-success small">
+                    <i class="fas fa-arrow-up"></i> 8.5% Up from yesterday
+                  </span>
+                </div>
+                <div class="bg-light rounded-circle p-3">
+                  <i class="fas fa-chart-line text-success"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Order Card -->
+          <div class="col-12 col-md-4">
+            <div class="card shadow-sm p-4">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="text-muted">Total Order</h6>
+                  <h3>10,293</h3>
+                  <span class="text-success small">
+                    <i class="fas fa-arrow-up"></i> 1.3% Up from past week
+                  </span>
+                </div>
+                <div class="bg-light rounded-circle p-3">
+                  <i class="fas fa-box text-warning"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Sales Card -->
+          <div class="col-12 col-md-4">
+            <div class="card shadow-sm p-4">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="text-muted">Total Sales</h6>
+                  <h3>₱100,000</h3>
+                  <span class="text-danger small">
+                    <i class="fas fa-arrow-down"></i> 4.3% Down from yesterday
+                  </span>
+                </div>
+                <div class="bg-light rounded-circle p-3">
+                  <i class="fas fa-chart-bar text-danger"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/dashboard.js"></script>
 </body>
 </html>
