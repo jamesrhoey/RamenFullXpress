@@ -1,11 +1,14 @@
 require('dotenv').config();
 const express = require('express');
 const { default: mongoose } = require('mongoose');
+
 const port = process.env.PORT;
 const Mongoose_URI = process.env.MONGO_URI;
 
 
 const authRoutes = require('./routes/authRoutes');
+const inventoryRoutes = require('./routes/inventoryRoutes');
+const menuRoutes = require('./routes/menuRoutes');
 
 
 
@@ -15,11 +18,12 @@ app.use(express.json());
 const mapper = '/api/v1/';
 
 
-const authRoutes = require('./routes/authRoutes');
-const inventoryRoutes = require('./routes/inventoryRoutes');
 
 
-
+// Routes
+app.use(mapper + 'auth', authRoutes);
+app.use(mapper + 'inventory', inventoryRoutes);
+app.use(mapper + 'menu', menuRoutes);
 
 mongoose.connect(Mongoose_URI)
   .then(() => console.log('MongoDB Connected'))
