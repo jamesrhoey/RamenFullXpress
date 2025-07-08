@@ -5,7 +5,6 @@ const salesSchema = new mongoose.Schema({
     quantity: { type: Number, required: true },
     total: { type: Number, required: true },
     date: { type: Date, default: Date.now },
-    cashier: { type: String },
     notes: { type: String }
 });
 

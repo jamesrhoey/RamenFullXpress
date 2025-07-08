@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const salesController = require('../controllers/salesController');
+const authMiddleware = require('../middleware/authMiddleware');
+
+// Apply authentication and admin check to all sales routes
+router.use(authMiddleware, authMiddleware.isAdmin);
 
 // Create a new sale
 router.post('/', salesController.createSale);

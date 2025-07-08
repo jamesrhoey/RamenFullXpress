@@ -58,5 +58,48 @@ DELETE http://localhost:3000/api/v1/inventory/{id}
 Headers:
 - Authorization: Bearer <token>
 
+## Sales (Admin Only)
+
+### Create a new sale
+POST http://localhost:3000/api/v1/sales
+Headers:
+- Content-Type: application/json
+- Authorization: Bearer <token>
+Body (JSON):
+{
+  "item": "Tonkotsu Ramen",
+  "quantity": 2,
+  "total": 500,
+  "notes": "Extra spicy"
+}
+
+### Get all sales
+GET http://localhost:3000/api/v1/sales
+Headers:
+- Authorization: Bearer <token>
+
+### Get a sale by ID
+GET http://localhost:3000/api/v1/sales/{id}
+Headers:
+- Authorization: Bearer <token>
+
+### Update a sale by ID
+PUT http://localhost:3000/api/v1/sales/{id}
+Headers:
+- Content-Type: application/json
+- Authorization: Bearer <token>
+Body (JSON):
+{
+  "item": "Tonkotsu Ramen",
+  "quantity": 3,
+  "total": 750,
+  "notes": "Changed quantity"
+}
+
+### Delete a sale by ID
+DELETE http://localhost:3000/api/v1/sales/{id}
+Headers:
+- Authorization: Bearer <token>
+
 
 
