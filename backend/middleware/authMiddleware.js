@@ -22,3 +22,11 @@ module.exports.isAdmin = function (req, res, next) {
   }
   return res.status(403).json({ message: 'Access denied: Admins only.' });
 };
+
+// Middleware to check if user is cashier
+module.exports.isCashier = function (req, res, next) {
+  if (req.user && req.user.role === 'cashier') {
+    return next();
+  }
+  return res.status(403).json({ message: 'Access denied: Cashiers only.' });
+};
