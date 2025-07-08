@@ -92,5 +92,92 @@
             </div>
           </div>
         </div>
-</script>
+
+         <!-- Ingredients Table -->
+         <div class="row">
+          <div class="col-12 d-flex justify-content-center">
+            <div class="card shadow rounded-4 w-100" style="max-width:90vw;">
+              <div class="card-body small">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                  <h3 class="card-title mb-0">Raw Ingredients</h3>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-success" id="addMenuBtn"><i class="fas fa-plus"></i> Add Menu</button>
+                    <button class="btn btn-primary" id="addIngredientBtn"><i class="fas fa-plus"></i> Add Ingredients</button>
+                  </div>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle large">
+                    <thead class="table-light text-uppercase fw-bold">
+                      <tr>
+                        <th>Name</th>
+                        <th>Quantity</th>
+                        <th>Units</th>
+                        <th>Restocked Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="ingredientsTableBody">
+                      <!-- Table content will be populated by JavaScript -->
+                    </tbody>
+                  </table>
+                </div>
+                <!-- Pagination -->
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 gap-2">
+                  <button class="btn btn-primary" id="prevPage">Previous Page</button>
+                  <span class="ms-md-auto" id="pageInfo">Page 1 of 1</span>
+                  <button class="btn btn-primary" id="nextPage">Next Page</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  
+  <script>
+    // Sample ingredients data
+    const sampleIngredients = [
+      { name: 'Eggs', quantity: 0, units: 'pcs', restocked: '2024-06-03', status: 'Out of Stock' },
+      { name: 'Spinach', quantity: 1, units: 'bunch', restocked: '2024-06-01', status: 'Low Stock' },
+      { name: 'Chicken', quantity: 0, units: 'kg', restocked: '2024-06-02', status: 'Out of Stock' },
+      { name: 'Green Onions', quantity: 2, units: 'bunches', restocked: '2024-06-04', status: 'Low Stock' },
+      { name: 'Onions', quantity: 0, units: 'kg', restocked: '2024-06-04', status: 'Out of Stock' },
+      { name: 'Nori', quantity: 0, units: 'sheets', restocked: '2024-06-01', status: 'Out of Stock' },
+      { name: 'Bamboo Shoots', quantity: 0, units: 'kg', restocked: '2024-06-01', status: 'Out of Stock' },
+      { name: 'Pork Belly', quantity: 0, units: 'kg', restocked: '2024-06-01', status: 'Out of Stock' },
+      { name: 'Tofu', quantity: 0, units: 'pcs', restocked: '2024-06-01', status: 'Out of Stock' },
+      { name: 'Corn', quantity: 0, units: 'cobs', restocked: '2024-06-01', status: 'Out of Stock' },
+      { name: 'Seaweed', quantity: 3, units: 'sheets', restocked: '2024-06-01', status: 'Low Stock' },
+    ];
+
+    function getStatusBadge(status) {
+      if (status === 'In Stock') return '<span class="badge bg-success">In Stock</span>';
+      if (status === 'Low Stock') return '<span class="badge bg-warning text-dark">Low Stock</span>';
+      if (status === 'Out of Stock') return '<span class="badge bg-danger">Out of Stock</span>';
+      return status;
+    }
+
+    function renderIngredientsTable() {
+      const tbody = document.getElementById('ingredientsTableBody');
+      tbody.innerHTML = sampleIngredients.map(ingredient => `
+        <tr>
+          <td>${ingredient.name}</td>
+          <td>${ingredient.quantity}</td>
+          <td>${ingredient.units}</td>
+          <td>${ingredient.restocked}</td>
+          <td>${getStatusBadge(ingredient.status)}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i> Edit</button>
+            <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i> Delete</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Render table on page load
+    document.addEventListener('DOMContentLoaded', renderIngredientsTable);
+  </script>
+</body>
 </html>
