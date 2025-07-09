@@ -108,6 +108,100 @@
           </div>
         </div>
 
+        <!-- Search and Filter Bar -->
+        <div class="bg-white rounded-4 shadow p-4 mb-4">
+          <form class="row g-3 align-items-end" id="searchForm" onsubmit="return false;">
+            <div class="col-12 col-md-5 col-lg-4">
+              <label class="form-label mb-1">Search transactions</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" class="form-control" id="searchInput" placeholder="Search...">
+              </div>
+            </div>
+            <div class="col-12 col-md-4 col-lg-3">
+              <label class="form-label mb-1">Start Date</label>
+              <input type="date" class="form-control" id="filterStartDate">
+            </div>
+            <div class="col-12 col-md-3 col-lg-5 d-flex justify-content-md-end align-items-end gap-2">
+              <button type="button" class="btn btn-outline-primary" id="downloadBtn"><i class="fas fa-download me-2"></i>Download</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Sales Table -->
+        <div class="bg-white rounded-4 shadow p-4 mb-5">
+          <div class="table-responsive">
+            <table class="table align-middle mb-0" id="salesTable">
+              <thead class="table-light">
+                <tr>
+                  <th onclick="sortTable('id')" class="sortable">Transaction ID <i class="fas fa-sort ms-1"></i></th>
+                  <th onclick="sortTable('type')" class="sortable">Order Type <i class="fas fa-sort ms-1"></i></th>
+                  <th onclick="sortTable('items')" class="sortable">Items <i class="fas fa-sort ms-1"></i></th>
+                  <th onclick="sortTable('price')" class="sortable">Total Price <i class="fas fa-sort ms-1"></i></th>
+                  <th onclick="sortTable('date')" class="sortable">Date <i class="fas fa-sort ms-1"></i></th>
+                </tr>
+              </thead>
+              <tbody id="salesTableBody">
+                <tr>
+                  <td>TRX001</td>
+                  <td>Dine In</td>
+                  <td>Ramen, Gyoza</td>
+                  <td>₱210.00</td>
+                  <td>2023-10-01</td>
+                </tr>
+                <tr>
+                  <td>TRX002</td>
+                  <td>Pick Up</td>
+                  <td>Sushi, Miso Soup</td>
+                  <td>₱150.00</td>
+                  <td>2023-10-02</td>
+                </tr>
+                <tr>
+                  <td>TRX003</td>
+                  <td>Delivery</td>
+                  <td>Curry, Rice</td>
+                  <td>₱180.00</td>
+                  <td>2023-10-03</td>
+                </tr>
+                <tr>
+                  <td>TRX004</td>
+                  <td>Dine In</td>
+                  <td>Tempura, Sashimi</td>
+                  <td>₱250.00</td>
+                  <td>2023-10-04</td>
+                </tr>
+                <tr>
+                  <td>TRX005</td>
+                  <td>Pick Up</td>
+                  <td>Ramen, Salad</td>
+                  <td>₱220.00</td>
+                  <td>2023-10-05</td>
+                </tr>
+                <tr>
+                  <td>TRX006</td>
+                  <td>Delivery</td>
+                  <td>Sushi, Miso Soup</td>
+                  <td>₱190.00</td>
+                  <td>2023-10-06</td>
+              </tbody>
+            </table>
+          </div>
+                  <!-- Pagination -->
+          <nav aria-label="Page navigation">
+            <div class="d-flex justify-content-between mt-4">
+              <!-- Previous -->
+              <a class="page-link" href="#page1" style="max-width: 120px;">&laquo; Previous</a>
+
+              <!-- Next -->
+              <a class="page-link" href="#page2" style="max-width: 120px;">Next &raquo;</a>
+            </div>
+          </nav>
+
+
+        </div>
+      </main>
+        
+
   </script>
 </body>
 </html>
