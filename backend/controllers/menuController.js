@@ -1,4 +1,5 @@
 const Menu = require('../models/menu');
+const Inventory = require('../models/inventory');
 
 // Get all menu items
 const getAllMenu = async (req, res) => {
@@ -41,6 +42,25 @@ const getMenuById = async (req, res) => {
   }
 };
 
+// Validate ingredients against inventory
+const validateIngredients = async (ingredients) => {
+  const missingIngredients = [];
+  const invalidIngredients = [];
+
+  for (const ingredient of ingredients) {
+    // Check if ingredient exists in inventory
+    const inventoryItem = await Inventory.findOne({ name: ingredient.inventoryItem });
+    
+    if (!inventoryItem) {
+      missingIngredients.push(ingredient.inventoryItem);
+    } else if (ingredient.quantity <= 0) {
+      invalidIngredients.push(`${ingredient.inventoryItem}: quantity must be greater than 0`);
+    }
+  }
+
+  return { missingIngredients, invalidIngredients };
+};
+
 // Create new menu item
 const createMenu = async (req, res) => {
   try {
@@ -52,6 +72,27 @@ const createMenu = async (req, res) => {
         success: false,
         message: 'Name, price, category, and image are required'
       });
+    }
+
+    // Validate ingredients if provided
+    if (ingredients && Array.isArray(ingredients) && ingredients.length > 0) {
+      const { missingIngredients, invalidIngredients } = await validateIngredients(ingredients);
+      
+      if (missingIngredients.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Some ingredients are not found in inventory',
+          missingIngredients: missingIngredients
+        });
+      }
+
+      if (invalidIngredients.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid ingredient quantities',
+          invalidIngredients: invalidIngredients
+        });
+      }
     }
 
     const newMenuItem = new Menu({
@@ -82,6 +123,27 @@ const createMenu = async (req, res) => {
 const updateMenu = async (req, res) => {
   try {
     const { name, price, category, image, ingredients } = req.body;
+    
+    // Validate ingredients if provided
+    if (ingredients && Array.isArray(ingredients) && ingredients.length > 0) {
+      const { missingIngredients, invalidIngredients } = await validateIngredients(ingredients);
+      
+      if (missingIngredients.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Some ingredients are not found in inventory',
+          missingIngredients: missingIngredients
+        });
+      }
+
+      if (invalidIngredients.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid ingredient quantities',
+          invalidIngredients: invalidIngredients
+        });
+      }
+    }
     
     const updatedMenuItem = await Menu.findByIdAndUpdate(
       req.params.id,

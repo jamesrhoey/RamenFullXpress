@@ -7,9 +7,9 @@ const authMiddleware = require('../middleware/authMiddleware');
 router.use(authMiddleware, authMiddleware.isCashier);
 
 // GET all mobile orders
-router.get('/', mobileOrderController.getAllMobileOrders);
+router.get('/all', mobileOrderController.getAllMobileOrders);
 
 // PUT update a mobile order by ID
-router.put('/:id', mobileOrderController.updateMobileOrder);
+router.put('/update/:id', mobileOrderController.updateMobileOrder);
 
 module.exports = router;
