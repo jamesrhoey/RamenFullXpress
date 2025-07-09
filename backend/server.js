@@ -9,6 +9,8 @@ const Mongoose_URI = process.env.MONGO_URI;
 const authRoutes = require('./routes/authRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
 const menuRoutes = require('./routes/menuRoutes');
+const salesRoutes = require('./routes/salesRoutes');
+const mobileOrderRoutes = require('./routes/mobileOrderRoutes');
 
 
 
@@ -24,6 +26,8 @@ const mapper = '/api/v1/';
 app.use(mapper + 'auth', authRoutes);
 app.use(mapper + 'inventory', inventoryRoutes);
 app.use(mapper + 'menu', menuRoutes);
+app.use(mapper + 'sales', salesRoutes);
+app.use(mapper + 'mobile-orders', mobileOrderRoutes);
 
 mongoose.connect(Mongoose_URI)
   .then(() => console.log('MongoDB Connected'))
