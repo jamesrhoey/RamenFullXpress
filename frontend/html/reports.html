@@ -7,201 +7,249 @@
   <!-- Bootstrap CSS & FontAwesome -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <link href="#" rel="stylesheet">
+  <link href="../css/reports.css" rel="stylesheet">
 
 </head>
 <body class="bg-light">
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-danger sticky-top ">
-    <div class="container-fluid">
-      <button class="navbar-toggler" type="button" id="sidebarToggle">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <a class="navbar-brand d-flex align-items-center" href="#">
-        <img src="../assets/logo.png" alt="Logo" class="rounded-circle me-2" style="height: 40px; width: 40px;">
-        Ramen App
-      </a>
-      <div class="d-flex align-items-center ms-auto">
-        <img src="../assets/notif.png" alt="notif" class="rounded-circle me-2" style="height: 40px; width: 40px;">
-        <div class="dropdown">
-          <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="adminDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="../assets/adminPIC.png" alt="admin" class="rounded-circle me-2" style="height: 40px; width: 40px;">
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
-            <li>
-              <button class="dropdown-item" onclick="window.location.href='../login.html'">Logout</button>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </nav>
 
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-danger sticky-top">
   <div class="container-fluid">
-    <div class="row min-vh-100">
-      <!-- Sidebar -->
-      <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-dark text-white p-3 collapse position-fixed h-100" style="z-index: 1000;">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h4 class="fw-bold mb-0">Menu</h4>
-          <button class="btn-close btn-close-white d-md-none" id="closeSidebar"></button>
-        </div>
-        <ul class="nav flex-column">
-          <li class="nav-item mb-2">
-            <a href="../html/dashboard.html" class="nav-link text-white">
-              <i class="fas fa-tachometer-alt me-2"></i> Dashboard
-            </a>
-          </li>
-          <li class="nav-item mb-2">
-            <a href="../html/inventory.html" class="nav-link text-white">
-              <i class="fas fa-shopping-cart  me-2"></i> Inventory
-            </a>
-          </li>
-          <li class="nav-item mb-2">
-            <a href="../html/reports.html" class="nav-link text-white active bg-danger rounded">
-              <i class="fas fa-users me-2"></i> Reports
-            </a>
+    <button class="navbar-toggler" type="button" id="sidebarToggle">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand d-flex align-items-center" href="#">
+      <img src="../assets/logo.png" alt="Logo" class="rounded-circle me-2" style="height: 40px; width: 40px;">
+      Ramen App
+    </a>
+    <div class="d-flex align-items-center ms-auto">
+      <img src="../assets/notif.png" alt="notif" class="rounded-circle me-2" style="height: 40px; width: 40px;">
+      <div class="dropdown">
+        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="adminDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          <img src="../assets/adminPIC.png" alt="admin" class="rounded-circle me-2" style="height: 40px; width: 40px;">
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
+          <li>
+            <button class="dropdown-item" onclick="window.location.href='../login.html'">Logout</button>
           </li>
         </ul>
-      </nav>
+      </div>
+    </div>
+  </div>
+</nav>
 
-       <main class="main-content col-md-9 col-lg-10 ms-sm-auto px-md-4 py-4">
-        <div>
-          <h2 class="h2">Sales  Reports</h2>
+<div class="container-fluid">
+  <div class="row min-vh-100">
+    <!-- Sidebar -->
+    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-dark text-white p-3 collapse position-fixed h-100" style="z-index: 1000;">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold mb-0">Menu</h4>
+        <button class="btn-close btn-close-white d-md-none" id="closeSidebar"></button>
+      </div>
+      <ul class="nav flex-column">
+        <li class="nav-item mb-2">
+          <a href="../html/dashboard.html" class="nav-link text-white">
+            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+          </a>
+        </li>
+        <li class="nav-item mb-2">
+          <a href="../html/inventory.html" class="nav-link text-white">
+            <i class="fas fa-shopping-cart  me-2"></i> Inventory
+          </a>
+        </li>
+        <li class="nav-item mb-2">
+          <a href="../html/reports.html" class="nav-link text-white active bg-danger rounded">
+            <i class="fas fa-users me-2"></i> Reports
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <main class="main-content col-md-9 col-lg-10 ms-sm-auto px-md-4 py-4">
+      <div>
+        <h2 class="h2">Sales Reports</h2>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="bg-white rounded-4 shadow p-3 summary-card">
+            <span class="text-primary mb-1">Profit</span>
+            <div class="stat mb-1">100,000</div>
+            <div class="desc">Last 7 Days</div>
+          </div>
         </div>
-        <!-- Summary Cards -->
-        <div class="row g-3 mb-4">
-          <div class="col-12 col-sm-6 col-lg-3">
-            <div class="bg-white rounded-4 shadow p-3 summary-card">
-              <span class="text-primary mb-1">Profit</span>
-              <div class="stat mb-1">100,000</div>
-              <div class="desc">Last 7 Days</div>
-            </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="bg-white rounded-4 shadow p-3 summary-card">
+            <span class="text-warning mb-1">Total Orders</span>
+            <div class="stat mb-1">14</div>
+            <div class="desc">Last 7 Days</div>
           </div>
-          <div class="col-12 col-sm-6 col-lg-3">
-            <div class="bg-white rounded-4 shadow p-3 summary-card">
-              <span class="text-warning mb-1">Total Orders</span>
-              <div class="stat mb-1">14</div>
-              <div class="desc">Last 7 Days</div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="bg-white rounded-4 shadow p-3 summary-card">
+            <span class="text-purple mb-1">Order Type</span>
+            <div class="d-flex justify-content-between mb-1">
+              <span class="stat">5</span>
+              <span class="stat">8</span>
+              <span class="stat">7</span>
             </div>
-          </div>
-          <div class="col-12 col-sm-6 col-lg-3">
-            <div class="bg-white rounded-4 shadow p-3 summary-card">
-              <span class="text-purple mb-1">Order Type</span>
-              <div class="d-flex justify-content-between mb-1">
-                <span class="stat">5</span>
-                <span class="stat">8</span>
-                <span class="stat">7</span>
-              </div>
-              <div class="d-flex justify-content-between desc">
-                <span>Dine In</span>
-                <span>Pick Up</span>
-                <span>Delivery</span>
-              </div>
-            </div>
-          </div>
-          <div class="col-12 col-sm-6 col-lg-3">
-            <div class="bg-white rounded-4 shadow p-3 summary-card">
-              <span class="text-danger mb-1">Revenue</span>
-              <div class="stat mb-1">25,000</div>
-              <div class="desc">Last 7 Days</div>
+            <div class="d-flex justify-content-between desc">
+              <span>Dine In</span>
+              <span>Pick Up</span>
+              <span>Delivery</span>
             </div>
           </div>
         </div>
-
-        <!-- Search and Filter Bar -->
-        <div class="bg-white rounded-4 shadow p-4 mb-4">
-          <form class="row g-3 align-items-end" id="searchForm" onsubmit="return false;">
-            <div class="col-12 col-md-5 col-lg-4">
-              <label class="form-label mb-1">Search transactions</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-search"></i></span>
-                <input type="text" class="form-control" id="searchInput" placeholder="Search...">
-              </div>
-            </div>
-            <div class="col-12 col-md-4 col-lg-3">
-              <label class="form-label mb-1">Start Date</label>
-              <input type="date" class="form-control" id="filterStartDate">
-            </div>
-            <div class="col-12 col-md-3 col-lg-5 d-flex justify-content-md-end align-items-end gap-2">
-              <button type="button" class="btn btn-outline-primary" id="downloadBtn"><i class="fas fa-download me-2"></i>Download</button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Sales Table -->
-        <div class="bg-white rounded-4 shadow p-4 mb-5">
-          <div class="table-responsive">
-            <table class="table align-middle mb-0" id="salesTable">
-              <thead class="table-light">
-                <tr>
-                  <th onclick="sortTable('id')" class="sortable">Transaction ID <i class="fas fa-sort ms-1"></i></th>
-                  <th onclick="sortTable('type')" class="sortable">Order Type <i class="fas fa-sort ms-1"></i></th>
-                  <th onclick="sortTable('items')" class="sortable">Items <i class="fas fa-sort ms-1"></i></th>
-                  <th onclick="sortTable('price')" class="sortable">Total Price <i class="fas fa-sort ms-1"></i></th>
-                  <th onclick="sortTable('date')" class="sortable">Date <i class="fas fa-sort ms-1"></i></th>
-                </tr>
-              </thead>
-              <tbody id="salesTableBody">
-                <tr>
-                  <td>TRX001</td>
-                  <td>Dine In</td>
-                  <td>Ramen, Gyoza</td>
-                  <td>₱210.00</td>
-                  <td>2023-10-01</td>
-                </tr>
-                <tr>
-                  <td>TRX002</td>
-                  <td>Pick Up</td>
-                  <td>Sushi, Miso Soup</td>
-                  <td>₱150.00</td>
-                  <td>2023-10-02</td>
-                </tr>
-                <tr>
-                  <td>TRX003</td>
-                  <td>Delivery</td>
-                  <td>Curry, Rice</td>
-                  <td>₱180.00</td>
-                  <td>2023-10-03</td>
-                </tr>
-                <tr>
-                  <td>TRX004</td>
-                  <td>Dine In</td>
-                  <td>Tempura, Sashimi</td>
-                  <td>₱250.00</td>
-                  <td>2023-10-04</td>
-                </tr>
-                <tr>
-                  <td>TRX005</td>
-                  <td>Pick Up</td>
-                  <td>Ramen, Salad</td>
-                  <td>₱220.00</td>
-                  <td>2023-10-05</td>
-                </tr>
-                <tr>
-                  <td>TRX006</td>
-                  <td>Delivery</td>
-                  <td>Sushi, Miso Soup</td>
-                  <td>₱190.00</td>
-                  <td>2023-10-06</td>
-              </tbody>
-            </table>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="bg-white rounded-4 shadow p-3 summary-card">
+            <span class="text-danger mb-1">Revenue</span>
+            <div class="stat mb-1">25,000</div>
+            <div class="desc">Last 7 Days</div>
           </div>
-                  <!-- Pagination -->
-          <nav aria-label="Page navigation">
-            <div class="d-flex justify-content-between mt-4">
-              <!-- Previous -->
-              <a class="page-link" href="#page1" style="max-width: 120px;">&laquo; Previous</a>
-
-              <!-- Next -->
-              <a class="page-link" href="#page2" style="max-width: 120px;">Next &raquo;</a>
-            </div>
-          </nav>
-
-
         </div>
-      </main>
-        
+      </div>
 
-  </script>
+      <!-- Search and Filter -->
+      <div class="bg-white rounded-4 shadow p-4 mb-4">
+        <form class="row g-3 align-items-end" id="searchForm" onsubmit="return false;">
+          <div class="col-12 col-md-5 col-lg-4">
+            <label class="form-label mb-1">Search transactions</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-search"></i></span>
+              <input type="text" class="form-control" id="searchInput" placeholder="Search...">
+            </div>
+          </div>
+          <div class="col-12 col-md-4 col-lg-3">
+            <label class="form-label mb-1">Start Date</label>
+            <input type="date" class="form-control" id="filterStartDate">
+          </div>
+          <div class="col-12 col-md-3 col-lg-5 d-flex justify-content-md-end align-items-end gap-2">
+            <button type="button" class="btn btn-outline-primary" id="downloadBtn"><i class="fas fa-download me-2"></i>Download</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Sales Table -->
+      <div class="bg-white rounded-4 shadow p-4 mb-5">
+        <div class="table-responsive">
+          <table class="table align-middle mb-0" id="salesTable">
+            <thead class="table-light">
+              <tr>
+                <th onclick="sortTable('id')" class="sortable">Transaction ID <i class="fas fa-sort ms-1"></i></th>
+                <th onclick="sortTable('type')" class="sortable">Order Type <i class="fas fa-sort ms-1"></i></th>
+                <th onclick="sortTable('items')" class="sortable">Items <i class="fas fa-sort ms-1"></i></th>
+                <th onclick="sortTable('price')" class="sortable">Total Price <i class="fas fa-sort ms-1"></i></th>
+                <th onclick="sortTable('date')" class="sortable">Date <i class="fas fa-sort ms-1"></i></th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="salesTableBody">
+              <tr>
+                <td>TRX002</td>
+                <td>Pick Up</td>
+                <td>Sushi, Miso Soup</td>
+                <td>₱150.00</td>
+                <td>2023-10-02</td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary" onclick="openTransactionModal('TRX002', 'Pick Up', 'Sushi, Miso Soup', '₱150.00', '2023-10-02')">
+                    <i class="fas fa-eye"></i> View
+                  </button>
+                </td>
+              </tr>
+
+              <tr>
+                <td>TRX003</td>
+                <td>Delivery</td>
+                <td>Curry, Rice</td>
+                <td>₱180.00</td>
+                <td>2023-10-03</td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary" onclick="openTransactionModal('TRX003', 'Delivery', 'Curry, Rice', '₱180.00', '2023-10-03')">
+                    <i class="fas fa-eye"></i> View
+                  </button>
+                </td>
+              </tr>
+
+              <tr>
+                <td>TRX004</td>
+                <td>Dine In</td>
+                <td>Tempura, Sashimi</td>
+                <td>₱250.00</td>
+                <td>2023-10-04</td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary" onclick="openTransactionModal('TRX004', 'Dine In', 'Tempura, Sashimi', '₱250.00', '2023-10-04')">
+                    <i class="fas fa-eye"></i> View
+                  </button>
+                </td>
+              </tr>
+
+              <tr>
+                <td>TRX005</td>
+                <td>Pick Up</td>
+                <td>Ramen, Salad</td>
+                <td>₱220.00</td>
+                <td>2023-10-05</td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary" onclick="openTransactionModal('TRX005', 'Pick Up', 'Ramen, Salad', '₱220.00', '2023-10-05')">
+                    <i class="fas fa-eye"></i> View
+                  </button>
+                </td>
+              </tr>
+
+              <tr>
+                <td>TRX006</td>
+                <td>Delivery</td>
+                <td>Sushi, Miso Soup</td>
+                <td>₱190.00</td>
+                <td>2023-10-06</td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary" onclick="openTransactionModal('TRX006', 'Delivery', 'Sushi, Miso Soup', '₱190.00', '2023-10-06')">
+                    <i class="fas fa-eye"></i> View
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <nav aria-label="Page navigation">
+          <div class="d-flex justify-content-between mt-4">
+            <a class="page-link" href="#page1" style="max-width: 120px;">&laquo; Previous</a>
+            <a class="page-link" href="#page2" style="max-width: 120px;">Next &raquo;</a>
+          </div>
+        </nav>
+      </div>
+
+      <!-- Transaction Details Modal -->
+      <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="transactionModalLabel">Transaction Details</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p><strong>Transaction ID:</strong> <span id="modalTransactionId"></span></p>
+              <p><strong>Order Type:</strong> <span id="modalOrderType"></span></p>
+              <p><strong>Items:</strong> <span id="modalItems"></span></p>
+              <p><strong>Total Price:</strong> <span id="modalTotalPrice"></span></p>
+              <p><strong>Date:</strong> <span id="modalDate"></span></p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- JS Files -->
+<script src="/frontend/js/reports.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
