@@ -7,63 +7,8 @@
   <!-- Bootstrap CSS & FontAwesome -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <style>
+  <link rel="stylesheet" href="../css/pos.css">
 
-    .menu-item {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.2s;
-      cursor: pointer;
-    }
-    .menu-item:hover {
-      transform: translateY(-5px);
-    }
-    .menu-item .card-img-top {
-      height: 150px;
-      object-fit: cover;
-    }
-    .menu-item .card-body {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .menu-item .card-title {
-      font-size: 0.9rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .menu-item .card-text {
-      font-size: 0.9rem;
-    }
-    /* Make category buttons sticky */
-    .category-container {
-      position: sticky;
-      top: 56px;
-      background-color: white;
-      z-index: 1020;
-      padding-top: 10px;
-      padding-bottom: 10px;
-    }
-    /* Sidebar styling */
-    .sidebar {
-      width: 250px;
-    }
-    .main-content {
-      margin-left: 250px;
-    }
-    @media (max-width: 768px) {
-      .sidebar {
-        width: 100%;
-        position: relative;
-      }
-      .main-content {
-        margin-left: 0;
-      }
-    }
-  </style>
 </head>
 <body class="bg-light">
   <!-- Navbar -->
@@ -302,33 +247,33 @@
                 <!-- Order Type -->
                 <div class="mt-3">
                   <label class="form-label">Order Type</label>
-                  <div class="d-flex gap-2">
-                    <button class="btn btn-outline-danger flex-grow-1 active">
-                      <i class="fas fa-utensils mb-1"></i><div class="small">Dine-in</div>
-                    </button>
-                    <button class="btn btn-outline-danger flex-grow-1">
-                      <i class="fas fa-shopping-bag mb-1"></i><div class="small">Takeout</div>
-                    </button>
-                    <button class="btn btn-outline-danger flex-grow-1">
-                      <i class="fas fa-box mb-1"></i><div class="small">Pickup</div>
-                    </button>
-                  </div>
+                                  <div class="d-flex gap-2">
+                  <button class="btn btn-outline-danger flex-grow-1 active" data-order-type="dine-in">
+                    <i class="fas fa-utensils mb-1"></i><div class="small">Dine-in</div>
+                  </button>
+                  <button class="btn btn-outline-danger flex-grow-1" data-order-type="takeout">
+                    <i class="fas fa-shopping-bag mb-1"></i><div class="small">Takeout</div>
+                  </button>
+                  <button class="btn btn-outline-danger flex-grow-1" data-order-type="pickup">
+                    <i class="fas fa-box mb-1"></i><div class="small">Pickup</div>
+                  </button>
+                </div>
                 </div>
 
                 <!-- Payment Method -->
                 <div class="mt-3">
                   <label class="form-label">Payment Method</label>
-                  <div class="d-flex gap-2">
-                    <button class="btn btn-outline-danger flex-grow-1 active">
-                      <i class="fas fa-money-bill mb-1"></i><div class="small">Cash</div>
-                    </button>
-                    <button class="btn btn-outline-danger flex-grow-1">
-                      <i class="fas fa-mobile-alt mb-1"></i><div class="small">GCash</div>
-                    </button>
-                    <button class="btn btn-outline-danger flex-grow-1">
-                      <i class="fas fa-credit-card mb-1"></i><div class="small">Maya</div>
-                    </button>
-                  </div>
+                                  <div class="d-flex gap-2">
+                  <button class="btn btn-outline-danger flex-grow-1 active" data-payment-method="cash">
+                    <i class="fas fa-money-bill mb-1"></i><div class="small">Cash</div>
+                  </button>
+                  <button class="btn btn-outline-danger flex-grow-1" data-payment-method="gcash">
+                    <i class="fas fa-mobile-alt mb-1"></i><div class="small">GCash</div>
+                  </button>
+                  <button class="btn btn-outline-danger flex-grow-1" data-payment-method="maya">
+                    <i class="fas fa-credit-card mb-1"></i><div class="small">Maya</div>
+                  </button>
+                </div>
                 </div>
 
                 <!-- Total and Checkout -->
@@ -337,7 +282,7 @@
                     <h5 class="mb-0">Total</h5>
                     <h5 class="mb-0 text-danger">₱606.00</h5>
                   </div>
-                  <button class="btn btn-danger w-100">CHECKOUT</button>
+                  <button class="btn btn-danger w-100" id="checkoutBtn">CHECKOUT</button>
                 </div>
               </div>
             </div>
@@ -407,89 +352,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    
-    document.addEventListener('DOMContentLoaded', function() {
-      const productModal = document.getElementById('productModal');
-      
-      if (productModal) {
-        productModal.addEventListener('show.bs.modal', function(event) {
-          const button = event.relatedTarget;
-          const name = button.getAttribute('data-name');
-          const price = button.getAttribute('data-price');
-          const image = button.getAttribute('data-image');
-          const category = button.getAttribute('data-category');
-          
-      
-          document.getElementById('productModalTitle').textContent = name;
-          document.getElementById('productModalPrice').textContent = `₱${price}`;
-          document.getElementById('productModalImage').src = image;
-          document.getElementById('productModalImage').alt = name;
-          
-          
-          const addonsSection = document.getElementById('addonsSection');
-          if (category === 'Ramen') {
-            addonsSection.classList.remove('d-none');
-          } else {
-            addonsSection.classList.add('d-none');
-          }
-          
-          
-          document.getElementById('productQuantity').value = 1;
-          document.getElementById('extraNoodles').checked = false;
-          document.getElementById('extraChashu').checked = false;
-          document.getElementById('extraEgg').checked = false;
-          document.getElementById('specialInstructions').value = '';
-        });
-      }
-      
-
-      const decrementBtn = document.getElementById('decrementQuantity');
-      const incrementBtn = document.getElementById('incrementQuantity');
-      const quantityInput = document.getElementById('productQuantity');
-      
-      if (decrementBtn && incrementBtn && quantityInput) {
-        decrementBtn.addEventListener('click', function() {
-          let value = parseInt(quantityInput.value);
-          if (value > 1) {
-            quantityInput.value = value - 1;
-          }
-        });
-        
-        incrementBtn.addEventListener('click', function() {
-          let value = parseInt(quantityInput.value);
-          quantityInput.value = value + 1;
-        });
-      }
-      
-      
-      const addToCartBtn = document.getElementById('addToCartBtn');
-      if (addToCartBtn) {
-        addToCartBtn.addEventListener('click', function() {
-          
-          const modal = bootstrap.Modal.getInstance(productModal);
-          modal.hide();
-          
-          
-          alert('Item added to cart!');
-        });
-      }
-      
-      // Toggle sidebar on mobile
-      const sidebarToggle = document.getElementById('sidebarToggle');
-      const closeSidebar = document.getElementById('closeSidebar');
-      const sidebar = document.querySelector('.sidebar');
-      
-      if (sidebarToggle && closeSidebar && sidebar) {
-        sidebarToggle.addEventListener('click', function() {
-          sidebar.classList.toggle('show');
-        });
-        
-        closeSidebar.addEventListener('click', function() {
-          sidebar.classList.remove('show');
-        });
-      }
-    });
-  </script>
+  <script src="../js/pos.js"></script>
 </body>
 </html>
