@@ -11,6 +11,9 @@ const inventoryRoutes = require('./routes/inventoryRoutes');
 const menuRoutes = require('./routes/menuRoutes');
 const salesRoutes = require('./routes/salesRoutes');
 const mobileOrderRoutes = require('./routes/mobileOrderRoutes');
+const customerRoutes = require('./routes/customerRoutes');
+const paymentMethodRoutes = require('./routes/paymentMethodRoutes');
+const deliveryAddressRoutes = require('./routes/deliveryAddressRoutes');
 
 
 
@@ -26,6 +29,9 @@ app.use(mapper + 'inventory', inventoryRoutes);
 app.use(mapper + 'menu', menuRoutes);
 app.use(mapper + 'sales', salesRoutes);
 app.use(mapper + 'mobile-orders', mobileOrderRoutes);
+app.use(mapper + 'customers', customerRoutes);
+app.use(mapper + 'payment-methods', paymentMethodRoutes);
+app.use(mapper + 'delivery-addresses', deliveryAddressRoutes);
 
 mongoose.connect(Mongoose_URI)
   .then(() => console.log('MongoDB Connected'))
