@@ -1,0 +1,142 @@
+.menu-item {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s;
+    cursor: pointer;
+  }
+  .menu-item:hover {
+    transform: translateY(-5px);
+  }
+  .menu-item .card-img-top {
+    height: 150px;
+    object-fit: cover;
+  }
+  .menu-item .card-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .menu-item .card-title {
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .menu-item .card-text {
+    font-size: 0.9rem;
+  }
+  /* Make category buttons sticky */
+  .category-container {
+    position: sticky;
+    top: 56px;
+    background-color: white;
+    z-index: 1020;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  /* Sidebar styling */
+  .sidebar {
+    width: 250px;
+  }
+  .main-content {
+    margin-left: 250px;
+  }
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 100%;
+      position: relative;
+    }
+    .main-content {
+      margin-left: 0;
+    }
+  }
+
+  /* Enhanced POS functionality styles */
+  .cart-item {
+    transition: all 0.2s ease;
+  }
+  
+  .cart-item:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .cart-item-quantity-btn {
+    min-width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .cart-item-remove {
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+  
+  .cart-item-remove:hover {
+    opacity: 1;
+  }
+  
+  /* Order type and payment method buttons */
+  [data-order-type], [data-payment-method] {
+    transition: all 0.2s ease;
+  }
+  
+  [data-order-type]:hover, [data-payment-method]:hover {
+    transform: translateY(-1px);
+  }
+  
+  /* Search input styling */
+  #searchInput:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+  }
+  
+  /* Category filter buttons */
+  .category-container .btn {
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  
+  .category-container .btn:hover {
+    transform: translateY(-1px);
+  }
+  
+  /* Modal enhancements */
+  .modal-content {
+    border-radius: 15px;
+  }
+  
+  .modal-header {
+    border-bottom: 2px solid #f8f9fa;
+  }
+  
+  /* Notification styles */
+  .alert {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Checkout button enhancement */
+  .btn-danger {
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  /* Receipt print styles */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    .receipt-content, .receipt-content * {
+      visibility: visible;
+    }
+    .receipt-content {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+  }
