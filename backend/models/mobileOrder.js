@@ -40,8 +40,11 @@ const mobileOrderSchema = new mongoose.Schema({
   },
   notes: String,
   invoiceNumber: String,
-  customerName: String,
-  customerPhone: String
+  customerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Customer',
+    required: false
+  }
 }, {
   timestamps: true
 });
