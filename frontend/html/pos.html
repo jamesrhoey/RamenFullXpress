@@ -7,7 +7,8 @@
   <!-- Bootstrap CSS & FontAwesome -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <link href="../css/POS.css" rel="stylesheet">
+  <link rel="stylesheet" href="../css/pos.css">
+
 </head>
 <body class="bg-light">
   <!-- Navbar -->
@@ -38,7 +39,7 @@
 
   <div class="container-fluid">
     <div class="row min-vh-100">
-    <!-- Sidebar -->
+      <!-- Sidebar -->
       <div class="sidebar col-md-3 col-lg-2 d-md-block bg-dark text-white p-3 position-fixed h-100">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h4 class="fw-bold mb-0">Menu</h4>
@@ -46,7 +47,7 @@
         </div>
         <ul class="nav flex-column">
           <li class="nav-item mb-2">
-            <a href="inventory.html" class="nav-link text-white active bg-danger rounded">
+            <a href="#" class="nav-link text-white active bg-danger rounded">
               <i class="fas fa-shopping-cart me-2"></i> Point of Sale
             </a>
           </li>
@@ -89,7 +90,71 @@
 
             <div class="menu-items-container">
               <div class="row g-2 g-sm-3 mt-2" id="menuItemsGrid">
-                <!-- Menu items go here -->
+                <!-- Sample Menu Items with consistent card sizes -->
+                <div class="col-6 col-sm-4 col-md-3">
+                  <div class="card menu-item" data-bs-toggle="modal" data-bs-target="#productModal" data-name="Tonkotsu Ramen" data-price="249.00" data-category="Ramen" data-image="https://via.placeholder.com/300x200?text=Tonkotsu+Ramen">
+                    <img src="../assets/ramen1.jpg" class="card-img-top" alt="Tonkotsu Ramen">
+                    <div class="card-body p-2">
+                      <h6 class="card-title mb-1">Tonkotsu Ramen</h6>
+                      <p class="card-text text-danger mb-0">₱249.00</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-3">
+                  <div class="card menu-item" data-bs-toggle="modal" data-bs-target="#productModal" data-name="Shoyu Ramen" data-price="229.00" data-category="Ramen" data-image="https://via.placeholder.com/300x200?text=Shoyu+Ramen">
+                    <img src="../assets/ramen2.jpg" class="card-img-top" alt="Shoyu Ramen">
+                    <div class="card-body p-2">
+                      <h6 class="card-title mb-1">Shoyu Ramen</h6>
+                      <p class="card-text text-danger mb-0">₱229.00</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-3">
+                  <div class="card menu-item" data-bs-toggle="modal" data-bs-target="#productModal" data-name="Miso Ramen" data-price="239.00" data-category="Ramen" data-image="https://via.placeholder.com/300x200?text=Miso+Ramen">
+                    <img src="../assets/ramen3.jpg" class="card-img-top" alt="Miso Ramen">
+                    <div class="card-body p-2">
+                      <h6 class="card-title mb-1">Miso Ramen</h6>
+                      <p class="card-text text-danger mb-0">₱239.00</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-3">
+                  <div class="card menu-item" data-bs-toggle="modal" data-bs-target="#productModal" data-name="Gyoza (6 pcs)" data-price="129.00" data-category="Side Dishes" data-image="https://via.placeholder.com/300x200?text=Gyoza">
+                    <img src="../assets/ramen4.jpg" class="card-img-top" alt="Gyoza">
+                    <div class="card-body p-2">
+                      <h6 class="card-title mb-1">Gyoza (6 pcs)</h6>
+                      <p class="card-text text-danger mb-0">₱129.00</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-3">
+                  <div class="card menu-item" data-bs-toggle="modal" data-bs-target="#productModal" data-name="Chicken Karaage" data-price="149.00" data-category="Side Dishes" data-image="https://via.placeholder.com/300x200?text=Chicken+Karaage">
+                    <img src="../assets/ramen1.jpg" class="card-img-top" alt="Chicken Karaage">
+                    <div class="card-body p-2">
+                      <h6 class="card-title mb-1">Chicken Karaage</h6>
+                      <p class="card-text text-danger mb-0">₱149.00</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-3">
+                  <div class="card menu-item" data-bs-toggle="modal" data-bs-target="#productModal" data-name="Beef Rice Bowl" data-price="199.00" data-category="Rice Bowls" data-image="https://via.placeholder.com/300x200?text=Beef+Rice+Bowl">
+                    <img src="../assets//ricebowl.jpg" class="card-img-top" alt="Beef Rice Bowl">
+                    <div class="card-body p-2">
+                      <h6 class="card-title mb-1">Beef Rice Bowl</h6>
+                      <p class="card-text text-danger mb-0">₱199.00</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-sm-4 col-md-3">
+                  <div class="card menu-item" data-bs-toggle="modal" data-bs-target="#productModal" data-name="Pork Rice Bowl" data-price="179.00" data-category="Rice Bowls" data-image="https://via.placeholder.com/300x200?text=Pork+Rice+Bowl">
+                    <img src="../assets/ricebowl2.jpg" class="card-img-top" alt="Pork Rice Bowl">
+                    <div class="card-body p-2">
+                      <h6 class="card-title mb-1">Pork Rice Bowl</h6>
+                      <p class="card-text text-danger mb-0">₱179.00</p>
+                    </div>
+                  </div>
+                </div>
+                
               </div>
             </div>
           </div>
@@ -174,33 +239,33 @@
                 <!-- Order Type -->
                 <div class="mt-3">
                   <label class="form-label">Order Type</label>
-                  <div class="d-flex gap-2">
-                    <button class="btn btn-outline-danger flex-grow-1 active">
-                      <i class="fas fa-utensils mb-1"></i><div class="small">Dine-in</div>
-                    </button>
-                    <button class="btn btn-outline-danger flex-grow-1">
-                      <i class="fas fa-shopping-bag mb-1"></i><div class="small">Takeout</div>
-                    </button>
-                    <button class="btn btn-outline-danger flex-grow-1">
-                      <i class="fas fa-box mb-1"></i><div class="small">Pickup</div>
-                    </button>
-                  </div>
+                                  <div class="d-flex gap-2">
+                  <button class="btn btn-outline-danger flex-grow-1 active" data-order-type="dine-in">
+                    <i class="fas fa-utensils mb-1"></i><div class="small">Dine-in</div>
+                  </button>
+                  <button class="btn btn-outline-danger flex-grow-1" data-order-type="takeout">
+                    <i class="fas fa-shopping-bag mb-1"></i><div class="small">Takeout</div>
+                  </button>
+                  <button class="btn btn-outline-danger flex-grow-1" data-order-type="pickup">
+                    <i class="fas fa-box mb-1"></i><div class="small">Pickup</div>
+                  </button>
+                </div>
                 </div>
 
                 <!-- Payment Method -->
                 <div class="mt-3">
                   <label class="form-label">Payment Method</label>
-                  <div class="d-flex gap-2">
-                    <button class="btn btn-outline-danger flex-grow-1 active">
-                      <i class="fas fa-money-bill mb-1"></i><div class="small">Cash</div>
-                    </button>
-                    <button class="btn btn-outline-danger flex-grow-1">
-                      <i class="fas fa-mobile-alt mb-1"></i><div class="small">GCash</div>
-                    </button>
-                    <button class="btn btn-outline-danger flex-grow-1">
-                      <i class="fas fa-credit-card mb-1"></i><div class="small">Maya</div>
-                    </button>
-                  </div>
+                                  <div class="d-flex gap-2">
+                  <button class="btn btn-outline-danger flex-grow-1 active" data-payment-method="cash">
+                    <i class="fas fa-money-bill mb-1"></i><div class="small">Cash</div>
+                  </button>
+                  <button class="btn btn-outline-danger flex-grow-1" data-payment-method="gcash">
+                    <i class="fas fa-mobile-alt mb-1"></i><div class="small">GCash</div>
+                  </button>
+                  <button class="btn btn-outline-danger flex-grow-1" data-payment-method="maya">
+                    <i class="fas fa-credit-card mb-1"></i><div class="small">Maya</div>
+                  </button>
+                </div>
                 </div>
 
                 <!-- Total and Checkout -->
@@ -209,8 +274,7 @@
                     <h5 class="mb-0">Total</h5>
                     <h5 class="mb-0 text-danger">₱606.00</h5>
                   </div>
-                  <button class="btn btn-danger w-100">CHECKOUT</button>
-                </div>
+                  <button class="btn btn-danger w-100" id="checkoutBtn">Checkout</button>
               </div>
             </div>
           </div>
@@ -220,6 +284,65 @@
     </div>
   </div>
 
+  <!-- Product Modal -->
+  <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="productModalTitle">Product Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="text-center mb-3">
+            <img src="" id="productModalImage" class="img-fluid rounded" style="max-height: 200px;" alt="Product Image">
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 id="productModalPrice" class="mb-0">₱0.00</h5>
+            <div class="input-group" style="width: 120px;">
+              <button class="btn btn-outline-secondary" type="button" id="decrementQuantity">-</button>
+              <input type="number" class="form-control text-center" id="productQuantity" value="1" min="1">
+              <button class="btn btn-outline-secondary" type="button" id="incrementQuantity">+</button>
+            </div>
+          </div>
+          
+          <!-- Add-ons Section (for Ramen) -->
+          <div id="addonsSection" class="mb-3">
+            <h6>Add-ons</h6>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="" id="extraNoodles">
+              <label class="form-check-label" for="extraNoodles">
+                Extra Noodles (+₱50.00)
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="" id="extraChashu">
+              <label class="form-check-label" for="extraChashu">
+                Extra Chashu (+₱80.00)
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="" id="extraEgg">
+              <label class="form-check-label" for="extraEgg">
+                Extra Egg (+₱30.00)
+              </label>
+            </div>
+          </div>
+          
+          <!-- Special Instructions -->
+          <div class="mb-3">
+            <label for="specialInstructions" class="form-label">Special Instructions</label>
+            <textarea class="form-control" id="specialInstructions" rows="2" placeholder="Any special requests?"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" id="addToCartBtn">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/pos.js"></script>
 </body>
 </html>
