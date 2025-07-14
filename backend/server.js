@@ -17,7 +17,7 @@ const paymentMethodRoutes = require('./routes/paymentMethodRoutes');
 const deliveryAddressRoutes = require('./routes/deliveryAddressRoutes');
 
 
-
+const cors = require('cors');
 const app = express();
 
 // CORS configuration
@@ -29,6 +29,11 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+app.use(cors({
+  origin: ['http://127.0.0.1:5501', 'http://localhost:5501'], // allow your frontend origins
+  credentials: true // if you want to allow cookies/auth headers
+}));
 
 const mapper = '/api/v1/';
 
