@@ -13,9 +13,14 @@ const salesRoutes = require('./routes/salesRoutes');
 const mobileOrderRoutes = require('./routes/mobileOrderRoutes');
 
 
-
+const cors = require('cors');
 const app = express();
 app.use(express.json());
+
+app.use(cors({
+  origin: ['http://127.0.0.1:5501', 'http://localhost:5501'], // allow your frontend origins
+  credentials: true // if you want to allow cookies/auth headers
+}));
 
 const mapper = '/api/v1/';
 
