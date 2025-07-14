@@ -117,6 +117,7 @@ class _AddressPageState extends State<AddressPage> {
       });
       
       if (context.mounted) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Address deleted successfully'),
