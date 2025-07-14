@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const { default: mongoose } = require('mongoose');
+const cors = require('cors');
 
 const port = process.env.PORT;
 const Mongoose_URI = process.env.MONGO_URI;
@@ -18,6 +19,15 @@ const deliveryAddressRoutes = require('./routes/deliveryAddressRoutes');
 
 
 const app = express();
+
+// CORS configuration
+app.use(cors({
+  origin: true, // Allow all origins (all ports)
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
 app.use(express.json());
 
 const mapper = '/api/v1/';
@@ -37,7 +47,13 @@ mongoose.connect(Mongoose_URI)
   .then(() => console.log('MongoDB Connected'))
   .catch(err => console.log(err));
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', message: 'RamenXpress API is running' });
+});
+
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
+    console.log(`Health check available at http://localhost:${port}/health`);
 });
 

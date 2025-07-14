@@ -4,6 +4,7 @@ import 'dart:developer' as developer;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/order.dart';
 import '../models/cart_item.dart';
+import 'api_service.dart';
 
 class OrderService {
   static const String _ordersKey = 'orders';
@@ -15,11 +16,21 @@ class OrderService {
   
   OrderService._internal();
 
+  final ApiService _apiService = ApiService();
   List<Order> _orders = [];
 
   List<Order> get orders => List.unmodifiable(_orders);
 
   Future<void> loadOrders() async {
+    try {
+      // Try to load from API first using customer-specific endpoint
+      final apiOrders = await _apiService.getCustomerOrders();
+      _orders = apiOrders;
+      await saveOrders(); // Save API data locally
+    } catch (e) {
+      developer.log('Error loading orders from API: $e', name: 'OrderService');
+      
+      // Fallback to local storage
     try {
       final prefs = await SharedPreferences.getInstance();
       final ordersJson = prefs.getString(_ordersKey);
@@ -28,8 +39,9 @@ class OrderService {
         _orders = ordersList.map((order) => Order.fromJson(order)).toList();
       }
     } catch (e) {
-      developer.log('Error loading orders: $e', name: 'OrderService');
+        developer.log('Error loading orders from local storage: $e', name: 'OrderService');
       _orders = [];
+      }
     }
   }
 
@@ -52,6 +64,24 @@ class OrderService {
     required String paymentMethod,
     String? notes,
   }) async {
+    try {
+      // Try to create order via API first
+      final order = await _apiService.createMobileOrder(
+        items: items,
+        deliveryMethod: deliveryMethod,
+        deliveryAddress: deliveryAddress,
+        paymentMethod: paymentMethod,
+        notes: notes,
+      );
+      
+      // Also save locally for offline access
+      _orders.insert(0, order);
+      await saveOrders();
+      return order;
+    } catch (e) {
+      developer.log('Error creating order via API: $e', name: 'OrderService');
+      
+      // Fallback to local storage if API fails
     final orderId = _generateOrderId();
     final invoiceNumber = _generateInvoiceNumber();
     
@@ -69,9 +99,10 @@ class OrderService {
       invoiceNumber: invoiceNumber,
     );
 
-    _orders.insert(0, order); // Add to beginning of list
+      _orders.insert(0, order);
     await saveOrders();
     return order;
+    }
   }
 
   Future<void> updateOrderStatus(String orderId, OrderStatus status) async {

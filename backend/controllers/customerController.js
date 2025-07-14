@@ -286,3 +286,69 @@ exports.changePassword = async (req, res) => {
     });
   }
 }; 
+
+// Get customer's own orders
+exports.getMyOrders = async (req, res) => {
+  try {
+    const customerId = req.customerId;
+    const MobileOrder = require('../models/mobileOrder');
+    const orders = await MobileOrder.find({ customerId }).sort({ createdAt: -1 });
+    res.json({ success: true, data: orders });
+  } catch (error) {
+    console.error('Error fetching customer orders:', error);
+    res.status(500).json({ success: false, message: 'Internal server error', error: error.message });
+  }
+};
+
+// Create customer's own order
+exports.createMyOrder = async (req, res) => {
+  try {
+    const customerId = req.customerId;
+    const customer = req.customer;
+    const { items, deliveryMethod, deliveryAddress, paymentMethod, notes } = req.body;
+    const subtotal = items.reduce((sum, item) => {
+      const addOnsPrice = item.selectedAddOns.reduce((addOnSum, addOn) => addOnSum + addOn.price, 0);
+      return sum + ((item.menuItem.price + addOnsPrice) * item.quantity);
+    }, 0);
+    const deliveryFee = deliveryMethod === 'Delivery' ? 50.0 : 0.0;
+    const total = subtotal + deliveryFee;
+    const orderId = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    const invoiceNumber = `INV${Date.now()}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+    const MobileOrder = require('../models/mobileOrder');
+    const mobileOrder = new MobileOrder({
+      orderId,
+      items,
+      total,
+      deliveryMethod,
+      deliveryAddress,
+      paymentMethod,
+      notes,
+      customerName: customer.fullName,
+      customerPhone: customer.phone,
+      customerId,
+      invoiceNumber
+    });
+    const savedOrder = await mobileOrder.save();
+    res.status(201).json({ success: true, data: savedOrder });
+  } catch (err) {
+    console.error('Error creating customer order:', err);
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+// Get customer's specific order
+exports.getMyOrderById = async (req, res) => {
+  try {
+    const customerId = req.customerId;
+    const orderId = req.params.id;
+    const MobileOrder = require('../models/mobileOrder');
+    const order = await MobileOrder.findOne({ _id: orderId, customerId });
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+    res.json({ success: true, data: order });
+  } catch (err) {
+    console.error('Error fetching customer order:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+}; 

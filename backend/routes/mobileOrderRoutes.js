@@ -2,14 +2,18 @@ const express = require('express');
 const router = express.Router();
 const mobileOrderController = require('../controllers/mobileOrderController');
 const authMiddleware = require('../middleware/authMiddleware');
+const { customerAuthMiddleware } = require('../middleware/customerAuthMiddleware');
+
+// Allow only customers to create a mobile order
+router.post('/', customerAuthMiddleware, mobileOrderController.createMobileOrder);
+
+// Customer-specific route to get their own orders
+router.get('/my-orders', customerAuthMiddleware, mobileOrderController.getCustomerOrders);
 
 // Only cashiers can access these endpoints
 router.use(authMiddleware, authMiddleware.isCashier);
 
-// POST create a new mobile order
-router.post('/', mobileOrderController.createMobileOrder);
-
-// GET all mobile orders
+// GET all mobile orders (cashiers only)
 router.get('/all', mobileOrderController.getAllMobileOrders);
 
 // GET mobile order by ID

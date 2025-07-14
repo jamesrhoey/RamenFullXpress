@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'invoice_page.dart';
 import '../services/cart_service.dart';
 import '../services/order_service.dart';
+import '../services/api_service.dart';
 import '../models/cart_item.dart';
 import '../models/menu_item.dart';
+import '../models/delivery_address.dart';
+import '../models/payment_method.dart';
 
 class PaymentPage extends StatefulWidget {
   final Map<String, dynamic>? orderData;
@@ -15,14 +18,20 @@ class PaymentPage extends StatefulWidget {
 }
 
 class _PaymentPageState extends State<PaymentPage> {
-  String selectedDeliveryMethod = 'Pick Up';
-  Map<String, dynamic>? selectedPaymentMethod;
-  Map<String, dynamic>? selectedAddress;
+  String selectedDeliveryMethod = 'Pickup';
+  PaymentMethod? selectedPaymentMethod;
+  DeliveryAddress? selectedAddress;
   final TextEditingController _notesController = TextEditingController();
   
   // Services
   final CartService _cartService = CartService();
   final OrderService _orderService = OrderService();
+  final ApiService _apiService = ApiService();
+
+  // API Data
+  List<DeliveryAddress> deliveryAddresses = [];
+  List<PaymentMethod> paymentMethods = [];
+  bool isLoading = true;
 
   // Use order data if provided, otherwise use cart service
   List<Map<String, dynamic>> get cartItems {
@@ -43,17 +52,7 @@ class _PaymentPageState extends State<PaymentPage> {
     }).toList();
   }
 
-  List<Map<String, dynamic>> deliveryAddresses = [
-    {
-      'id': '1',
-      'street': '123 Main Street',
-      'barangay': 'Barangay 1',
-      'municipality': 'Manila',
-      'province': 'Metro Manila',
-      'zipCode': '1000',
-      'isDefault': true,
-    },
-  ];
+
 
   final List<Map<String, dynamic>> availableAddons = [
     {'name': 'Extra Egg', 'price': 30.0},
@@ -71,12 +70,96 @@ class _PaymentPageState extends State<PaymentPage> {
   @override
   void initState() {
     super.initState();
-    _loadCart();
+    _loadData();
   }
 
-  Future<void> _loadCart() async {
+  @override
+  void dispose() {
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      // Load cart data
     await _cartService.loadCart();
-    setState(() {});
+      
+      // Load delivery addresses and payment methods from API
+      await Future.wait([
+        _loadDeliveryAddresses(),
+        _loadPaymentMethods(),
+      ]);
+    } catch (e) {
+      print('Error loading data: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadDeliveryAddresses() async {
+    try {
+      print('🔍 Loading delivery addresses...');
+      deliveryAddresses = await _apiService.getDeliveryAddresses();
+      print('✅ Loaded ${deliveryAddresses.length} delivery addresses');
+      
+      // Set default address if available, safely
+      if (deliveryAddresses.isNotEmpty) {
+        final defaultAddress = deliveryAddresses.where((a) => a.isDefault).toList();
+        if (defaultAddress.isNotEmpty) {
+          selectedAddress = defaultAddress.first;
+        } else {
+          selectedAddress = deliveryAddresses.first;
+        }
+        print('📍 Selected address: ${selectedAddress!.fullAddress}');
+      } else {
+        selectedAddress = null;
+        print('⚠️ No delivery addresses found');
+      }
+    } catch (e) {
+      print('❌ Error loading delivery addresses: $e');
+      deliveryAddresses = [];
+      // Show user-friendly error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load delivery addresses: $e'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _loadPaymentMethods() async {
+    try {
+      print('🔍 Loading payment methods...');
+      paymentMethods = await _apiService.getPaymentMethods();
+      print('✅ Loaded ${paymentMethods.length} payment methods');
+      
+      // Do not auto-select any payment method; let the customer choose
+      selectedPaymentMethod = null;
+      if (paymentMethods.isEmpty) {
+        print('⚠️ No payment methods found');
+      }
+    } catch (e) {
+      print('❌ Error loading payment methods: $e');
+      paymentMethods = [];
+      // Show user-friendly error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load payment methods: $e'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    }
   }
 
   void showEditItemModal(Map<String, dynamic> item) {
@@ -444,6 +527,16 @@ class _PaymentPageState extends State<PaymentPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFFD32D43),
+          ),
+        ),
+      );
+    }
+
     if (cartItems.isEmpty) {
       return Scaffold(
         bottomNavigationBar: _buildBottomNavBar(),
@@ -571,22 +664,22 @@ class _PaymentPageState extends State<PaymentPage> {
                             Expanded(
                               child: GestureDetector(
                                 onTap: () {
-                                  setState(() => selectedDeliveryMethod = 'Pick Up');
+                                  setState(() => selectedDeliveryMethod = 'Pickup');
                                 },
                                 child: Container(
                                   height: 60,
                                   decoration: BoxDecoration(
-                                    color: selectedDeliveryMethod == 'Pick Up'
+                                    color: selectedDeliveryMethod == 'Pickup'
                                         ? const Color(0xFFD32D43)
                                         : Colors.white,
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: selectedDeliveryMethod == 'Pick Up'
+                                      color: selectedDeliveryMethod == 'Pickup'
                                           ? const Color(0xFFD32D43)
                                           : const Color(0xFFE9ECEF),
                                       width: 2,
                                     ),
-                                    boxShadow: selectedDeliveryMethod == 'Pick Up'
+                                    boxShadow: selectedDeliveryMethod == 'Pickup'
                                         ? [
                                             BoxShadow(
                                               color: const Color.fromARGB(255, 255, 235, 235),
@@ -610,17 +703,17 @@ class _PaymentPageState extends State<PaymentPage> {
                                       Icon(
                                         Icons.store,
                                         size: 24,
-                                        color: selectedDeliveryMethod == 'Pick Up'
+                                        color: selectedDeliveryMethod == 'Pickup'
                                             ? Colors.white
                                             : const Color(0xFFD32D43),
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        'Pick Up',
+                                        'Pickup',
                                         style: TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
-                                          color: selectedDeliveryMethod == 'Pick Up'
+                                          color: selectedDeliveryMethod == 'Pickup'
                                               ? Colors.white
                                               : const Color(0xFF1A1A1A),
                                         ),
@@ -709,29 +802,158 @@ class _PaymentPageState extends State<PaymentPage> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    if (deliveryAddresses.isNotEmpty)
-                      ...deliveryAddresses.map(
-                        (address) => Card(
-                          child: ListTile(
-                            title: Text(
-                              '${address['street']}, ${address['barangay']}',
-                            ),
-                            subtitle: Text(
-                              '${address['municipality']}, ${address['province']}',
-                            ),
-                            trailing: address['isDefault'] == true
-                                ? const Chip(label: Text('Default'))
-                                : null,
-                            onTap: () {
-                              setState(() {
-                                selectedAddress = address;
-                              });
-                            },
+                    if (deliveryAddresses.isNotEmpty) ...[
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8F9FA),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFFE9ECEF),
+                            width: 1,
                           ),
                         ),
-                      )
-                    else
-                      const Text('No delivery addresses available'),
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color.fromARGB(255, 255, 235, 235),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                Icons.location_on,
+                                color: Color(0xFFD32D43),
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    selectedAddress?.fullAddress ?? 'Select a delivery address',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1A1A1A),
+                                    ),
+                                  ),
+                                  if (selectedAddress != null && selectedAddress!.isDefault)
+                                    const Text(
+                                      'Default',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            PopupMenuButton<DeliveryAddress>(
+                              icon: const Icon(
+                                Icons.arrow_drop_down,
+                                color: Color(0xFFD32D43),
+                              ),
+                              onSelected: (DeliveryAddress address) {
+                                setState(() {
+                                  selectedAddress = address;
+                                });
+                              },
+                              itemBuilder: (BuildContext context) {
+                                return deliveryAddresses.map((DeliveryAddress address) {
+                                  return PopupMenuItem<DeliveryAddress>(
+                                    value: address,
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.location_on, size: 20, color: address.isDefault ? Color(0xFFD32D43) : Colors.grey),
+                                        const SizedBox(width: 8),
+                                        Expanded(child: Text(address.fullAddress)),
+                                        if (address.isDefault)
+                                          const Padding(
+                                            padding: EdgeInsets.only(left: 8.0),
+                                            child: Chip(
+                                              label: Text('Default'),
+                                              backgroundColor: Color(0xFFD32D43),
+                                              labelStyle: TextStyle(color: Colors.white, fontSize: 10),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ] else ...[
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8F9FA),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFFE9ECEF),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color.fromARGB(255, 255, 235, 235),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                Icons.location_on,
+                                color: Color(0xFFD32D43),
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'No delivery addresses',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1A1A1A),
+                                    ),
+                                  ),
+                                  Text(
+                                    'Add a delivery address to continue',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/address');
+                        },
+                        icon: const Icon(Icons.add, color: Color(0xFFD32D43)),
+                        label: const Text(
+                          'Add New Delivery Address',
+                          style: TextStyle(color: Color(0xFFD32D43)),
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 24),
                   ],
 
@@ -779,6 +1001,83 @@ class _PaymentPageState extends State<PaymentPage> {
                           ],
                         ),
                         const SizedBox(height: 16),
+                        if (paymentMethods.isNotEmpty) ...[
+                          Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8F9FA),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFFE9ECEF),
+                                width: 1,
+                              ),
+                            ),
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: const Color.fromARGB(255, 255, 235, 235),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    selectedPaymentMethod?.icon ?? Icons.account_balance_wallet,
+                                    color: const Color(0xFFD32D43),
+                                    size: 24,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        selectedPaymentMethod?.title ?? 'Select a payment method',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF1A1A1A),
+                                        ),
+                                      ),
+                                      Text(
+                                        selectedPaymentMethod?.displayName ?? '',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                PopupMenuButton<PaymentMethod>(
+                                  icon: const Icon(
+                                    Icons.arrow_drop_down,
+                                    color: Color(0xFFD32D43),
+                                  ),
+                                  onSelected: (PaymentMethod method) {
+                                    setState(() {
+                                      selectedPaymentMethod = method;
+                                    });
+                                  },
+                                  itemBuilder: (BuildContext context) {
+                                    return paymentMethods.map((PaymentMethod method) {
+                                      return PopupMenuItem<PaymentMethod>(
+                                        value: method,
+                                        child: Row(
+                                          children: [
+                                            Icon(method.icon, size: 20),
+                                            const SizedBox(width: 8),
+                                            Text(method.title),
+                                          ],
+                                        ),
+                                      );
+                                    }).toList();
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ] else ...[
                         Container(
                           decoration: BoxDecoration(
                             color: const Color(0xFFF8F9FA),
@@ -809,7 +1108,7 @@ class _PaymentPageState extends State<PaymentPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'GCash',
+                                        'No payment methods',
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -817,7 +1116,7 @@ class _PaymentPageState extends State<PaymentPage> {
                                       ),
                                     ),
                                     Text(
-                                      '•••• 9933',
+                                        'Add a payment method to continue',
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: Colors.grey,
@@ -826,18 +1125,10 @@ class _PaymentPageState extends State<PaymentPage> {
                                   ],
                                 ),
                               ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.edit,
-                                  color: Color(0xFFD32D43),
-                                ),
-                                onPressed: () {
-                                  // Add edit functionality if needed
-                                },
-                              ),
                             ],
                           ),
                         ),
+                        ],
                         const SizedBox(height: 12),
                         TextButton.icon(
                           onPressed: () {
@@ -1005,9 +1296,38 @@ class _PaymentPageState extends State<PaymentPage> {
                     child: ElevatedButton(
                       onPressed: () async {
                         try {
+                          // Validate delivery method and address
+                          if (selectedDeliveryMethod == 'Delivery' && selectedAddress == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please select a delivery address'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+
+                          // Validate payment method
+                          if (paymentMethods.isNotEmpty && selectedPaymentMethod == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please select a payment method'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+
+                          // Debug: Print cart items structure
+                          print('🔍 Cart items structure:');
+                          for (int i = 0; i < cartItems.length; i++) {
+                            print('📦 Item $i: ${cartItems[i]}');
+                          }
+                          
                           // Convert cart items to CartItem objects for OrderService
                           final cartItemObjects = cartItems.map((item) {
                             final menuItem = MenuItem(
+                              id: item['id'] ?? '1', // Add ID field
                               name: item['name'],
                               price: item['price'].toDouble(),
                               image: item['image'],
@@ -1030,9 +1350,9 @@ class _PaymentPageState extends State<PaymentPage> {
                             items: cartItemObjects,
                             deliveryMethod: selectedDeliveryMethod,
                             deliveryAddress: selectedDeliveryMethod == 'Delivery' && selectedAddress != null
-                                ? '${selectedAddress!['street']}, ${selectedAddress!['barangay']}, ${selectedAddress!['municipality']}, ${selectedAddress!['province']}, ${selectedAddress!['zipCode']}'
+                                ? '${selectedAddress!.street}, ${selectedAddress!.barangay}, ${selectedAddress!.municipality}, ${selectedAddress!.province}, ${selectedAddress!.zipCode}'
                                 : null,
-                            paymentMethod: 'GCash',
+                            paymentMethod: selectedPaymentMethod?.title ?? 'Cash',
                             notes: _notesController.text,
                           );
 
