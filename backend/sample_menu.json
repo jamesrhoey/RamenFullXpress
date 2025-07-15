@@ -1,0 +1,106 @@
+[
+    {
+      "name": "Tonkotsu Ramen",
+      "category": "Ramen",
+      "price": 249.00,
+      "image": "../assets/ramen1.jpg",
+      "ingredients": [
+        { "name": "Pork Bones", "quantity": 0.3, "unit": "kg" },
+        { "name": "Ramen Noodles", "quantity": 1, "unit": "pack" },
+        { "name": "Chashu Pork", "quantity": 2, "unit": "slices" },
+        { "name": "Marinated Egg", "quantity": 1, "unit": "pc" },
+        { "name": "Wood Ear Mushrooms", "quantity": 10, "unit": "g" },
+        { "name": "Nori", "quantity": 1, "unit": "sheet" },
+        { "name": "Green Onions", "quantity": 0.1, "unit": "bunch" },
+        { "name": "Garlic", "quantity": 0.1, "unit": "bulb" },
+        { "name": "Ginger", "quantity": 0.05, "unit": "kg" },
+        { "name": "Onions", "quantity": 0.05, "unit": "kg" }
+      ]
+    },
+    {
+      "name": "Shoyu Ramen",
+      "category": "Ramen",
+      "price": 229.00,
+      "image": "../assets/ramen2.jpg",
+      "ingredients": [
+        { "name": "Chicken Bones", "quantity": 0.3, "unit": "kg" },
+        { "name": "Soy Sauce", "quantity": 0.05, "unit": "L" },
+        { "name": "Ramen Noodles", "quantity": 1, "unit": "pack" },
+        { "name": "Chashu Pork", "quantity": 2, "unit": "slices" },
+        { "name": "Menma", "quantity": 20, "unit": "g" },
+        { "name": "Nori", "quantity": 1, "unit": "sheet" },
+        { "name": "Green Onions", "quantity": 0.1, "unit": "bunch" },
+        { "name": "Marinated Egg", "quantity": 1, "unit": "pc" }
+      ]
+    },
+    {
+      "name": "Miso Ramen",
+      "category": "Ramen",
+      "price": 239.00,
+      "image": "../assets/ramen3.jpg",
+      "ingredients": [
+        { "name": "Miso Paste", "quantity": 0.05, "unit": "kg" },
+        { "name": "Chicken Bones", "quantity": 0.3, "unit": "kg" },
+        { "name": "Ramen Noodles", "quantity": 1, "unit": "pack" },
+        { "name": "Ground Pork", "quantity": 50, "unit": "g" },
+        { "name": "Corn", "quantity": 0.25, "unit": "cup" },
+        { "name": "Butter", "quantity": 10, "unit": "g" },
+        { "name": "Bean Sprouts", "quantity": 0.25, "unit": "cup" },
+        { "name": "Green Onions", "quantity": 0.1, "unit": "bunch" },
+        { "name": "Marinated Egg", "quantity": 1, "unit": "pc" }
+      ]
+    },
+    {
+      "name": "Gyoza (6 pcs)",
+      "category": "Side Dishes",
+      "price": 129.00,
+      "image": "../assets/ramen4.jpg",
+      "ingredients": [
+        { "name": "Gyoza Wrappers", "quantity": 6, "unit": "pcs" },
+        { "name": "Ground Pork", "quantity": 60, "unit": "g" },
+        { "name": "Cabbage", "quantity": 0.2, "unit": "cup" },
+        { "name": "Garlic", "quantity": 0.05, "unit": "bulb" },
+        { "name": "Soy Sauce", "quantity": 0.02, "unit": "L" }
+      ]
+    },
+    {
+      "name": "Chicken Karaage",
+      "category": "Side Dishes",
+      "price": 149.00,
+      "image": "../assets/ramen1.jpg",
+      "ingredients": [
+        { "name": "Chicken Thigh", "quantity": 150, "unit": "g" },
+        { "name": "Soy Sauce", "quantity": 0.02, "unit": "L" },
+        { "name": "Garlic", "quantity": 0.05, "unit": "bulb" },
+        { "name": "Cornstarch", "quantity": 20, "unit": "g" },
+        { "name": "Oil", "quantity": 0.2, "unit": "L" }
+      ]
+    },
+    {
+      "name": "Beef Rice Bowl",
+      "category": "Rice Bowls",
+      "price": 199.00,
+      "image": "../assets/ricebowl.jpg",
+      "ingredients": [
+        { "name": "Beef Strips", "quantity": 100, "unit": "g" },
+        { "name": "White Rice", "quantity": 1, "unit": "cup" },
+        { "name": "Soy Sauce", "quantity": 0.02, "unit": "L" },
+        { "name": "Onions", "quantity": 0.1, "unit": "kg" },
+        { "name": "Green Onions", "quantity": 0.1, "unit": "bunch" }
+      ]
+    },
+    {
+      "name": "Pork Rice Bowl",
+      "category": "Rice Bowls",
+      "price": 179.00,
+      "image": "../assets/ricebowl2.jpg",
+      "ingredients": [
+        { "name": "Pork Belly", "quantity": 100, "unit": "g" },
+        { "name": "White Rice", "quantity": 1, "unit": "cup" },
+        { "name": "Soy Sauce", "quantity": 0.02, "unit": "L" },
+        { "name": "Onions", "quantity": 0.1, "unit": "kg" },
+        { "name": "Garlic", "quantity": 0.05, "unit": "bulb" }
+      ]
+    }
+  ]
+  
