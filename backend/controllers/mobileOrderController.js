@@ -3,15 +3,45 @@ const MobileOrder = require('../models/mobileOrder');
 // Create a new mobile order
 exports.createMobileOrder = async (req, res) => {
   try {
+    console.log('📦 Received mobile order request:');
+    console.log('📋 Request body:', JSON.stringify(req.body, null, 2));
+    console.log('👤 Authenticated customer:', req.customer);
+    
     const {
       items,
       deliveryMethod,
       deliveryAddress,
       paymentMethod,
-      notes,
-      customerName,
-      customerPhone
+      notes
     } = req.body;
+
+    // Validate required fields
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'Items array is required and cannot be empty' });
+    }
+
+    if (!deliveryMethod) {
+      return res.status(400).json({ message: 'Delivery method is required' });
+    }
+
+    if (!paymentMethod) {
+      return res.status(400).json({ message: 'Payment method is required' });
+    }
+
+    // Validate each item
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (!item.menuItem || !item.menuItem.id || !item.menuItem.name || item.menuItem.price === undefined) {
+        return res.status(400).json({ 
+          message: `Item ${i + 1} is missing required menuItem fields (id, name, price)` 
+        });
+      }
+      if (!item.quantity || item.quantity <= 0) {
+        return res.status(400).json({ 
+          message: `Item ${i + 1} has invalid quantity` 
+        });
+      }
+    }
 
     // Calculate total
     const subtotal = items.reduce((sum, item) => {
@@ -34,14 +64,15 @@ exports.createMobileOrder = async (req, res) => {
       deliveryAddress,
       paymentMethod,
       notes,
-      customerName,
-      customerPhone,
-      invoiceNumber
+      invoiceNumber,
+      customerId: req.customer?._id // Add customer ID reference if available
     });
 
+    console.log('💾 Saving mobile order:', JSON.stringify(mobileOrder, null, 2));
     const savedOrder = await mobileOrder.save();
     res.status(201).json(savedOrder);
   } catch (err) {
+    console.error('❌ Error creating mobile order:', err);
     res.status(400).json({ message: err.message });
   }
 };
@@ -52,6 +83,23 @@ exports.getAllMobileOrders = async (req, res) => {
     const orders = await MobileOrder.find().sort({ createdAt: -1 });
     res.json(orders);
   } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Get customer's own orders
+exports.getCustomerOrders = async (req, res) => {
+  try {
+    console.log('👤 Customer requesting orders:', req.customer._id);
+    
+    const orders = await MobileOrder.find({ 
+      customerId: req.customer._id 
+    }).sort({ createdAt: -1 });
+    
+    console.log(`📦 Found ${orders.length} orders for customer`);
+    res.json(orders);
+  } catch (err) {
+    console.error('❌ Error fetching customer orders:', err);
     res.status(500).json({ message: err.message });
   }
 };

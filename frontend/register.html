@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RamenXpress</title>
+    <title>Register - RamenXpress</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -18,10 +18,10 @@
                     <div class="card-body p-4 p-md-5">
                         <div class="text-center mb-4">
                             <i class="fas fa-utensils fa-3x text-danger mb-3"></i>
-                            <h2 class="fw-bold text-dark">RamenXpress</h2>
-                            <p class="text-muted small">Login to your account</p>
+                            <h2 class="fw-bold text-dark">Register</h2>
+                            <p class="text-muted small">Create your account</p>
                         </div>
-                        <form onsubmit="return handleLogin(event)">
+                        <form onsubmit="return handleRegister(event)">
                             <div class="mb-3">
                                 <label for="username" class="form-label text-dark small">Username</label>
                                 <div class="input-group">
@@ -56,13 +56,14 @@
                                 </div>
                             </div>
                             <div class="alert alert-danger small" id="errorMessage" style="display: none;"></div>
+                            <div class="alert alert-success small" id="successMessage" style="display: none;"></div>
                             <button type="submit" class="btn btn-danger w-100 py-2">
-                                <i class="fas fa-sign-in-alt me-2"></i>Login
+                                <i class="fas fa-user-plus me-2"></i>Register
                             </button>
                         </form>
                         <div class="text-center mt-3">
-                            <span class="text-muted small">Don't have an account?</span>
-                            <a href="register.html" class="text-danger small ms-1">Register here</a>
+                            <span class="text-muted small">Already have an account?</span>
+                            <a href="login.html" class="text-danger small ms-1">Login here</a>
                         </div>
                     </div>
                 </div>
@@ -72,6 +73,6 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
-    <script src="js/login.js"></script>
+    <script src="js/register.js"></script>
 </body>
-</html>
+</html> 

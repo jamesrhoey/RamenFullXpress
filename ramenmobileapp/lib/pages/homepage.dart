@@ -23,11 +23,20 @@ class _HomePageState extends State<HomePage> {
 
   // Local cart state
   int cartItemCount = 0;
+  
+  // Menu state
+  List<MenuItem> _menuItems = [];
+  bool _isLoading = true;
+
+  // Add-ons state
+  List<MenuItem> _addOns = [];
 
   @override
   void initState() {
     super.initState();
     _loadCart();
+    _loadMenuItems();
+    _loadAddOns();
   }
 
   Future<void> _loadCart() async {
@@ -37,16 +46,65 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> _loadMenuItems() async {
+    setState(() {
+      _isLoading = true;
+    });
 
+    try {
+      final items = await _menuService.getMenuItemsByCategory(selectedCategory);
+      setState(() {
+        _menuItems = items;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading menu items: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _searchMenuItems() async {
+    if (searchQuery.isEmpty) {
+      await _loadMenuItems();
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final items = await _menuService.searchMenuItems(searchQuery);
+      setState(() {
+        _menuItems = items.where((item) => 
+          selectedCategory == 'All' || item.category == selectedCategory
+        ).toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error searching menu items: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadAddOns() async {
+    try {
+      final addOns = await _menuService.getMenuItemsByCategory('add-ons');
+      setState(() {
+        _addOns = addOns;
+      });
+    } catch (e) {
+      print('Error loading add-ons: $e');
+    }
+  }
 
   List<MenuItem> get filteredMenuItems {
-    var items = _menuService.getMenuItemsByCategory(selectedCategory);
-    if (searchQuery.isNotEmpty) {
-      items = _menuService.searchMenuItems(searchQuery)
-          .where((item) => selectedCategory == 'All' || item.category == selectedCategory)
-          .toList();
-    }
-    return items;
+    // Exclude add-ons from the main menu list
+    return _menuItems.where((item) => item.category.toLowerCase() != 'add-ons').toList();
   }
 
   Future<void> addToCart(
@@ -203,7 +261,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      ...(item.availableAddOns).map((addOn) {
+                      ..._addOns.map((addOn) {
                         bool isSelected = selectedAddOns.any(
                           (a) => a['name'] == addOn.name,
                         );
@@ -473,6 +531,12 @@ class _HomePageState extends State<HomePage> {
                       setState(() {
                         searchQuery = value;
                       });
+                      // Debounce search
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                        if (mounted) {
+                          _searchMenuItems();
+                        }
+                      });
                     },
                   ),
                   const SizedBox(height: 24),
@@ -503,6 +567,7 @@ class _HomePageState extends State<HomePage> {
                                     setState(() {
                                       selectedCategory = category;
                                     });
+                                    _loadMenuItems();
                                   },
                                   selectedColor: const Color(0xFFD32D43),
                                   checkmarkColor: Colors.white,
@@ -529,7 +594,23 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  GridView.builder(
+                  _isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFFD32D43),
+                          ),
+                        )
+                      : filteredMenuItems.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'No items found',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            )
+                          : GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate:
@@ -549,7 +630,7 @@ class _HomePageState extends State<HomePage> {
                           side: BorderSide(color: Colors.grey[300]!),
                         ),
                         child: InkWell(
-                          splashColor: Color(0x1AD32D43),
+                                    splashColor: const Color(0x1AD32D43),
                           highlightColor: Colors.transparent,
                           onTap: () {
                             _showAddOnsModal(context, item);

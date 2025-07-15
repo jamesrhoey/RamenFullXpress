@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/delivery_address.dart';
+import '../services/api_service.dart';
 
 class AddressPage extends StatefulWidget {
   const AddressPage({super.key});
@@ -9,64 +10,65 @@ class AddressPage extends StatefulWidget {
 }
 
 class _AddressPageState extends State<AddressPage> {
-  // Sample delivery address data
-  final List<DeliveryAddress> _addresses = [
-    DeliveryAddress(
-      id: '1',
-      street: '#123 Marasigan St.',
-      barangay: 'Barangay Poblacion 5',
-      municipality: 'Calaca City',
-      province: 'Batangas',
-      zipCode: '4208',
-      isDefault: true,
-    ),
-    DeliveryAddress(
-      id: '2',
-      street: 'Purok 5',
-      barangay: 'Barangay 9',
-      municipality: 'Balayan',
-      province: 'Batangas',
-      zipCode: '4213',
-      isDefault: false,
-    ),
-    DeliveryAddress(
-      id: '3',
-      street: 'Purok 5',
-      barangay: 'Sinisian',
-      municipality: 'Calaca City',
-      province: 'Batangas',
-      zipCode: '4208',
-      isDefault: false,
-    ),
-    DeliveryAddress(
-      id: '4',
-      street: 'Purok 1',
-      barangay: 'Pooc',
-      municipality: 'Balayan',
-      province: 'Batangas',
-      zipCode: '4213',
-      isDefault: false,
-    ),
-  ];
+  List<DeliveryAddress> _addresses = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAddresses();
+  }
+
+  Future<void> _fetchAddresses() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final api = ApiService();
+      final addresses = await api.getDeliveryAddresses();
+      setState(() {
+        _addresses = addresses;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   Future<void> _addAddress() async {
-    final newAddress = await Navigator.of(context).push<DeliveryAddress>(
+    final newAddress = await Navigator.of(context).push<Map<String, dynamic>>(
       MaterialPageRoute(builder: (context) => const AddAddressPage()),
     );
     if (newAddress != null && context.mounted) {
-      setState(() {
-        // Create a new address with generated ID
-        final addressWithId = DeliveryAddress(
-          id: (_addresses.length + 1).toString(),
-          street: newAddress.street,
-          barangay: newAddress.barangay,
-          municipality: newAddress.municipality,
-          province: newAddress.province,
-          zipCode: newAddress.zipCode,
-          isDefault: newAddress.isDefault,
-        );
-        _addresses.add(addressWithId);
-      });
+      try {
+        final api = ApiService();
+        await api.createDeliveryAddressFromMap(newAddress);
+        await _fetchAddresses(); // Refresh from backend
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Address added successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to add address: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -167,131 +169,135 @@ class _AddressPageState extends State<AddressPage> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
-      body: _addresses.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.visibility_off,
-                    size: 80,
-                    color: Colors.grey[400],
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'No delivery addresses yet',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Add a delivery address to get started',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black54,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: _addresses.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final address = _addresses[index];
-                return Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: InkWell(
-                    onTap: () => _setDefaultAddress(address),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(child: Text(_errorMessage!, style: TextStyle(color: Colors.red)))
+              : _addresses.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.location_on,
-                            color: Colors.red,
-                            size: 32,
+                            Icons.visibility_off,
+                            size: 80,
+                            color: Colors.grey[400],
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    if (address.isDefault)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color.fromARGB(255, 255, 235, 235),
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: const Text(
-                                          'Default',
-                                          style: TextStyle(
-                                            color: Colors.red,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    const SizedBox(width: 8),
-                                    const Text(
-                                      'Home',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                        color: Colors.red,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  address.fullAddress,
-                                  style: const TextStyle(fontSize: 15),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Tap to set as default',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                              ],
+                          const SizedBox(height: 24),
+                          const Text(
+                            'No delivery addresses yet',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black87,
                             ),
                           ),
-                          Column(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.grey),
-                                onPressed: () => _editAddress(address),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.grey),
-                                onPressed: () => _deleteAddress(address),
-                              ),
-                            ],
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Add a delivery address to get started',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black54,
+                            ),
                           ),
                         ],
                       ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _addresses.length,
+                      separatorBuilder: (context, index) => const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        final address = _addresses[index];
+                        return Card(
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          child: InkWell(
+                            onTap: () => _setDefaultAddress(address),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.location_on,
+                                    color: Colors.red,
+                                    size: 32,
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            if (address.isDefault)
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                  vertical: 4,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: const Color.fromARGB(255, 255, 235, 235),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: const Text(
+                                                  'Default',
+                                                  style: TextStyle(
+                                                    color: Colors.red,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            const SizedBox(width: 8),
+                                            const Text(
+                                              'Home',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                                color: Colors.red,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          address.fullAddress,
+                                          style: const TextStyle(fontSize: 15),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Tap to set as default',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Column(
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit, color: Colors.grey),
+                                        onPressed: () => _editAddress(address),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete, color: Colors.grey),
+                                        onPressed: () => _deleteAddress(address),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                );
-              },
-            ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addAddress,
         backgroundColor: Colors.red,
@@ -313,16 +319,12 @@ class AddAddressPage extends StatefulWidget {
 
 class _AddAddressPageState extends State<AddAddressPage> {
   final _formKey = GlobalKey<FormState>();
-  final fullNameController = TextEditingController();
-  final mobileController = TextEditingController();
   final houseStreetController = TextEditingController();
   final barangayController = TextEditingController();
   final cityController = TextEditingController();
   final provinceController = TextEditingController();
   final zipController = TextEditingController();
-  final instructionsController = TextEditingController();
-  String label = 'Home';
-  bool saveForFuture = true;
+  bool isDefault = false;
 
   @override
   Widget build(BuildContext context) {
@@ -341,75 +343,6 @@ class _AddAddressPageState extends State<AddAddressPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Address Label / Type', style: TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    ChoiceChip(
-                      label: const Text('Home'),
-                      selected: label == 'Home',
-                      onSelected: (selected) => setState(() => label = 'Home'),
-                      selectedColor: Colors.red.shade100,
-                      labelStyle: TextStyle(color: label == 'Home' ? Colors.red : Colors.black),
-                    ),
-                    const SizedBox(width: 8),
-                    ChoiceChip(
-                      label: const Text('Work'),
-                      selected: label == 'Work',
-                      onSelected: (selected) => setState(() => label = 'Work'),
-                      selectedColor: Colors.red.shade100,
-                      labelStyle: TextStyle(color: label == 'Work' ? Colors.red : Colors.black),
-                    ),
-                    const SizedBox(width: 8),
-                    ChoiceChip(
-                      label: const Text('Other'),
-                      selected: label == 'Other',
-                      onSelected: (selected) => setState(() => label = 'Other'),
-                      selectedColor: Colors.red.shade100,
-                      labelStyle: TextStyle(color: label == 'Other' ? Colors.red : Colors.black),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // Full Name
-                TextFormField(
-                  controller: fullNameController,
-                  decoration: InputDecoration(
-                    labelText: 'Full Name',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Full Name is required';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 14),
-
-                // Mobile Number
-                TextFormField(
-                  controller: mobileController,
-                  decoration: InputDecoration(
-                    labelText: 'Mobile Number',
-                    hintText: 'For contact in case of issues or confirmation',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                  ),
-                  keyboardType: TextInputType.phone,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Mobile Number is required';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 14),
-
                 // House/Building Number & Street Name
                 TextFormField(
                   controller: houseStreetController,
@@ -506,27 +439,14 @@ class _AddAddressPageState extends State<AddAddressPage> {
                 ),
                 const SizedBox(height: 14),
 
-                // Delivery Instructions (Optional)
-                TextFormField(
-                  controller: instructionsController,
-                  decoration: InputDecoration(
-                    labelText: 'Delivery Instructions (Optional)',
-                    hintText: 'e.g., 3rd floor, blue gate, ring the bell twice',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                  ),
-                ),
-                const SizedBox(height: 12),
-
                 Row(
                   children: [
-                    Switch(
-                      value: saveForFuture,
-                      onChanged: (val) => setState(() => saveForFuture = val),
+                    Checkbox(
+                      value: isDefault,
+                      onChanged: (val) => setState(() => isDefault = val ?? false),
                       activeColor: Colors.red,
                     ),
-                    const Text('Enable auto-save'),
+                    const Text('Set as default address'),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -541,16 +461,15 @@ class _AddAddressPageState extends State<AddAddressPage> {
                     ),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        final newAddress = DeliveryAddress(
-                          id: '', // Will be set by parent
-                          street: houseStreetController.text.trim(),
-                          barangay: barangayController.text.trim(),
-                          municipality: cityController.text.trim(),
-                          province: provinceController.text.trim(),
-                          zipCode: zipController.text.trim(),
-                          isDefault: false,
-                        );
-                        Navigator.of(context).pop(newAddress);
+                        final addressData = {
+                          'street': houseStreetController.text.trim(),
+                          'barangay': barangayController.text.trim(),
+                          'municipality': cityController.text.trim(),
+                          'province': provinceController.text.trim(),
+                          'zipCode': zipController.text.trim(),
+                          'isDefault': isDefault,
+                        };
+                        Navigator.of(context).pop(addressData);
                       }
                     },
                     child: const Text('Save', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),

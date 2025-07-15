@@ -11,8 +11,11 @@ import 'pages/paymentmethod_page.dart';
 import 'pages/address_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/edit_payment_method_page.dart';
+import 'services/api_service.dart';
 
 void main() {
+  // Initialize API service
+  ApiService().initialize();
   runApp(const MyApp());
 }
 

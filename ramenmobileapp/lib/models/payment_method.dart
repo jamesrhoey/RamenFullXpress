@@ -55,10 +55,11 @@ class PaymentMethod {
     return PaymentMethod(
       id: json['id'],
       type: PaymentType.values.firstWhere(
-        (e) => e.toString() == json['type'],
+        (e) => e.name.toLowerCase() == (json['type']?.toString().toLowerCase() ?? ''),
+        orElse: () => PaymentType.gcash,
       ),
       title: json['title'],
-      accountNumber: json['accountNumber'],
+      accountNumber: json['accountNumber'] ?? json['mobileNumber'] ?? '',
       isDefault: json['isDefault'] ?? false,
     );
   }

@@ -14,4 +14,9 @@ router.get('/profile', customerController.getProfile);
 router.put('/profile', customerController.updateProfile);
 router.put('/change-password', customerController.changePassword);
 
+// Customer mobile orders (customer can only see their own orders)
+router.get('/my-orders', customerController.getMyOrders);
+router.post('/my-orders', customerController.createMyOrder);
+router.get('/my-orders/:id', customerController.getMyOrderById);
+
 module.exports = router; 
