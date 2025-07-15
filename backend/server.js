@@ -17,7 +17,6 @@ const paymentMethodRoutes = require('./routes/paymentMethodRoutes');
 const deliveryAddressRoutes = require('./routes/deliveryAddressRoutes');
 
 
-
 const app = express();
 
 // CORS configuration
