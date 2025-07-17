@@ -90,71 +90,7 @@
 
             <div class="menu-items-container">
               <div class="row g-2 g-sm-3 mt-2" id="menuItemsGrid">
-                <!-- Sample Menu Items with consistent card sizes -->
-                <div class="col-6 col-sm-4 col-md-3">
-                  <div class="card menu-item" data-bs-toggle="modal" data-bs-target="#productModal" data-name="Tonkotsu Ramen" data-price="249.00" data-category="Ramen" data-image="https://via.placeholder.com/300x200?text=Tonkotsu+Ramen">
-                    <img src="../assets/ramen1.jpg" class="card-img-top" alt="Tonkotsu Ramen">
-                    <div class="card-body p-2">
-                      <h6 class="card-title mb-1">Tonkotsu Ramen</h6>
-                      <p class="card-text text-danger mb-0">₱249.00</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-6 col-sm-4 col-md-3">
-                  <div class="card menu-item" data-bs-toggle="modal" data-bs-target="#productModal" data-name="Shoyu Ramen" data-price="229.00" data-category="Ramen" data-image="https://via.placeholder.com/300x200?text=Shoyu+Ramen">
-                    <img src="../assets/ramen2.jpg" class="card-img-top" alt="Shoyu Ramen">
-                    <div class="card-body p-2">
-                      <h6 class="card-title mb-1">Shoyu Ramen</h6>
-                      <p class="card-text text-danger mb-0">₱229.00</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-6 col-sm-4 col-md-3">
-                  <div class="card menu-item" data-bs-toggle="modal" data-bs-target="#productModal" data-name="Miso Ramen" data-price="239.00" data-category="Ramen" data-image="https://via.placeholder.com/300x200?text=Miso+Ramen">
-                    <img src="../assets/ramen3.jpg" class="card-img-top" alt="Miso Ramen">
-                    <div class="card-body p-2">
-                      <h6 class="card-title mb-1">Miso Ramen</h6>
-                      <p class="card-text text-danger mb-0">₱239.00</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-6 col-sm-4 col-md-3">
-                  <div class="card menu-item" data-bs-toggle="modal" data-bs-target="#productModal" data-name="Gyoza (6 pcs)" data-price="129.00" data-category="Side Dishes" data-image="https://via.placeholder.com/300x200?text=Gyoza">
-                    <img src="../assets/ramen4.jpg" class="card-img-top" alt="Gyoza">
-                    <div class="card-body p-2">
-                      <h6 class="card-title mb-1">Gyoza (6 pcs)</h6>
-                      <p class="card-text text-danger mb-0">₱129.00</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-6 col-sm-4 col-md-3">
-                  <div class="card menu-item" data-bs-toggle="modal" data-bs-target="#productModal" data-name="Chicken Karaage" data-price="149.00" data-category="Side Dishes" data-image="https://via.placeholder.com/300x200?text=Chicken+Karaage">
-                    <img src="../assets/ramen1.jpg" class="card-img-top" alt="Chicken Karaage">
-                    <div class="card-body p-2">
-                      <h6 class="card-title mb-1">Chicken Karaage</h6>
-                      <p class="card-text text-danger mb-0">₱149.00</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-6 col-sm-4 col-md-3">
-                  <div class="card menu-item" data-bs-toggle="modal" data-bs-target="#productModal" data-name="Beef Rice Bowl" data-price="199.00" data-category="Rice Bowls" data-image="https://via.placeholder.com/300x200?text=Beef+Rice+Bowl">
-                    <img src="../assets//ricebowl.jpg" class="card-img-top" alt="Beef Rice Bowl">
-                    <div class="card-body p-2">
-                      <h6 class="card-title mb-1">Beef Rice Bowl</h6>
-                      <p class="card-text text-danger mb-0">₱199.00</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-6 col-sm-4 col-md-3">
-                  <div class="card menu-item" data-bs-toggle="modal" data-bs-target="#productModal" data-name="Pork Rice Bowl" data-price="179.00" data-category="Rice Bowls" data-image="https://via.placeholder.com/300x200?text=Pork+Rice+Bowl">
-                    <img src="../assets/ricebowl2.jpg" class="card-img-top" alt="Pork Rice Bowl">
-                    <div class="card-body p-2">
-                      <h6 class="card-title mb-1">Pork Rice Bowl</h6>
-                      <p class="card-text text-danger mb-0">₱179.00</p>
-                    </div>
-                  </div>
-                </div>
-                
+                <!-- Dynamic menu items will be rendered here by JS -->
               </div>
             </div>
           </div>
@@ -168,72 +104,7 @@
               </div>
               <div class="card-body d-flex flex-column">
                 <div class="flex-grow-1 overflow-auto" id="cartItems">
-
-                  <!-- Example Item 1 -->
-                  <div class="border rounded p-2 mb-2">
-                    <div class="d-flex justify-content-between">
-                      <div class="d-flex flex-column justify-content-between">
-                        <strong class="mb-1">Tonkotsu Ramen</strong>
-                        <div class="d-flex align-items-center">
-                          <button class="btn btn-sm btn-outline-danger me-1 px-2 py-1">
-                            <i class="fas fa-minus" style="font-size: 0.7rem;"></i>
-                          </button>
-                          <span class="mx-1">1</span>
-                          <button class="btn btn-sm btn-outline-danger ms-1 px-2 py-1">
-                            <i class="fas fa-plus" style="font-size: 0.7rem;"></i>
-                          </button>
-                        </div>
-                      </div>
-                      <div class="text-end d-flex flex-column justify-content-between align-items-end">
-                        <span class="text-danger">₱249.00</span>
-                        <a href="#" class="text-danger small"><i class="fas fa-trash-alt"></i></a>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Example Item 2 -->
-                  <div class="border rounded p-2 mb-2">
-                    <div class="d-flex justify-content-between">
-                      <div class="d-flex flex-column justify-content-between">
-                        <strong class="mb-1">Gyoza (6 pcs)</strong>
-                        <div class="d-flex align-items-center">
-                          <button class="btn btn-sm btn-outline-danger me-1 px-2 py-1">
-                            <i class="fas fa-minus" style="font-size: 0.7rem;"></i>
-                          </button>
-                          <span class="mx-1">2</span>
-                          <button class="btn btn-sm btn-outline-danger ms-1 px-2 py-1">
-                            <i class="fas fa-plus" style="font-size: 0.7rem;"></i>
-                          </button>
-                        </div>
-                      </div>
-                      <div class="text-end d-flex flex-column justify-content-between align-items-end">
-                        <span class="text-danger">₱258.00</span>
-                        <a href="#" class="text-danger small"><i class="fas fa-trash-alt"></i></a>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Example Item 3 -->
-                  <div class="border rounded p-2 mb-2">
-                    <div class="d-flex justify-content-between">
-                      <div class="d-flex flex-column justify-content-between">
-                        <strong class="mb-1">Matcha Milk Tea</strong>
-                        <div class="d-flex align-items-center">
-                          <button class="btn btn-sm btn-outline-danger me-1 px-2 py-1">
-                            <i class="fas fa-minus" style="font-size: 0.7rem;"></i>
-                          </button>
-                          <span class="mx-1">1</span>
-                          <button class="btn btn-sm btn-outline-danger ms-1 px-2 py-1">
-                            <i class="fas fa-plus" style="font-size: 0.7rem;"></i>
-                          </button>
-                        </div>
-                      </div>
-                      <div class="text-end d-flex flex-column justify-content-between align-items-end">
-                        <span class="text-danger">₱99.00</span>
-                        <a href="#" class="text-danger small"><i class="fas fa-trash-alt"></i></a>
-                      </div>
-                    </div>
-                  </div>
+                  <!-- Cart items will be rendered here by JS -->
                 </div>
 
                 <!-- Order Type -->

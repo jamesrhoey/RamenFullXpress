@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const { default: mongoose } = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 
 const port = process.env.PORT;
 const Mongoose_URI = process.env.MONGO_URI;
@@ -46,6 +47,7 @@ app.use(mapper + 'mobile-orders', mobileOrderRoutes);
 app.use(mapper + 'customers', customerRoutes);
 app.use(mapper + 'payment-methods', paymentMethodRoutes);
 app.use(mapper + 'delivery-addresses', deliveryAddressRoutes);
+app.use('/uploads/menus', express.static(path.join(__dirname, 'uploads/menus')));
 
 mongoose.connect(Mongoose_URI)
   .then(() => console.log('MongoDB Connected'))
