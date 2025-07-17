@@ -22,10 +22,9 @@ const app = express();
 
 // CORS configuration
 app.use(cors({
-  origin: true, // Allow all origins (all ports)
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: ['http://127.0.0.1:5501', 'http://localhost:5501'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
