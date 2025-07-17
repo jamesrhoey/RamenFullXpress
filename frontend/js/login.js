@@ -22,9 +22,11 @@ async function handleLogin(event) {
         });
         const data = await response.json();
         if (response.ok) {
-            // Save token and user info to localStorage (or sessionStorage)
-            localStorage.setItem('token', data.token);
+            // Add the token to the user object
+            data.user.token = data.token;
             localStorage.setItem('user', JSON.stringify(data.user));
+            // Optionally, you can still save it separately if you want
+            localStorage.setItem('token', data.token);
             // Redirect based on role
             if (data.user.role === 'admin') {
                 window.location.href = 'html/dashboard.html';
