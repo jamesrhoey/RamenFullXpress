@@ -11,6 +11,13 @@
 
 </head>
 <body class="bg-light">
+  <script>
+    // Role-based access control for admin pages
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user.role || user.role !== 'admin') {
+      window.location.href = 'pos.html';
+    }
+  </script>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-danger sticky-top ">
     <div class="container-fluid">

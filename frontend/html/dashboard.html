@@ -158,6 +158,13 @@
 <!-- Your Chart JS -->
 <script src="../js/dashboard-charts.js"></script>
 <script>
+  // Role-based access control for admin pages
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (!user.role || user.role !== 'admin') {
+    window.location.href = 'pos.html';
+  }
+</script>
+<script>
   // Sidebar toggle for mobile
   const sidebarToggle = document.getElementById('sidebarToggle');
   const sidebarMenu = document.getElementById('sidebarMenu');

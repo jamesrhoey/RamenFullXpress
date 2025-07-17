@@ -1,3 +1,7 @@
+// Remove the 'var user' declaration and use the global 'user' variable from the HTML script
+if (!user.role || user.role !== 'admin') {
+  window.location.href = 'pos.html';
+}
 // Fetch inventory from backend and render in table
 const API_URL = 'http://localhost:3000/api/v1/inventory/all';
 const CREATE_URL = 'http://localhost:3000/api/v1/inventory/create';
