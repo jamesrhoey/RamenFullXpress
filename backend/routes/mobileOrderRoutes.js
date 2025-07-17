@@ -5,7 +5,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 const { customerAuthMiddleware } = require('../middleware/customerAuthMiddleware');
 
 // Allow only customers to create a mobile order
-router.post('/', customerAuthMiddleware, mobileOrderController.createMobileOrder);
+router.post('/add', customerAuthMiddleware, mobileOrderController.createMobileOrder);
 
 // Customer-specific route to get their own orders
 router.get('/my-orders', customerAuthMiddleware, mobileOrderController.getCustomerOrders);
