@@ -129,7 +129,7 @@
                     <td><span class="badge bg-success">Paid</span></td>
                     <td><span class="badge bg-warning text-dark">Processing</span></td>
                     <td>
-                      <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetails('ORD1001', 'Kyla Marie Cabungcal', '2025-07-10 8:23 AM', 'Processing', 'Paid', '+63 912 345 6789', '123 Main Street, Quezon City', 350, 50, 400)">View</button>
+                      <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetails('ORD1001')">View</button>
                       <button class="btn btn-sm btn-outline-success" onclick="updateOrderStatus()">Update</button>
                     </td>
                   </tr>
@@ -141,7 +141,7 @@
                     <td><span class="badge bg-warning text-dark">Pending</span></td>
                     <td><span class="badge bg-secondary">Pending</span></td>
                     <td>
-                      <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetails('ORD1002', 'James Rhoey De Castro', '2025-07-11 09:15 AM', 'Pending', 'Pending', '+63 923 456 7890', '456 Oak Avenue, Makati City', 210, 50, 260)">View</button>
+                      <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetails('ORD1002')">View</button>
                       <button class="btn btn-sm btn-outline-success" onclick="updateOrderStatus()">Update</button>
                     </td>
                   </tr>
@@ -153,7 +153,7 @@
                     <td><span class="badge bg-success">Paid</span></td>
                     <td><span class="badge bg-success">Delivered</span></td>
                     <td>
-                      <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetails('ORD1003', 'Bryan Thirdy Ornales', '2025-07-10 2:40 PM', 'Delivered', 'Paid', '+63 934 567 8901', '789 Pine Street, Manila', 580, 50, 630)">View</button>
+                      <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetails('ORD1003')">View</button>
                       <button class="btn btn-sm btn-outline-success" onclick="updateOrderStatus()">Update</button>
                     </td>
                   </tr>
@@ -165,7 +165,7 @@
                     <td><span class="badge bg-danger">Failed</span></td>
                     <td><span class="badge bg-secondary">Pending</span></td>
                     <td>
-                      <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetails('ORD1004', 'Maybel Pesigan', '2025-07-12 11:30 AM', 'Pending', 'Failed', '+63 945 678 9012', '321 Elm Street, Pasig City', 420, 50, 470)">View</button>
+                      <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetails('ORD1004')">View</button>
                       <button class="btn btn-sm btn-outline-success" onclick="updateOrderStatus()">Update</button>
                     </td>
                   </tr>
@@ -177,7 +177,7 @@
                     <td><span class="badge bg-success">Paid</span></td>
                     <td><span class="badge bg-warning text-dark">Processing</span></td>
                     <td>
-                      <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetails('ORD1005', 'Carla Ramos', '2025-07-13 08:05 AM', 'Processing', 'Paid', '+63 956 789 0123', '654 Maple Drive, Taguig City', 300, 50, 350)">View</button>
+                      <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetails('ORD1005')">View</button>
                       <button class="btn btn-sm btn-outline-success" onclick="updateOrderStatus()">Update</button>
                     </td>
                 </tbody>
@@ -224,14 +224,14 @@
             <div class="row align-items-center">
               <div class="col-md-6">
                 <div class="d-flex align-items-center mb-2">
-                  <h5 class="mb-0 me-3" id="modalOrderId">#ORD1001</h5>
-                  <span class="badge bg-warning text-dark" id="modalOrderStatus">Processing</span>
+                  <h5 class="mb-0 me-3" id="modalOrderId"></h5>
+                  <span class="badge bg-warning text-dark" id="modalOrderStatus"></span>
                 </div>
                 <p class="text-muted mb-0" id="modalOrderDate">2025-07-10 8:23 AM</p>
               </div>
               <div class="col-md-6 text-md-end">
                 <div class="payment-status mb-2">
-                  <span class="badge bg-success" id="modalPaymentStatus">Paid</span>
+                  <span class="badge bg-success" id="modalPaymentStatus"></span>
                 </div>
                 <p class="text-muted mb-0">Payment Status</p>
               </div>
@@ -251,19 +251,19 @@
                   <div class="col-md-6">
                     <div class="info-card">
                       <div class="info-label">Customer Name</div>
-                      <div class="info-value" id="modalCustomerName">Kyla Marie Cabungcal</div>
+                      <div class="info-value" id="modalCustomerName"></div>
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="info-card">
                       <div class="info-label">Phone Number</div>
-                      <div class="info-value" id="modalCustomerPhone">+63 912 345 6789</div>
+                      <div class="info-value" id="modalCustomerPhone"></div>
                     </div>
                   </div>
                   <div class="col-12">
                     <div class="info-card">
                       <div class="info-label">Delivery Address</div>
-                      <div class="info-value" id="modalCustomerAddress">123 Main Street, Quezon City</div>
+                      <div class="info-value" id="modalCustomerAddress"></div>
                     </div>
                   </div>
                 </div>
@@ -286,42 +286,7 @@
                       </tr>
                     </thead>
                     <tbody id="modalOrderItems">
-                      <tr>
-                        <td>
-                          <div class="d-flex align-items-center">
-                            <div class="item-image me-3">
-                              <img src="../assets/ramen1.jpg" alt="Tonkotsu Ramen" class="menu-item-img">
-                            </div>
-                            <div>
-                              <div class="fw-semibold">Tonkotsu Ramen</div>
-                              <small class="text-muted">Signature pork broth ramen</small>
-                            </div>
-                          </div>
-                        </td>
-                        <td class="text-center">
-                          <span class="badge bg-light text-dark">1</span>
-                        </td>
-                        <td class="text-end">₱250.00</td>
-                        <td class="text-end fw-semibold">₱250.00</td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <div class="d-flex align-items-center">
-                            <div class="item-image me-3">
-                              <img src="../assets/side1.jpg" alt="Gyoza" class="menu-item-img">
-                            </div>
-                            <div>
-                              <div class="fw-semibold">Gyoza (6 pcs)</div>
-                              <small class="text-muted">Pan-fried dumplings</small>
-                            </div>
-                          </div>
-                        </td>
-                        <td class="text-center">
-                          <span class="badge bg-light text-dark">1</span>
-                        </td>
-                        <td class="text-end">₱100.00</td>
-                        <td class="text-end fw-semibold">₱100.00</td>
-                      </tr>
+                      <!-- Order items will be injected here -->
                     </tbody>
                   </table>
                 </div>
@@ -338,14 +303,9 @@
                 
                 <div class="summary-card">
                   <div class="summary-row">
-                    <span>Subtotal</span>
-                    <span id="modalSubtotal">₱350.00</span>
-                  </div>
-                  <div class="summary-row">
                     <span>Delivery Fee</span>
                     <span id="modalDeliveryFee">₱50.00</span>
                   </div>
-
                   <hr class="my-3">
                   <div class="summary-row total">
                     <span>Total Amount</span>
@@ -361,6 +321,60 @@
         <div class="modal-footer bg-light">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
             <i class="fas fa-times me-2"></i>Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Update Order Status Modal -->
+  <div class="modal fade" id="updateOrderStatusModal" tabindex="-1" aria-labelledby="updateOrderStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-edit me-2"></i>
+            <h5 class="modal-title mb-0" id="updateOrderStatusModalLabel">Update Order Status</h5>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-4">
+            <div class="d-flex align-items-center mb-3">
+              <i class="fas fa-info-circle text-danger me-2"></i>
+              <h6 class="mb-0 fw-bold">Current Status</h6>
+            </div>
+            <div class="current-status-card p-3 bg-light rounded">
+              <span class="badge" id="updateModalCurrentStatus">Pending</span>
+            </div>
+          </div>
+          <div class="mb-4">
+            <div class="d-flex align-items-center mb-3">
+              <i class="fas fa-arrow-right text-danger me-2"></i>
+              <h6 class="mb-0 fw-bold">New Status</h6>
+            </div>
+            <select class="form-select" id="updateModalNewStatus">
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="ready">Ready for Delivery</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <div class="d-flex align-items-center mb-3">
+              <i class="fas fa-sticky-note text-danger me-2"></i>
+              <h6 class="mb-0 fw-bold">Notes (Optional)</h6>
+            </div>
+            <textarea class="form-control" id="updateModalNotes" rows="3" placeholder="Add any notes about the status change..." style="resize: none;"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancel
+          </button>
+          <button type="button" class="btn btn-success" id="updateModalConfirmBtn">
+            <i class="fas fa-save me-2"></i>Update Status
           </button>
         </div>
       </div>
