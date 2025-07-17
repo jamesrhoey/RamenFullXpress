@@ -80,7 +80,7 @@ exports.createMobileOrder = async (req, res) => {
 // Get all mobile orders
 exports.getAllMobileOrders = async (req, res) => {
   try {
-    const orders = await MobileOrder.find().sort({ createdAt: -1 });
+    const orders = await MobileOrder.find().populate('customerId');
     res.json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });
