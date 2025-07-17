@@ -115,6 +115,25 @@ exports.updateMobileOrder = async (req, res) => {
   }
 };
 
+// Update order status
+exports.updateOrderStatus = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body; // use 'status' as the field
+    const updatedOrder = await MobileOrder.findByIdAndUpdate(
+      orderId,
+      { status }, // update the 'status' field
+      { new: true }
+    ).populate('customerId', 'firstName lastName name fullName phone');
+    if (!updatedOrder) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    res.json(updatedOrder);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // Get mobile order by ID
 exports.getMobileOrderById = async (req, res) => {
   try {

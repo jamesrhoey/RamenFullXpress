@@ -8,6 +8,8 @@ let loadedOrders = [];
 document.addEventListener("DOMContentLoaded", function () {
     loadMobileOrders();
     // initializeFilters(); // Uncomment if you have filter logic
+    window.addEventListener('focus', loadMobileOrders);
+    setInterval(loadMobileOrders, 5000); // every 5 seconds
 });
 
 // Load mobile orders from backend
@@ -48,7 +50,7 @@ function displayOrders(orders) {
 
     orders.forEach(order => {
         const orderDate = new Date(order.createdAt).toLocaleString();
-        const statusBadge = getStatusBadge(order.status);
+        const statusBadge = getStatusBadge(order.status); // ensure this is order.status
         // Infer payment status if missing
         let paymentStatus = order.paymentStatus;
         if (!paymentStatus) {
@@ -60,27 +62,18 @@ function displayOrders(orders) {
         }
         const paymentBadge = getPaymentBadge(paymentStatus);
         const row = document.createElement("tr");
-        // Try to get customer name from customerName, or from populated customerId
-        let customerName = order.customerName;
-        if (!customerName && order.customerId) {
-            if (order.customerId.fullName) {
-                customerName = order.customerId.fullName;
-            } else if (order.customerId.name) {
-                customerName = order.customerId.name;
-            } else if (order.customerId.firstName || order.customerId.lastName) {
-                customerName = `${order.customerId.firstName || ''} ${order.customerId.lastName || ''}`.trim();
-            }
-        }
+        const customerName = getCustomerDisplayName(order);
+        const isUpdateDisabled = order.status === 'delivered' || order.status === 'cancelled';
         row.innerHTML = `
             <td>#${order.orderId || order._id}</td>
-            <td>${customerName || "N/A"}</td>
+            <td>${customerName}</td>
             <td>${orderDate}</td>
             <td>₱${order.total ? order.total.toFixed(2) : "0.00"}</td>
             <td>${paymentBadge}</td>
             <td>${statusBadge}</td>
             <td>
                 <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetails('${order._id}')">View</button>
-                <button class="btn btn-sm btn-outline-success" onclick="updateOrderStatus('${order._id}')">Update</button>
+                <button class="btn btn-sm btn-outline-success" onclick="updateOrderStatus('${order._id}')" ${isUpdateDisabled ? 'disabled' : ''}>Update</button>
             </td>
         `;
         tbody.appendChild(row);
@@ -91,6 +84,7 @@ function displayOrders(orders) {
 function getStatusBadge(status) {
     const map = {
         pending: '<span class="badge bg-secondary">Pending</span>',
+        processing: '<span class="badge bg-warning text-dark">Processing</span>',
         preparing: '<span class="badge bg-warning text-dark">Preparing</span>',
         ready: '<span class="badge bg-info">Ready</span>',
         delivered: '<span class="badge bg-success">Delivered</span>',
@@ -109,6 +103,19 @@ function getPaymentBadge(status) {
     return map[status] || map["pending"];
 }
 
+function getCustomerDisplayName(order) {
+    // Try all possible fields for customer name
+    if (order.customerName && order.customerName.trim()) return order.customerName;
+    if (order.customerId) {
+        if (order.customerId.fullName && order.customerId.fullName.trim()) return order.customerId.fullName;
+        if (order.customerId.name && order.customerId.name.trim()) return order.customerId.name;
+        if ((order.customerId.firstName && order.customerId.firstName.trim()) || (order.customerId.lastName && order.customerId.lastName.trim())) {
+            return `${order.customerId.firstName || ''} ${order.customerId.lastName || ''}`.trim();
+        }
+    }
+    return 'N/A';
+}
+
 // Show notification
 function showNotification(message, type = "info") {
     const alertClass = type === "error" ? "alert-danger" : type === "success" ? "alert-success" : "alert-info";
@@ -125,15 +132,78 @@ function showNotification(message, type = "info") {
     }, 5000);
 }
 
-window.viewOrderDetails = function(orderId) {
+// Add a function to show a centered Bootstrap modal for success
+function showSuccessModal(message, status) {
+    // Remove any existing modal
+    const existing = document.getElementById('successUpdateModal');
+    if (existing) existing.remove();
+    // Determine color based on status
+    let color = 'success';
+    let iconColor = 'success';
+    switch ((status || '').toLowerCase()) {
+        case 'processing':
+        case 'preparing':
+            color = 'warning';
+            iconColor = 'warning text-dark';
+            break;
+        case 'ready':
+            color = 'info';
+            iconColor = 'info';
+            break;
+        case 'delivered':
+            color = 'success';
+            iconColor = 'success';
+            break;
+        case 'cancelled':
+            color = 'danger';
+            iconColor = 'danger';
+            break;
+        case 'pending':
+            color = 'secondary';
+            iconColor = 'secondary';
+            break;
+        default:
+            color = 'success';
+            iconColor = 'success';
+    }
+    // Create modal HTML
+    const modalHtml = `
+    <div class="modal fade" id="successUpdateModal" tabindex="-1" aria-labelledby="successUpdateModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-${color} text-white">
+            <h5 class="modal-title" id="successUpdateModalLabel">Success</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center">
+            <i class="fas fa-check-circle fa-3x mb-3 text-${iconColor}"></i>
+            <div class="fw-bold fs-5 mb-2">${message}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modal = new bootstrap.Modal(document.getElementById('successUpdateModal'));
+    modal.show();
+    // Auto-hide after 2 seconds
+    setTimeout(() => {
+        modal.hide();
+    }, 2000);
+}
+
+window.viewOrderDetails = async function(orderId) {
+    await loadMobileOrders();
     const order = loadedOrders.find(o => o._id === orderId);
     if (!order) {
         showNotification("Order not found.", "error");
         return;
     }
     // Customer info
-    let customerName = order.customerName;
+    let customerName = getCustomerDisplayName(order);
     let customerPhone = "";
+    if (order.customerId && order.customerId.phone) {
+        customerPhone = order.customerId.phone;
+    }
     let customerAddress = order.deliveryAddress || "";
     if (!customerName && order.customerId) {
         if (order.customerId.fullName) {
@@ -148,7 +218,7 @@ window.viewOrderDetails = function(orderId) {
     }
     document.getElementById('modalOrderId').textContent = `#${order.orderId || order._id}`;
     document.getElementById('modalOrderDate').textContent = new Date(order.createdAt).toLocaleString();
-    document.getElementById('modalCustomerName').textContent = customerName || "N/A";
+    document.getElementById('modalCustomerName').textContent = customerName;
     document.getElementById('modalCustomerPhone').textContent = customerPhone;
     document.getElementById('modalCustomerAddress').textContent = customerAddress || "N/A";
     // Status badges
@@ -177,6 +247,7 @@ window.viewOrderDetails = function(orderId) {
         default:
             orderStatusElement.classList.add('bg-secondary');
     }
+    orderStatusElement.textContent = order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : "N/A";
     // Infer payment status if missing
     let paymentStatus = order.paymentStatus;
     if (!paymentStatus) {
@@ -199,7 +270,6 @@ window.viewOrderDetails = function(orderId) {
         default:
             paymentStatusElement.classList.add('bg-secondary');
     }
-    orderStatusElement.textContent = order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : "N/A";
     paymentStatusElement.textContent = paymentStatus ? paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1) : "N/A";
     // Order items
     const tbody = document.getElementById('modalOrderItems');
@@ -231,7 +301,7 @@ window.viewOrderDetails = function(orderId) {
                             <img src="../assets/${image}" alt="${name}" class="menu-item-img">
                         </div>
                         <div>
-                            <div class="fw-semibold">${name}</div>
+                            <div class="fw-semibold">${name}</div>  
                             ${addOnsHtml}
                         </div>
                     </div>
@@ -266,6 +336,16 @@ window.viewOrderDetails = function(orderId) {
     }
     computedTotal += order.deliveryFee ? order.deliveryFee : 0;
     document.getElementById('modalTotal').textContent = `₱${computedTotal.toFixed(2)}`;
+    // Add contact number to summary section
+    const summarySection = document.querySelector('.summary-section');
+    if (summarySection && !document.getElementById('modalContactNumberSummary')) {
+        const contactRow = document.createElement('div');
+        contactRow.className = 'summary-row';
+        contactRow.innerHTML = `<span>Contact Number</span><span id="modalContactNumberSummary">${customerPhone || 'N/A'}</span>`;
+        summarySection.insertBefore(contactRow, summarySection.firstChild);
+    } else if (summarySection) {
+        document.getElementById('modalContactNumberSummary').textContent = customerPhone || 'N/A';
+    }
     // Show the modal
     const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
     modal.show();
@@ -282,6 +362,8 @@ window.updateOrderStatus = function(orderId) {
     currentStatusSpan.className = 'badge';
     switch(order.status) {
         case 'processing':
+            currentStatusSpan.classList.add('bg-warning', 'text-dark');
+            break;
         case 'preparing':
             currentStatusSpan.classList.add('bg-warning', 'text-dark');
             break;
@@ -305,7 +387,7 @@ window.updateOrderStatus = function(orderId) {
     const statusSelect = document.getElementById('updateModalNewStatus');
     statusSelect.value = order.status || 'pending';
     // Clear notes
-    document.getElementById('updateModalNotes').value = '';
+    // document.getElementById('updateModalNotes').value = ''; // This line is removed as per the edit hint
     // Store orderId for confirm
     statusSelect.setAttribute('data-order-id', orderId);
     // Show modal
@@ -319,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const statusSelect = document.getElementById('updateModalNewStatus');
         const newStatus = statusSelect.value;
         const orderId = statusSelect.getAttribute('data-order-id');
-        const notes = document.getElementById('updateModalNotes').value;
+        // Removed notes field
         try {
             const response = await fetch(`${API_BASE_URL}/mobile-orders/${orderId}/status`, {
                 method: 'PATCH',
@@ -327,17 +409,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${authToken}`
                 },
-                body: JSON.stringify({ status: newStatus, notes })
+                body: JSON.stringify({ status: newStatus })
             });
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            // Update local data and UI
-            const updatedOrder = await response.json();
-            const idx = loadedOrders.findIndex(o => o._id === orderId);
-            if (idx !== -1) {
-                loadedOrders[idx] = { ...loadedOrders[idx], ...updatedOrder };
-            }
-            displayOrders(loadedOrders);
-            showNotification(`Order status updated to ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}!`, 'success');
+            // Instead of merging partial response, reload all orders to preserve customer info
+            await loadMobileOrders();
+            showSuccessModal(`Order status updated to ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}!`, newStatus);
             // Hide modal
             const modalEl = document.getElementById('updateOrderStatusModal');
             const modal = bootstrap.Modal.getInstance(modalEl);

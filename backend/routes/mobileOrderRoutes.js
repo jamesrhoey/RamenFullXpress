@@ -22,4 +22,7 @@ router.get('/:id', mobileOrderController.getMobileOrderById);
 // PUT update a mobile order by ID
 router.put('/update/:id', mobileOrderController.updateMobileOrder);
 
+// Add this route for updating order status
+router.patch('/:orderId/status', mobileOrderController.updateOrderStatus);
+
 module.exports = router;
