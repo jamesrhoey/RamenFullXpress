@@ -9,11 +9,19 @@ const UPDATE_URL = 'http://localhost:3000/api/v1/inventory/update/';
 const DELETE_URL = 'http://localhost:3000/api/v1/inventory/delete/';
 const ADD_MENU_URL = 'http://localhost:3000/api/v1/menu/newMenu';
 
-function getStatusBadge(status) {
-  if (status === 'in stock') return '<span class="badge bg-success">In Stock</span>';
-  if (status === 'low stock') return '<span class="badge bg-warning text-dark">Low Stock</span>';
-  if (status === 'out of stock') return '<span class="badge bg-danger">Out of Stock</span>';
-  return status;
+function getStatusBadge(status, calculatedStatus, isOverridden) {
+  let badgeClass = 'bg-success';
+  if (status === 'low stock') badgeClass = 'bg-warning text-dark';
+  if (status === 'out of stock') badgeClass = 'bg-danger';
+  
+  let badge = `<span class="badge ${badgeClass}">${status}</span>`;
+  
+  // Add override indicator if status differs from calculated
+  if (isOverridden) {
+    badge += ` <small class="text-muted">(override)</small>`;
+  }
+  
+  return badge;
 }
 
 function renderIngredientsTable(ingredients) {
@@ -25,7 +33,7 @@ function renderIngredientsTable(ingredients) {
       <td>${ingredient.stocks}</td>
       <td>${ingredient.units}</td>
       <td>${ingredient.restocked ? new Date(ingredient.restocked).toLocaleDateString() : ''}</td>
-      <td>${getStatusBadge(ingredient.status)}</td>
+      <td>${getStatusBadge(ingredient.status, ingredient.calculatedStatus, ingredient.isStatusOverridden)}</td>
       <td>
         <button class="btn btn-sm btn-outline-primary me-1 edit-btn" data-id="${ingredient._id}"><i class="fas fa-edit"></i> Edit</button>
         <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${ingredient._id}"><i class="fas fa-trash"></i> Delete</button>
@@ -81,6 +89,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (addBtn && addIngredientModal) {
     addBtn.addEventListener('click', () => {
       document.getElementById('addIngredientForm').reset();
+      // Set today's date as default for restock date
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('ingredientRestocked').value = today;
       document.getElementById('addIngredientError').style.display = 'none';
       addIngredientModal.show();
     });
@@ -89,6 +100,26 @@ document.addEventListener('DOMContentLoaded', () => {
   // Handle add form submit
   const form = document.getElementById('addIngredientForm');
   if (form) {
+    // Add event listener for stock quantity changes to suggest status
+    const stocksInput = document.getElementById('ingredientStocks');
+    const statusSelect = document.getElementById('ingredientStatus');
+    if (stocksInput && statusSelect) {
+      stocksInput.addEventListener('input', (e) => {
+        const stocks = parseInt(e.target.value) || 0;
+        let suggestedStatus = 'in stock';
+        if (stocks <= 0) suggestedStatus = 'out of stock';
+        else if (stocks <= 10) suggestedStatus = 'low stock';
+        
+        // Set as default if no status is selected yet
+        if (!statusSelect.value || statusSelect.value === 'in stock') {
+          statusSelect.value = suggestedStatus;
+        }
+        
+        // Show suggestion
+        statusSelect.title = `Calculated: ${suggestedStatus}`;
+      });
+    }
+    
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const token = localStorage.getItem('token');
@@ -100,7 +131,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const formData = new FormData(form);
       const body = {};
       formData.forEach((value, key) => {
-        body[key] = value;
+        // Skip restocked field as it's set automatically by backend
+        if (key !== 'restocked') {
+          body[key] = value;
+        }
       });
       try {
         const response = await fetch(CREATE_URL, {
@@ -128,6 +162,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // Handle edit form submit (moved inside DOMContentLoaded)
   const editForm = document.getElementById('editIngredientForm');
   if (editForm) {
+    // Add event listener for stock quantity changes to suggest status
+    const stocksInput = document.getElementById('editIngredientStocks');
+    const statusSelect = document.getElementById('editIngredientStatus');
+    if (stocksInput && statusSelect) {
+      stocksInput.addEventListener('input', (e) => {
+        const stocks = parseInt(e.target.value) || 0;
+        let suggestedStatus = 'in stock';
+        if (stocks <= 0) suggestedStatus = 'out of stock';
+        else if (stocks <= 10) suggestedStatus = 'low stock';
+        
+        // Show suggestion
+        statusSelect.title = `Calculated: ${suggestedStatus}`;
+      });
+    }
+    
     editForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const token = localStorage.getItem('token');
@@ -141,8 +190,8 @@ document.addEventListener('DOMContentLoaded', () => {
         name: document.getElementById('editIngredientName').value,
         stocks: document.getElementById('editIngredientStocks').value,
         units: document.getElementById('editIngredientUnits').value,
-        restocked: document.getElementById('editIngredientRestocked').value,
         status: document.getElementById('editIngredientStatus').value
+        // restocked is set automatically by backend
       };
       try {
         const response = await fetch(UPDATE_URL + id, {
@@ -179,9 +228,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Open add menu modal on button click
   const addMenuBtn = document.getElementById('addMenuBtn');
   if (addMenuBtn && addMenuModal) {
-    addMenuBtn.addEventListener('click', () => {
+    addMenuBtn.addEventListener('click', async () => {
       document.getElementById('addMenuForm').reset();
       document.getElementById('addMenuError').style.display = 'none';
+      
+      // Populate ingredients list
+      await populateIngredientsList();
+      
       addMenuModal.show();
     });
   }
@@ -192,6 +245,24 @@ document.addEventListener('DOMContentLoaded', () => {
     addMenuForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(addMenuForm);
+      
+      // Get selected ingredients
+      const selectedIngredients = [];
+      document.querySelectorAll('.ingredient-checkbox:checked').forEach(checkbox => {
+        const ingredientId = checkbox.value;
+        const quantityInput = document.getElementById(`quantity_input_${ingredientId}`);
+        const quantity = quantityInput ? parseFloat(quantityInput.value) || 1 : 1;
+        
+        selectedIngredients.push({
+          name: checkbox.dataset.name,
+          quantity: quantity,
+          unit: checkbox.dataset.units
+        });
+      });
+      
+      // Add ingredients to form data
+      formData.append('ingredients', JSON.stringify(selectedIngredients));
+      
       try {
         const response = await fetch(ADD_MENU_URL, {
           method: 'POST',
@@ -230,8 +301,15 @@ async function openEditModal(id) {
     document.getElementById('editIngredientName').value = ingredient.name;
     document.getElementById('editIngredientStocks').value = ingredient.stocks;
     document.getElementById('editIngredientUnits').value = ingredient.units;
+    // Show current restock date but it will be updated automatically
     document.getElementById('editIngredientRestocked').value = ingredient.restocked ? new Date(ingredient.restocked).toISOString().split('T')[0] : '';
-    document.getElementById('editIngredientStatus').value = ingredient.status;
+    document.getElementById('editIngredientStatus').value = ingredient.status || 'in stock';
+    
+    // Show calculated status as tooltip
+    const statusSelect = document.getElementById('editIngredientStatus');
+    if (ingredient.calculatedStatus) {
+      statusSelect.title = `Calculated: ${ingredient.calculatedStatus}`;
+    }
     document.getElementById('editIngredientError').style.display = 'none';
     // Always create a new modal instance and show it
     const modalEl = document.getElementById('editIngredientModal');
@@ -239,6 +317,76 @@ async function openEditModal(id) {
     editModal.show();
   } catch (err) {
     Swal.fire('Error', err.message, 'error');
+  }
+}
+
+// Populate ingredients list for menu creation
+async function populateIngredientsList() {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  
+  try {
+    const response = await fetch(API_URL, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!response.ok) throw new Error('Failed to fetch ingredients');
+    const data = await response.json();
+    const ingredients = Array.isArray(data) ? data : data.data || [];
+    
+    const ingredientsList = document.getElementById('ingredientsList');
+    if (!ingredientsList) return;
+    
+    ingredientsList.innerHTML = ingredients.map(ingredient => `
+      <div class="col-md-6 mb-2">
+        <div class="form-check">
+          <input class="form-check-input ingredient-checkbox" type="checkbox" 
+                 id="ingredient_${ingredient._id}" value="${ingredient._id}" 
+                 data-name="${ingredient.name}" data-units="${ingredient.units}">
+          <label class="form-check-label" for="ingredient_${ingredient._id}">
+            <strong>${ingredient.name}</strong>
+            <br>
+            <small class="text-muted">
+              Stock: ${ingredient.stocks} ${ingredient.units} 
+              <span class="badge ${ingredient.status === 'in stock' ? 'bg-success' : ingredient.status === 'low stock' ? 'bg-warning' : 'bg-danger'} ms-1">
+                ${ingredient.status}
+              </span>
+            </small>
+          </label>
+          <div class="mt-2" id="quantity_${ingredient._id}" style="display: none;">
+            <div class="input-group input-group-sm">
+              <input type="number" class="form-control quantity-input" 
+                     id="quantity_input_${ingredient._id}" 
+                     placeholder="Quantity" min="0.1" step="0.1" value="1">
+              <span class="input-group-text">${ingredient.units}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+    
+    // Add event listeners for quantity inputs
+    ingredients.forEach(ingredient => {
+      const checkbox = document.getElementById(`ingredient_${ingredient._id}`);
+      if (checkbox) {
+        checkbox.addEventListener('change', (e) => {
+          const isChecked = e.target.checked;
+          const quantityInput = document.getElementById(`quantity_${ingredient._id}`);
+          if (quantityInput) {
+            quantityInput.style.display = isChecked ? 'block' : 'none';
+            if (!isChecked) quantityInput.value = '';
+          }
+        });
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error fetching ingredients:', error);
+    const ingredientsList = document.getElementById('ingredientsList');
+    if (ingredientsList) {
+      ingredientsList.innerHTML = '<div class="col-12 text-danger">Failed to load ingredients</div>';
+    }
   }
 }
 

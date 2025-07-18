@@ -490,4 +490,32 @@ class ApiService {
         return Exception('Network error: ${e.message}');
     }
   }
+
+  // Image URL utilities
+  static String getImageUrl(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty) {
+      return 'assets/profilesgg.png'; // Default fallback
+    }
+    
+    // If it's already a full URL, return as is
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    
+    // If it's an asset path, return as is
+    if (imagePath.startsWith('assets/') || imagePath.contains('assets/')) {
+      return imagePath;
+    }
+    
+    // If it's just a filename (from backend), construct the full URL
+    // Backend stores only filenames like "1752799756016-997715280-ramenbg.jpg"
+    final serverBaseUrl = baseUrl.replaceAll('/api/v1', '');
+    return '$serverBaseUrl/uploads/menus/$imagePath';
+  }
+
+  static bool isNetworkImage(String imagePath) {
+    // It's a network image if it's a full URL or a backend filename (not an asset)
+    return imagePath.startsWith('http://') || imagePath.startsWith('https://') || 
+           (!imagePath.startsWith('assets/') && !imagePath.contains('assets/'));
+  }
 } 

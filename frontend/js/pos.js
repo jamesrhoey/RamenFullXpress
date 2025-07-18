@@ -43,15 +43,60 @@ class POSSystem {
         try {
             const response = await fetch('http://localhost:3000/api/v1/menu/all');
             const data = await response.json();
+            console.log('Menu data received:', data); // Debug log
+            
             if (data.success && Array.isArray(data.data)) {
                 this.menuItems = data.data;
+                console.log('Menu items loaded:', this.menuItems.length); // Debug log
+                console.log('Sample menu item:', this.menuItems[0]); // Debug log to see image field
                 this.renderMenuItems();
             } else {
-                this.menuItems = [];
+                console.log('Menu data structure:', data); // Debug log
+                // If no menu items from backend, use sample data for testing
+                if (!data.data || data.data.length === 0) {
+                    this.menuItems = [
+                        {
+                            _id: 'sample1',
+                            name: 'Tonkotsu Ramen',
+                            price: 249.00,
+                            category: 'Ramen',
+                            image: '1752557989055-484669850-5.png' // Use actual uploaded image filename
+                        },
+                        {
+                            _id: 'sample2',
+                            name: 'Shoyu Ramen',
+                            price: 229.00,
+                            category: 'Ramen',
+                            image: '1752734566327-250033116-alfonso.png' // Use actual uploaded image filename
+                        },
+                        {
+                            _id: 'sample3',
+                            name: 'Miso Ramen',
+                            price: 239.00,
+                            category: 'Ramen',
+                            image: '1752735156274-179138818-red label.png' // Use actual uploaded image filename
+                        },
+                        {
+                            _id: 'sample4',
+                            name: 'Gyoza (6 pcs)',
+                            price: 129.00,
+                            category: 'Side Dishes',
+                            image: '1752735357952-346936489-day.jpg' // Use actual uploaded image filename
+                        }
+                    ];
+                    console.log('Using sample menu data'); // Debug log
+                } else {
+                    this.menuItems = [];
+                }
                 this.renderMenuItems();
-                this.showNotification('Failed to load menu from backend', 'warning');
+                if (!data.data || data.data.length === 0) {
+                    this.showNotification('Using sample menu data - no items in backend', 'info');
+                } else {
+                    this.showNotification('Failed to load menu from backend', 'warning');
+                }
             }
         } catch (err) {
+            console.error('Error loading menu:', err); // Debug log
             this.menuItems = [];
             this.renderMenuItems();
             this.showNotification('Error connecting to backend for menu', 'warning');
@@ -65,18 +110,26 @@ class POSSystem {
             grid.innerHTML = '<div class="text-center text-muted py-4">No menu items available</div>';
             return;
         }
-        grid.innerHTML = this.menuItems.map(item => `
-            <div class="col-6 col-sm-4 col-md-3">
-                <div class="card menu-item" data-bs-toggle="modal" data-bs-target="#productModal"
-                    data-name="${item.name}" data-price="${item.price}" data-category="${item.category}" data-image="http://localhost:3000/uploads/menus/${item.image}">
-                    <img src="http://localhost:3000/uploads/menus/${item.image}" class="card-img-top" alt="${item.name}">
-                    <div class="card-body p-2">
-                        <h6 class="card-title mb-1">${item.name}</h6>
-                        <p class="card-text text-danger mb-0">₱${item.price.toFixed(2)}</p>
+        grid.innerHTML = this.menuItems.map(item => {
+            // Use the image field from database - it contains the filename
+            const imageUrl = item.image ? `http://localhost:3000/uploads/menus/${item.image}` : '';
+            const fallbackImage = '../assets/ramen1.jpg'; // Default fallback image
+            
+            return `
+                <div class="col-6 col-sm-4 col-md-3">
+                    <div class="card menu-item" data-bs-toggle="modal" data-bs-target="#productModal"
+                        data-name="${item.name}" data-price="${item.price}" data-category="${item.category}" data-image="${imageUrl}">
+                        <img src="${imageUrl}" class="card-img-top" alt="${item.name}" 
+                             onerror="this.src='${fallbackImage}'; this.onerror=null;"
+                             style="height: 120px; object-fit: scale-down;">
+                        <div class="card-body p-2">
+                            <h6 class="card-title mb-1">${item.name}</h6>
+                            <p class="card-text text-danger mb-0">₱${item.price.toFixed(2)}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     setupEventListeners() {
@@ -193,8 +246,19 @@ class POSSystem {
         // Set modal content
         document.getElementById('productModalTitle').textContent = name;
         document.getElementById('productModalPrice').textContent = `₱${price}`;
-        document.getElementById('productModalImage').src = image;
-        document.getElementById('productModalImage').alt = name;
+        
+        // Handle image with fallback
+        const modalImage = document.getElementById('productModalImage');
+        const fallbackImage = '../assets/ramen1.jpg';
+        
+        // Use the image URL passed from the card (which should be the full backend URL)
+        modalImage.src = image || fallbackImage;
+        modalImage.alt = name;
+        modalImage.onerror = function() {
+            console.log('Image failed to load:', image); // Debug log
+            this.src = fallbackImage;
+            this.onerror = null;
+        };
         
         // Show/hide add-ons based on category
         const addonsSection = document.getElementById('addonsSection');
@@ -394,8 +458,12 @@ class POSSystem {
     }
 
     setOrderType(type) {
-        this.currentOrder.orderType = type;
-        
+        // Map button type to backend value
+        let backendType = type;
+        if (type === 'Takeout' || type === 'takeout') backendType = 'takeout';
+        if (type === 'Pickup' || type === 'pickup') backendType = 'pickup';
+        if (type === 'Dine-in' || type === 'dine-in') backendType = 'dine-in';
+        this.currentOrder.orderType = backendType;
         // Update button states
         document.querySelectorAll('[data-order-type]').forEach(btn => {
             btn.classList.remove('active');

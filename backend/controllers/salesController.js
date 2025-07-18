@@ -74,8 +74,8 @@ exports.createSale = async (req, res) => {
             return res.status(400).json({ message: 'Valid payment method is required (cash, paymaya, gcash)' });
         }
         
-        if (!serviceType || !['pickup', 'dine-in'].includes(serviceType)) {
-            return res.status(400).json({ message: 'Valid service type is required (pickup, dine-in)' });
+        if (!serviceType || !['pickup', 'dine-in', 'takeout'].includes(serviceType)) {
+            return res.status(400).json({ message: 'Valid service type is required (pickup, dine-in, takeout)' });
         }
         
         // Validate main menu item exists

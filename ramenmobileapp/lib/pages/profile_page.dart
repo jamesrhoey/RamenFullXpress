@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'edit_profile_page.dart';
+import '../services/api_service.dart';
 
 
 class ProfilePage extends StatefulWidget {
@@ -65,6 +66,54 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Widget _buildProfileImage(String imagePath) {
+    final imageUrl = ApiService.getImageUrl(imagePath);
+    final isNetwork = ApiService.isNetworkImage(imagePath);
+    
+    if (isNetwork) {
+      return Image.network(
+        imageUrl,
+        width: 80,
+        height: 80,
+        fit: BoxFit.fill,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            'assets/profilesgg.png',
+            width: 80,
+            height: 80,
+            fit: BoxFit.fill,
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            width: 80,
+            height: 80,
+            color: Colors.grey[200],
+            child: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        },
+      );
+    } else {
+      return Image.asset(
+        imageUrl,
+        width: 80,
+        height: 80,
+        fit: BoxFit.fill,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            'assets/profilesgg.png',
+            width: 80,
+            height: 80,
+            fit: BoxFit.fill,
+          );
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -123,12 +172,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             decoration: BoxDecoration(
                               color: Colors.grey[200],
                             ),
-                            child: Image.asset(
-                              profile['profileImage']!,
-                              width: 80,
-                              height: 80,
-                              fit: BoxFit.cover,
-                            ),
+                            child: _buildProfileImage(profile['profileImage']!),
                           ),
                         ),
                         const SizedBox(width: 20),

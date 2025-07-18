@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/cart_service.dart';
 import '../services/menu_service.dart';
+import '../services/api_service.dart';
 import '../models/menu_item.dart';
 
 import 'payment_page.dart';
@@ -107,6 +108,58 @@ class _HomePageState extends State<HomePage> {
     return _menuItems.where((item) => item.category.toLowerCase() != 'add-ons').toList();
   }
 
+  Widget _buildMenuItemImage(String imagePath, {double? width, double? height}) {
+    final imageUrl = ApiService.getImageUrl(imagePath);
+    final isNetwork = ApiService.isNetworkImage(imagePath);
+    
+    if (isNetwork) {
+      return Image.network(
+        imageUrl,
+        width: width,
+        height: height,
+        fit: BoxFit.fill,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: width ?? 80,
+            height: height ?? 80,
+            color: Colors.grey[200],
+            child: const Icon(
+              Icons.image_not_supported,
+            ),
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            width: width ?? 80,
+            height: height ?? 80,
+            color: Colors.grey[200],
+            child: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        },
+      );
+    } else {
+      return Image.asset(
+        imageUrl,
+        width: width,
+        height: height,
+        fit: BoxFit.fill,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: width ?? 80,
+            height: height ?? 80,
+            color: Colors.grey[200],
+            child: const Icon(
+              Icons.image_not_supported,
+            ),
+          );
+        },
+      );
+    }
+  }
+
   Future<void> addToCart(
     Map<String, dynamic> item,
     List<Map<String, dynamic>> selectedAddOns,
@@ -206,22 +259,7 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child: Image.asset(
-                                item.image,
-                                width: 80,
-                                height: 80,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    width: 80,
-                                    height: 80,
-                                    color: Colors.grey[200],
-                                    child: const Icon(
-                                      Icons.image_not_supported,
-                                    ),
-                                  );
-                                },
-                              ),
+                              child: _buildMenuItemImage(item.image, width: 80, height: 80),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -644,11 +682,7 @@ class _HomePageState extends State<HomePage> {
                                   borderRadius: const BorderRadius.vertical(
                                     top: Radius.circular(12),
                                   ),
-                                  child: Image.asset(
-                                    item.image,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  ),
+                                  child: _buildMenuItemImage(item.image, width: double.infinity),
                                 ),
                               ),
                               Padding(

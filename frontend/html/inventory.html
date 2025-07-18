@@ -171,7 +171,8 @@
             </div>
             <div class="mb-3">
               <label for="ingredientRestocked" class="form-label">Restocked Date</label>
-              <input type="date" class="form-control" id="ingredientRestocked" name="restocked" required>
+              <input type="date" class="form-control" id="ingredientRestocked" name="restocked" disabled>
+              <small class="form-text text-muted">Restock date is automatically set to today's date</small>
             </div>
             <div class="mb-3">
               <label for="ingredientStatus" class="form-label">Status</label>
@@ -180,6 +181,7 @@
                 <option value="low stock">Low Stock</option>
                 <option value="out of stock">Out of Stock</option>
               </select>
+              <small class="form-text text-muted">Default status is calculated based on stock quantity. You can override if needed.</small>
             </div>
             <div id="addIngredientError" class="text-danger mb-2" style="display:none;"></div>
           </div>
@@ -218,7 +220,8 @@
             </div>
             <div class="mb-3">
               <label for="editIngredientRestocked" class="form-label">Restocked Date</label>
-              <input type="date" class="form-control" id="editIngredientRestocked" name="restocked" required>
+              <input type="date" class="form-control" id="editIngredientRestocked" name="restocked" disabled>
+              <small class="form-text text-muted">Restock date is automatically updated to today's date</small>
             </div>
             <div class="mb-3">
               <label for="editIngredientStatus" class="form-label">Status</label>
@@ -227,6 +230,7 @@
                 <option value="low stock">Low Stock</option>
                 <option value="out of stock">Out of Stock</option>
               </select>
+              <small class="form-text text-muted">Default status is calculated based on stock quantity. You can override if needed.</small>
             </div>
             <div id="editIngredientError" class="text-danger mb-2" style="display:none;"></div>
           </div>
@@ -275,6 +279,18 @@
               <label for="menuImage" class="form-label">Image (Upload file)</label>
               <input type="file" class="form-control" id="menuImage" name="image" accept="image/*" required>
             </div>
+            
+            <!-- Ingredients Selection -->
+            <div class="mb-3">
+              <label class="form-label">Ingredients</label>
+              <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                <div id="ingredientsList" class="row">
+                  <!-- Ingredients will be populated by JavaScript -->
+                </div>
+              </div>
+              <small class="form-text text-muted">Select ingredients from inventory to add to this menu item</small>
+            </div>
+            
             <div id="addMenuError" class="text-danger mb-2" style="display:none;"></div>
           </div>
           <div class="modal-footer">

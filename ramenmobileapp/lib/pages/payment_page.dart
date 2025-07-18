@@ -67,6 +67,48 @@ class _PaymentPageState extends State<PaymentPage> {
     });
   }
 
+  Widget _buildItemImage(String imagePath) {
+    final imageUrl = ApiService.getImageUrl(imagePath);
+    final isNetwork = ApiService.isNetworkImage(imagePath);
+    
+    if (isNetwork) {
+      return Image.network(
+        imageUrl,
+        fit: BoxFit.fill,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.grey[200],
+            child: const Icon(
+              Icons.image_not_supported,
+            ),
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            color: Colors.grey[200],
+            child: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        },
+      );
+    } else {
+      return Image.asset(
+        imageUrl,
+        fit: BoxFit.fill,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.grey[200],
+            child: const Icon(
+              Icons.image_not_supported,
+            ),
+          );
+        },
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -217,10 +259,7 @@ class _PaymentPageState extends State<PaymentPage> {
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12),
-                            child: Image.asset(
-                              item['image'],
-                              fit: BoxFit.cover,
-                            ),
+                            child: _buildItemImage(item['image']),
                           ),
                         ),
                         const SizedBox(width: 16),

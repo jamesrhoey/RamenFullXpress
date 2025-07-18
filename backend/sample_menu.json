@@ -5,16 +5,10 @@
       "price": 249.00,
       "image": "../assets/ramen1.jpg",
       "ingredients": [
-        { "name": "Pork Bones", "quantity": 0.3, "unit": "kg" },
         { "name": "Ramen Noodles", "quantity": 1, "unit": "pack" },
         { "name": "Chashu Pork", "quantity": 2, "unit": "slices" },
         { "name": "Marinated Egg", "quantity": 1, "unit": "pc" },
-        { "name": "Wood Ear Mushrooms", "quantity": 10, "unit": "g" },
-        { "name": "Nori", "quantity": 1, "unit": "sheet" },
-        { "name": "Green Onions", "quantity": 0.1, "unit": "bunch" },
-        { "name": "Garlic", "quantity": 0.1, "unit": "bulb" },
-        { "name": "Ginger", "quantity": 0.05, "unit": "kg" },
-        { "name": "Onions", "quantity": 0.05, "unit": "kg" }
+        { "name": "Nori", "quantity": 2, "unit": "sheet" }
       ]
     },
     {
@@ -23,13 +17,9 @@
       "price": 229.00,
       "image": "../assets/ramen2.jpg",
       "ingredients": [
-        { "name": "Chicken Bones", "quantity": 0.3, "unit": "kg" },
-        { "name": "Soy Sauce", "quantity": 0.05, "unit": "L" },
         { "name": "Ramen Noodles", "quantity": 1, "unit": "pack" },
         { "name": "Chashu Pork", "quantity": 2, "unit": "slices" },
-        { "name": "Menma", "quantity": 20, "unit": "g" },
         { "name": "Nori", "quantity": 1, "unit": "sheet" },
-        { "name": "Green Onions", "quantity": 0.1, "unit": "bunch" },
         { "name": "Marinated Egg", "quantity": 1, "unit": "pc" }
       ]
     },
@@ -43,10 +33,6 @@
         { "name": "Chicken Bones", "quantity": 0.3, "unit": "kg" },
         { "name": "Ramen Noodles", "quantity": 1, "unit": "pack" },
         { "name": "Ground Pork", "quantity": 50, "unit": "g" },
-        { "name": "Corn", "quantity": 0.25, "unit": "cup" },
-        { "name": "Butter", "quantity": 10, "unit": "g" },
-        { "name": "Bean Sprouts", "quantity": 0.25, "unit": "cup" },
-        { "name": "Green Onions", "quantity": 0.1, "unit": "bunch" },
         { "name": "Marinated Egg", "quantity": 1, "unit": "pc" }
       ]
     },
@@ -58,9 +44,7 @@
       "ingredients": [
         { "name": "Gyoza Wrappers", "quantity": 6, "unit": "pcs" },
         { "name": "Ground Pork", "quantity": 60, "unit": "g" },
-        { "name": "Cabbage", "quantity": 0.2, "unit": "cup" },
-        { "name": "Garlic", "quantity": 0.05, "unit": "bulb" },
-        { "name": "Soy Sauce", "quantity": 0.02, "unit": "L" }
+        { "name": "Cabbage", "quantity": 50, "unit": "g" }
       ]
     },
     {
@@ -70,8 +54,6 @@
       "image": "../assets/ramen1.jpg",
       "ingredients": [
         { "name": "Chicken Thigh", "quantity": 150, "unit": "g" },
-        { "name": "Soy Sauce", "quantity": 0.02, "unit": "L" },
-        { "name": "Garlic", "quantity": 0.05, "unit": "bulb" },
         { "name": "Cornstarch", "quantity": 20, "unit": "g" },
         { "name": "Oil", "quantity": 0.2, "unit": "L" }
       ]
@@ -83,10 +65,8 @@
       "image": "../assets/ricebowl.jpg",
       "ingredients": [
         { "name": "Beef Strips", "quantity": 100, "unit": "g" },
-        { "name": "White Rice", "quantity": 1, "unit": "cup" },
-        { "name": "Soy Sauce", "quantity": 0.02, "unit": "L" },
-        { "name": "Onions", "quantity": 0.1, "unit": "kg" },
-        { "name": "Green Onions", "quantity": 0.1, "unit": "bunch" }
+        { "name": "White Rice", "quantity": 200, "unit": "g" },
+        { "name": "Onions", "quantity": 50, "unit": "g" }
       ]
     },
     {
@@ -96,10 +76,8 @@
       "image": "../assets/ricebowl2.jpg",
       "ingredients": [
         { "name": "Pork Belly", "quantity": 100, "unit": "g" },
-        { "name": "White Rice", "quantity": 1, "unit": "cup" },
-        { "name": "Soy Sauce", "quantity": 0.02, "unit": "L" },
-        { "name": "Onions", "quantity": 0.1, "unit": "kg" },
-        { "name": "Garlic", "quantity": 0.05, "unit": "bulb" }
+        { "name": "White Rice", "quantity": 200, "unit": "g" },
+        { "name": "Onions", "quantity": 50, "unit": "g" }
       ]
     }
   ]

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
 
 class EditprofilePage extends StatefulWidget {
   final Map<String, String> initialProfile;
@@ -39,6 +40,18 @@ class _EditprofilePageState extends State<EditprofilePage> {
     Navigator.pop(context, updatedProfile);
   }
 
+  ImageProvider _getProfileImage() {
+    final imagePath = widget.initialProfile['profileImage'] ?? 'assets/profilesgg.png';
+    final imageUrl = ApiService.getImageUrl(imagePath);
+    final isNetwork = ApiService.isNetworkImage(imagePath);
+    
+    if (isNetwork) {
+      return NetworkImage(imageUrl);
+    } else {
+      return AssetImage(imageUrl);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,9 +87,9 @@ class _EditprofilePageState extends State<EditprofilePage> {
             Stack(
               alignment: Alignment.bottomRight,
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 55,
-                  backgroundImage: AssetImage('assets/profilesgg.png'),
+                  backgroundImage: _getProfileImage(),
                 ),
                 Container(
                   decoration: const BoxDecoration(
