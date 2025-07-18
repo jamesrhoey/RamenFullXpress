@@ -48,13 +48,16 @@ const validateIngredients = async (ingredients) => {
   const invalidIngredients = [];
 
   for (const ingredient of ingredients) {
+    // Frontend sends 'name' field, backend expects 'inventoryItem'
+    const ingredientName = ingredient.name || ingredient.inventoryItem;
+    
     // Check if ingredient exists in inventory
-    const inventoryItem = await Inventory.findOne({ name: ingredient.inventoryItem });
+    const inventoryItem = await Inventory.findOne({ name: ingredientName });
     
     if (!inventoryItem) {
-      missingIngredients.push(ingredient.inventoryItem);
+      missingIngredients.push(ingredientName);
     } else if (ingredient.quantity <= 0) {
-      invalidIngredients.push(`${ingredient.inventoryItem}: quantity must be greater than 0`);
+      invalidIngredients.push(`${ingredientName}: quantity must be greater than 0`);
     }
   }
 
@@ -78,9 +81,20 @@ const createMenu = async (req, res) => {
       });
     }
 
+    // Parse ingredients if it's a JSON string
+    let parsedIngredients = ingredients;
+    if (typeof ingredients === 'string') {
+      try {
+        parsedIngredients = JSON.parse(ingredients);
+      } catch (error) {
+        console.error('Error parsing ingredients:', error);
+        parsedIngredients = [];
+      }
+    }
+
     // Validate ingredients if provided
-    if (ingredients && Array.isArray(ingredients) && ingredients.length > 0) {
-      const { missingIngredients, invalidIngredients } = await validateIngredients(ingredients);
+    if (parsedIngredients && Array.isArray(parsedIngredients) && parsedIngredients.length > 0) {
+      const { missingIngredients, invalidIngredients } = await validateIngredients(parsedIngredients);
       
       if (missingIngredients.length > 0) {
         return res.status(400).json({
@@ -97,24 +111,48 @@ const createMenu = async (req, res) => {
           invalidIngredients: invalidIngredients
         });
       }
+
+      // Convert frontend format to backend format
+      const backendIngredients = parsedIngredients.map(ingredient => ({
+        inventoryItem: ingredient.name,
+        quantity: ingredient.quantity
+      }));
+
+      const newMenuItem = new Menu({
+        name,
+        price,
+        category,
+        image,
+        ingredients: backendIngredients
+      });
+
+      const savedMenuItem = await newMenuItem.save();
+      
+      res.status(201).json({
+        success: true,
+        message: 'Menu item created successfully',
+        data: savedMenuItem
+      });
+    } else {
+      // No ingredients provided
+      const newMenuItem = new Menu({
+        name,
+        price,
+        category,
+        image,
+        ingredients: []
+      });
+
+      const savedMenuItem = await newMenuItem.save();
+      
+      res.status(201).json({
+        success: true,
+        message: 'Menu item created successfully',
+        data: savedMenuItem
+      });
     }
-
-    const newMenuItem = new Menu({
-      name,
-      price,
-      category,
-      image,
-      ingredients: ingredients || []
-    });
-
-    const savedMenuItem = await newMenuItem.save();
-    
-    res.status(201).json({
-      success: true,
-      message: 'Menu item created successfully',
-      data: savedMenuItem
-    });
   } catch (error) {
+    console.error('Error creating menu item:', error);
     res.status(500).json({
       success: false,
       message: 'Error creating menu item',
@@ -128,9 +166,20 @@ const updateMenu = async (req, res) => {
   try {
     const { name, price, category, image, ingredients } = req.body;
     
+    // Parse ingredients if it's a JSON string
+    let parsedIngredients = ingredients;
+    if (typeof ingredients === 'string') {
+      try {
+        parsedIngredients = JSON.parse(ingredients);
+      } catch (error) {
+        console.error('Error parsing ingredients:', error);
+        parsedIngredients = [];
+      }
+    }
+    
     // Validate ingredients if provided
-    if (ingredients && Array.isArray(ingredients) && ingredients.length > 0) {
-      const { missingIngredients, invalidIngredients } = await validateIngredients(ingredients);
+    if (parsedIngredients && Array.isArray(parsedIngredients) && parsedIngredients.length > 0) {
+      const { missingIngredients, invalidIngredients } = await validateIngredients(parsedIngredients);
       
       if (missingIngredients.length > 0) {
         return res.status(400).json({
@@ -147,33 +196,66 @@ const updateMenu = async (req, res) => {
           invalidIngredients: invalidIngredients
         });
       }
-    }
-    
-    const updatedMenuItem = await Menu.findByIdAndUpdate(
-      req.params.id,
-      {
-        name,
-        price,
-        category,
-        image,
-        ingredients
-      },
-      { new: true, runValidators: true }
-    );
 
-    if (!updatedMenuItem) {
-      return res.status(404).json({
-        success: false,
-        message: 'Menu item not found'
+      // Convert frontend format to backend format
+      const backendIngredients = parsedIngredients.map(ingredient => ({
+        inventoryItem: ingredient.name,
+        quantity: ingredient.quantity
+      }));
+
+      const updatedMenuItem = await Menu.findByIdAndUpdate(
+        req.params.id,
+        {
+          name,
+          price,
+          category,
+          image,
+          ingredients: backendIngredients
+        },
+        { new: true, runValidators: true }
+      );
+
+      if (!updatedMenuItem) {
+        return res.status(404).json({
+          success: false,
+          message: 'Menu item not found'
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Menu item updated successfully',
+        data: updatedMenuItem
+      });
+    } else {
+      // No ingredients provided
+      const updatedMenuItem = await Menu.findByIdAndUpdate(
+        req.params.id,
+        {
+          name,
+          price,
+          category,
+          image,
+          ingredients: []
+        },
+        { new: true, runValidators: true }
+      );
+
+      if (!updatedMenuItem) {
+        return res.status(404).json({
+          success: false,
+          message: 'Menu item not found'
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Menu item updated successfully',
+        data: updatedMenuItem
       });
     }
-
-    res.status(200).json({
-      success: true,
-      message: 'Menu item updated successfully',
-      data: updatedMenuItem
-    });
   } catch (error) {
+    console.error('Error updating menu item:', error);
     res.status(500).json({
       success: false,
       message: 'Error updating menu item',

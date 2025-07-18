@@ -40,12 +40,17 @@ function displayOrders(orders) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="7" class="text-center text-muted py-4">
-                    <i class="fas fa-inbox fa-2x mb-2"></i>
-                    <br>No orders found
+                <i class="fas fa-inbox fa-2x mb-2"></i>
+                <br>No orders found
                 </td>
             </tr>
         `;
         return;
+    }
+
+    // Debug: Log first order to see customer data structure
+    if (orders.length > 0) {
+        console.log('Sample order customer data:', orders[0].customerId);
     }
 
     orders.forEach(order => {
@@ -104,16 +109,34 @@ function getPaymentBadge(status) {
 }
 
 function getCustomerDisplayName(order) {
-    // Try all possible fields for customer name
-    if (order.customerName && order.customerName.trim()) return order.customerName;
+    // Check if customerId is populated and has the expected structure
     if (order.customerId) {
-        if (order.customerId.fullName && order.customerId.fullName.trim()) return order.customerId.fullName;
-        if (order.customerId.name && order.customerId.name.trim()) return order.customerId.name;
-        if ((order.customerId.firstName && order.customerId.firstName.trim()) || (order.customerId.lastName && order.customerId.lastName.trim())) {
-            return `${order.customerId.firstName || ''} ${order.customerId.lastName || ''}`.trim();
+        // If customerId is an object (populated), check for name fields
+        if (typeof order.customerId === 'object' && order.customerId !== null) {
+            // Check for fullName first (virtual field)
+            if (order.customerId.fullName && order.customerId.fullName.trim()) {
+                return order.customerId.fullName;
+            }
+            // Check for firstName and lastName
+            if (order.customerId.firstName || order.customerId.lastName) {
+                const firstName = order.customerId.firstName || '';
+                const lastName = order.customerId.lastName || '';
+                return `${firstName} ${lastName}`.trim();
+            }
+            // Fallback to name field if exists
+            if (order.customerId.name && order.customerId.name.trim()) {
+                return order.customerId.name;
+            }
         }
     }
-    return 'N/A';
+    
+    // Check for direct customerName field
+    if (order.customerName && order.customerName.trim()) {
+        return order.customerName;
+    }
+    
+    // If no customer data found, return a default
+    return 'Customer';
 }
 
 // Show notification
@@ -201,20 +224,12 @@ window.viewOrderDetails = async function(orderId) {
     // Customer info
     let customerName = getCustomerDisplayName(order);
     let customerPhone = "";
-    if (order.customerId && order.customerId.phone) {
-        customerPhone = order.customerId.phone;
-    }
     let customerAddress = order.deliveryAddress || "";
-    if (!customerName && order.customerId) {
-        if (order.customerId.fullName) {
-            customerName = order.customerId.fullName;
-        } else if (order.customerId.name) {
-            customerName = order.customerId.name;
-        } else if (order.customerId.firstName || order.customerId.lastName) {
-            customerName = `${order.customerId.firstName || ''} ${order.customerId.lastName || ''}`.trim();
-        }
+    
+    // Get customer phone and address from populated customerId
+    if (order.customerId && typeof order.customerId === 'object' && order.customerId !== null) {
         customerPhone = order.customerId.phone || "";
-        if (!customerAddress) customerAddress = order.customerId.address || "";
+        // Note: Customer model doesn't have address field, so we use deliveryAddress from order
     }
     document.getElementById('modalOrderId').textContent = `#${order.orderId || order._id}`;
     document.getElementById('modalOrderDate').textContent = new Date(order.createdAt).toLocaleString();
