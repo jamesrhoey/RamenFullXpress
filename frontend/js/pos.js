@@ -394,8 +394,12 @@ class POSSystem {
     }
 
     setOrderType(type) {
-        this.currentOrder.orderType = type;
-        
+        // Map button type to backend value
+        let backendType = type;
+        if (type === 'Takeout' || type === 'takeout') backendType = 'takeout';
+        if (type === 'Pickup' || type === 'pickup') backendType = 'pickup';
+        if (type === 'Dine-in' || type === 'dine-in') backendType = 'dine-in';
+        this.currentOrder.orderType = backendType;
         // Update button states
         document.querySelectorAll('[data-order-type]').forEach(btn => {
             btn.classList.remove('active');
