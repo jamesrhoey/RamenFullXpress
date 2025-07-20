@@ -25,10 +25,15 @@ class OrderService {
     try {
       // Try to load from API first using customer-specific endpoint
       final apiOrders = await _apiService.getCustomerOrders();
+      print('🟢 Orders received from API: ${apiOrders.length} ${apiOrders}');
+      for (var order in apiOrders) {
+        print('Order details: ${order.toJson()}');
+      }
       _orders = apiOrders;
       await saveOrders(); // Save API data locally
     } catch (e) {
-      developer.log('Error loading orders from API: $e', name: 'OrderService');
+      print('🔴 Error loading orders from API: ${e}');
+      developer.log('Error loading orders from API: ${e}', name: 'OrderService');
       
       // Fallback to local storage
     try {
@@ -39,7 +44,7 @@ class OrderService {
         _orders = ordersList.map((order) => Order.fromJson(order)).toList();
       }
     } catch (e) {
-        developer.log('Error loading orders from local storage: $e', name: 'OrderService');
+        developer.log('Error loading orders from local storage: ${e}', name: 'OrderService');
       _orders = [];
       }
     }

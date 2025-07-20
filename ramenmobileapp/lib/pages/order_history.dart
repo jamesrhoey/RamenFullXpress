@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'invoice_page.dart';
 import '../services/order_service.dart';
 import '../models/order.dart';
+import '../services/api_service.dart';
+import '../services/socket_service.dart';
 
 class OrderHistoryPage extends StatefulWidget {
   const OrderHistoryPage({super.key});
@@ -19,10 +21,22 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   @override
   void initState() {
     super.initState();
+    SocketService().connect();
+    SocketService().onOrderStatusUpdate = (data) {
+      setState(() {
+        final idx = orders.indexWhere((o) => o.id == data['orderId'] || o.id == data['order']['_id']);
+        if (idx != -1) {
+          final updatedOrders = List<Order>.from(orders);
+          updatedOrders[idx] = Order.fromJson(Map<String, dynamic>.from(data['order']));
+          orders = updatedOrders;
+        }
+      });
+    };
     _loadOrders();
   }
 
   Future<void> _loadOrders() async {
+    await ApiService().loadToken();
     await _orderService.loadOrders();
     setState(() {
       orders = _orderService.orders;
@@ -34,6 +48,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     setState(() {
       isLoading = true;
     });
+    await ApiService().loadToken();
     await _loadOrders();
   }
 
@@ -148,7 +163,9 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                               ),
                             ),
                             ...orders.map((order) {
-                              final orderId = order.id.padLeft(4, '0');
+                              final orderId = order.id.length > 4
+                                  ? order.id.substring(order.id.length - 4)
+                                  : order.id.padLeft(4, '0');
                               return Card(
                                 margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
                                 child: InkWell(
@@ -218,7 +235,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    'Delivery: ${order.deliveryMethod}',
+                                                    'Delivery: ${order.deliveryMethod}${order.deliveryMethod.toLowerCase() == 'pickup' ? ' - N/A' : (order.deliveryAddress != null && order.deliveryAddress!.isNotEmpty ? ' - ' + order.deliveryAddress! : ' - N/A')}',
                                                     style: TextStyle(
                                                       color: Color(0xFF1A1A1A),
                                                       fontSize: 12,

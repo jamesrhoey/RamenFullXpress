@@ -44,8 +44,8 @@ class CartItem {
   factory CartItem.fromJson(Map<String, dynamic> json) {
     return CartItem(
       menuItem: MenuItem.fromJson(json['menuItem']),
-      quantity: json['quantity'],
-      selectedAddOns: (json['selectedAddOns'] as List)
+      quantity: json['quantity'] ?? 1,
+      selectedAddOns: (json['selectedAddOns'] as List? ?? [])
           .map((addOnJson) => AddOn.fromJson(addOnJson))
           .toList(),
     );

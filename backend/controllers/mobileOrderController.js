@@ -1,4 +1,6 @@
 const MobileOrder = require('../models/mobileOrder');
+const Sales = require('../models/sales');
+const Menu = require('../models/menu');
 
 // Create a new mobile order
 exports.createMobileOrder = async (req, res) => {
@@ -70,6 +72,52 @@ exports.createMobileOrder = async (req, res) => {
 
     console.log('💾 Saving mobile order:', JSON.stringify(mobileOrder, null, 2));
     const savedOrder = await mobileOrder.save();
+
+    // Create corresponding sales record for each item
+    try {
+      for (const item of items) {
+        // Find the menu item in the database
+        const menuItem = await Menu.findById(item.menuItem.id);
+        if (menuItem) {
+          // Process add-ons for sales record
+          const processedAddOns = item.selectedAddOns.map(addOn => ({
+            menuItem: addOn.id || addOn.name, // Use ID if available, otherwise name
+            quantity: 1,
+            price: addOn.price
+          }));
+
+          // Generate sales order ID
+          const totalSales = await Sales.countDocuments();
+          const salesOrderID = (totalSales + 1).toString().padStart(4, '0');
+
+          // Map delivery method to service type
+          const serviceType = deliveryMethod === 'Delivery' ? 'pickup' : 'pickup';
+
+          // Create sales record
+          const salesRecord = new Sales({
+            orderID: salesOrderID,
+            menuItem: item.menuItem.id,
+            quantity: item.quantity,
+            price: item.menuItem.price,
+            addOns: processedAddOns,
+            paymentMethod: paymentMethod.toLowerCase(),
+            serviceType: serviceType,
+            totalAmount: (item.menuItem.price * item.quantity) + 
+                        item.selectedAddOns.reduce((sum, addOn) => sum + addOn.price, 0),
+            mobileOrderId: savedOrder._id,
+            mobileOrderReference: savedOrder.orderId,
+            isFromMobileOrder: true
+          });
+
+          await salesRecord.save();
+          console.log('💰 Created sales record for mobile order item:', salesOrderID);
+        }
+      }
+    } catch (salesError) {
+      console.error('⚠️ Warning: Failed to create sales record:', salesError);
+      // Don't fail the mobile order creation if sales creation fails
+    }
+
     res.status(201).json(savedOrder);
   } catch (err) {
     console.error('❌ Error creating mobile order:', err);
@@ -128,6 +176,16 @@ exports.updateOrderStatus = async (req, res) => {
     if (!updatedOrder) {
       return res.status(404).json({ message: 'Order not found' });
     }
+    // Emit socket.io event for real-time update
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('orderStatusUpdate', {
+        orderId: updatedOrder._id,
+        status: updatedOrder.status,
+        customerId: updatedOrder.customerId?._id,
+        order: updatedOrder
+      });
+    }
     res.json(updatedOrder);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
@@ -156,3 +214,79 @@ function generateInvoiceNumber() {
   const random = Math.floor(Math.random() * 10000);
   return `INV${timestamp}${random.toString().padStart(4, '0')}`;
 }
+
+// Utility function to sync mobile orders to sales (for existing orders)
+exports.syncMobileOrdersToSales = async (req, res) => {
+  try {
+    console.log('🔄 Starting mobile orders to sales sync...');
+    
+    const mobileOrders = await MobileOrder.find({});
+    let syncedCount = 0;
+    let errorCount = 0;
+
+    for (const mobileOrder of mobileOrders) {
+      try {
+        for (const item of mobileOrder.items) {
+          // Check if sales record already exists for this mobile order
+          const existingSales = await Sales.findOne({ 
+            mobileOrderId: mobileOrder._id,
+            menuItem: item.menuItem.id 
+          });
+
+          if (!existingSales) {
+            // Find the menu item in the database
+            const menuItem = await Menu.findById(item.menuItem.id);
+            if (menuItem) {
+              // Process add-ons for sales record
+              const processedAddOns = item.selectedAddOns.map(addOn => ({
+                menuItem: addOn.id || addOn.name,
+                quantity: 1,
+                price: addOn.price
+              }));
+
+              // Generate sales order ID
+              const totalSales = await Sales.countDocuments();
+              const salesOrderID = (totalSales + 1).toString().padStart(4, '0');
+
+              // Map delivery method to service type
+              const serviceType = mobileOrder.deliveryMethod === 'Delivery' ? 'pickup' : 'pickup';
+
+              // Create sales record
+              const salesRecord = new Sales({
+                orderID: salesOrderID,
+                menuItem: item.menuItem.id,
+                quantity: item.quantity,
+                price: item.menuItem.price,
+                addOns: processedAddOns,
+                paymentMethod: mobileOrder.paymentMethod.toLowerCase(),
+                serviceType: serviceType,
+                totalAmount: (item.menuItem.price * item.quantity) + 
+                            item.selectedAddOns.reduce((sum, addOn) => sum + addOn.price, 0),
+                mobileOrderId: mobileOrder._id, // Reference to mobile order
+                mobileOrderReference: mobileOrder.orderId,
+                isFromMobileOrder: true
+              });
+
+              await salesRecord.save();
+              syncedCount++;
+              console.log(`💰 Synced mobile order ${mobileOrder.orderId} item to sales record ${salesOrderID}`);
+            }
+          }
+        }
+      } catch (error) {
+        console.error(`❌ Error syncing mobile order ${mobileOrder.orderId}:`, error);
+        errorCount++;
+      }
+    }
+
+    res.json({
+      message: 'Mobile orders sync completed',
+      syncedCount,
+      errorCount,
+      totalProcessed: mobileOrders.length
+    });
+  } catch (error) {
+    console.error('❌ Error in mobile orders sync:', error);
+    res.status(500).json({ message: 'Sync failed', error: error.message });
+  }
+};

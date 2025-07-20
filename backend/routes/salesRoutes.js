@@ -6,22 +6,30 @@ const authMiddleware = require('../middleware/authMiddleware');
 // Create a new sale (accessible by both admin and cashier)
 router.post('/new-sale', authMiddleware, salesController.createSale);
 
-// Apply admin check to routes that need admin access
-router.use(authMiddleware, authMiddleware.isAdmin);
+// Middleware to check if user is admin or cashier
+const isAdminOrCashier = function (req, res, next) {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'cashier')) {
+    return next();
+  }
+  return res.status(403).json({ message: 'Access denied: Admins and cashiers only.' });
+};
 
-// Get all sales (admin only)
-router.get('/all-sales', salesController.getAllSales);
+// Apply admin/cashier check to routes that need access
+router.use(authMiddleware);
 
-// Get a sale by orderID (admin only)
-router.get('/order/:orderID', salesController.getSaleByOrderID);
+// Get all sales (admin and cashier)
+router.get('/all-sales', isAdminOrCashier, salesController.getAllSales);
 
-// Get a sale by ID (admin only)
-router.get('/:id', salesController.getSaleById);
+// Get a sale by orderID (admin and cashier)
+router.get('/order/:orderID', isAdminOrCashier, salesController.getSaleByOrderID);
 
-// Update a sale by ID (admin only)
-router.put('/update/:id', salesController.updateSale);
+// Get a sale by ID (admin and cashier)
+router.get('/:id', isAdminOrCashier, salesController.getSaleById);
 
-// Delete a sale by ID (admin only)
-router.delete('/delete/:id', salesController.deleteSale);
+// Update a sale by ID (admin and cashier)
+router.put('/update/:id', isAdminOrCashier, salesController.updateSale);
+
+// Delete a sale by ID (admin only - keep this restricted)
+router.delete('/delete/:id', authMiddleware.isAdmin, salesController.deleteSale);
 
 module.exports = router;

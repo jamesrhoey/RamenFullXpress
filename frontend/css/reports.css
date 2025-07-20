@@ -56,3 +56,144 @@
 .btn-secondary:hover {
   background-color: #5a6268;
 }
+
+/* Transaction Badge Styling */
+.badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+}
+
+.badge.bg-info {
+  background-color: #17a2b8 !important;
+}
+
+.badge.bg-success {
+  background-color: #28a745 !important;
+}
+
+/* Table Styling */
+.table th {
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+  vertical-align: middle;
+  color: #495057;
+}
+
+/* Sortable Column Styling */
+.sortable {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.sortable:hover {
+  background-color: #f8f9fa;
+}
+
+/* Summary Cards Enhancement */
+.summary-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Search and Filter Enhancement */
+.input-group-text {
+  background-color: #f8f9fa;
+  border-color: #ced4da;
+}
+
+.form-control:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Loading State */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Error State */
+.text-danger {
+  color: #dc3545 !important;
+}
+
+/* Success State */
+.text-success {
+  color: #28a745 !important;
+}
+
+/* Pagination Styling */
+.pagination-container {
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.pagination-info {
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.pagination {
+  margin-bottom: 0;
+}
+
+.pagination .page-link {
+  color: #dc3545;
+  border-color: #dee2e6;
+  padding: 0.5rem 0.75rem;
+  font-weight: 500;
+}
+
+.pagination .page-link:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+  color: #6c757d;
+  background-color: transparent;
+  border-color: #dee2e6;
+}
+
+.pagination .page-item.disabled .page-link:hover {
+  background-color: transparent;
+  color: #6c757d;
+}
+
+/* Empty State Styling */
+.text-muted {
+  color: #6c757d !important;
+}
+
+/* Loading and Error States */
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
+}
+
+.fa-2x {
+  font-size: 2em;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem !important;
+}

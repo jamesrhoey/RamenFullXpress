@@ -54,6 +54,20 @@ const salesSchema = new mongoose.Schema({
     date: {
         type: Date,
         default: Date.now
+    },
+    // Mobile order integration fields
+    mobileOrderId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'MobileOrder',
+        required: false
+    },
+    mobileOrderReference: {
+        type: String,
+        required: false
+    },
+    isFromMobileOrder: {
+        type: Boolean,
+        default: false
     }
 });
 

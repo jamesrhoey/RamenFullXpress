@@ -61,22 +61,24 @@ class Order {
   }
 
   factory Order.fromJson(Map<String, dynamic> json) {
+    final deliveryMethod = json['deliveryMethod']?.toString() ?? '';
+    final deliveryAddress = deliveryMethod.toLowerCase() == 'pickup'
+      ? 'N/A'
+      : (json['deliveryAddress']?.toString() ?? 'N/A');
     return Order(
-      id: json['id'],
-      items: (json['items'] as List)
-          .map((item) => CartItem.fromJson(item))
-          .toList(),
-      total: json['total'].toDouble(),
+      id: json['_id'] ?? json['id'] ?? '',
+      items: (json['items'] as List).map((item) => CartItem.fromJson(item)).toList(),
+      total: (json['total'] ?? 0).toDouble(),
       status: OrderStatus.values.firstWhere(
-        (e) => e.name == json['status'],
+        (e) => e.name == (json['status'] ?? 'pending'),
         orElse: () => OrderStatus.pending,
       ),
-      orderDate: DateTime.parse(json['orderDate']),
-      deliveryMethod: json['deliveryMethod'],
-      deliveryAddress: json['deliveryAddress'],
-      paymentMethod: json['paymentMethod'],
-      notes: json['notes'],
-      invoiceNumber: json['invoiceNumber'],
+      orderDate: DateTime.parse(json['orderDate'] ?? json['createdAt']),
+      deliveryMethod: deliveryMethod,
+      deliveryAddress: deliveryAddress,
+      paymentMethod: json['paymentMethod'] ?? '',
+      notes: json['notes']?.toString(),
+      invoiceNumber: json['invoiceNumber']?.toString(),
     );
   }
 

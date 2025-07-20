@@ -25,8 +25,9 @@ async function handleLogin(event) {
             // Add the token to the user object
             data.user.token = data.token;
             localStorage.setItem('user', JSON.stringify(data.user));
-            // Optionally, you can still save it separately if you want
-            localStorage.setItem('token', data.token);
+            // Store token with consistent key name
+            localStorage.setItem('authToken', data.token);
+            console.log('Login successful, token stored:', data.token ? 'Yes' : 'No');
             // Redirect based on role
             if (data.user.role === 'admin') {
                 window.location.href = 'html/dashboard.html';

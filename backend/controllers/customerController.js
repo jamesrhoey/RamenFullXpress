@@ -292,7 +292,9 @@ exports.getMyOrders = async (req, res) => {
   try {
     const customerId = req.customerId;
     const MobileOrder = require('../models/mobileOrder');
+    console.log('🔍 Fetching orders for customerId:', customerId);
     const orders = await MobileOrder.find({ customerId }).sort({ createdAt: -1 });
+    console.log('📦 Orders found:', orders.length, orders);
     res.json({ success: true, data: orders });
   } catch (error) {
     console.error('Error fetching customer orders:', error);

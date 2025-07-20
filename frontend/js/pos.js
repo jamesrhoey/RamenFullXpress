@@ -1,728 +1,763 @@
-// POS System JavaScript
-class POSSystem {
-    constructor() {
-        this.cart = [];
-        this.currentOrder = {
-            id: this.generateOrderId(),
-            items: [],
-            orderType: 'dine-in',
-            paymentMethod: 'cash',
-            total: 0,
-            subtotal: 0,
-            discount: 0
-        };
-        this.menuItems = [];
-        this.categories = ['All', 'Ramen', 'Rice Bowls', 'Side Dishes', 'Drinks'];
-        this.addons = {
-            'extraNoodles': { name: 'Extra Noodles', price: 50.00 },
-            'extraChashu': { name: 'Extra Chashu', price: 80.00 },
-            'extraEgg': { name: 'Extra Egg', price: 30.00 }
-        };
+// Global variables
+let menuItems = [];
+let cartItems = [];
+let selectedCategory = 'All';
+let searchQuery = '';
+let orderType = 'dine-in';
+let paymentMethod = 'cash';
+let currentModalItem = null;
+let selectedAddons = [];
+
+// API Base URL
+const API_BASE_URL = 'http://localhost:3000/api/v1';
+
+// Authentication utilities
+function getAuthToken() {
+    const token = localStorage.getItem('authToken');
+    console.log('Getting auth token:', token ? 'Token found' : 'No token found');
+    return token;
+}
+
+function isAuthenticated() {
+    const token = getAuthToken();
+    if (!token) {
+        console.log('No token found in localStorage');
+        return false;
+    }
+    
+    try {
+        // Decode JWT token to check expiration
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const currentTime = Date.now() / 1000;
         
-        this.init();
-    }
-
-    async init() {
-        await this.loadMenuItems();
-        this.setupEventListeners();
-        this.updateCartDisplay();
-        this.setupSearchFunctionality();
-        this.setupCategoryFilter();
-        // Auto-refresh menu every 10 seconds
-        this.startMenuAutoRefresh();
-    }
-
-    generateOrderId() {
-        const timestamp = Date.now();
-        const random = Math.floor(Math.random() * 1000);
-        return `#${timestamp.toString().slice(-6)}${random.toString().padStart(3, '0')}`;
-    }
-
-    async loadMenuItems() {
-        // Fetch menu data from backend
-        try {
-            const response = await fetch('http://localhost:3000/api/v1/menu/all');
-            const data = await response.json();
-            console.log('Menu data received:', data); // Debug log
-            
-            if (data.success && Array.isArray(data.data)) {
-                this.menuItems = data.data;
-                console.log('Menu items loaded:', this.menuItems.length); // Debug log
-                console.log('Sample menu item:', this.menuItems[0]); // Debug log to see image field
-                this.renderMenuItems();
-            } else {
-                console.log('Menu data structure:', data); // Debug log
-                // If no menu items from backend, use sample data for testing
-                if (!data.data || data.data.length === 0) {
-                    this.menuItems = [
-                        {
-                            _id: 'sample1',
-                            name: 'Tonkotsu Ramen',
-                            price: 249.00,
-                            category: 'Ramen',
-                            image: '1752557989055-484669850-5.png' // Use actual uploaded image filename
-                        },
-                        {
-                            _id: 'sample2',
-                            name: 'Shoyu Ramen',
-                            price: 229.00,
-                            category: 'Ramen',
-                            image: '1752734566327-250033116-alfonso.png' // Use actual uploaded image filename
-                        },
-                        {
-                            _id: 'sample3',
-                            name: 'Miso Ramen',
-                            price: 239.00,
-                            category: 'Ramen',
-                            image: '1752735156274-179138818-red label.png' // Use actual uploaded image filename
-                        },
-                        {
-                            _id: 'sample4',
-                            name: 'Gyoza (6 pcs)',
-                            price: 129.00,
-                            category: 'Side Dishes',
-                            image: '1752735357952-346936489-day.jpg' // Use actual uploaded image filename
-                        }
-                    ];
-                    console.log('Using sample menu data'); // Debug log
-                } else {
-                    this.menuItems = [];
-                }
-                this.renderMenuItems();
-                if (!data.data || data.data.length === 0) {
-                    this.showNotification('Using sample menu data - no items in backend', 'info');
-                } else {
-                    this.showNotification('Failed to load menu from backend', 'warning');
-                }
-            }
-        } catch (err) {
-            console.error('Error loading menu:', err); // Debug log
-            this.menuItems = [];
-            this.renderMenuItems();
-            this.showNotification('Error connecting to backend for menu', 'warning');
+        console.log('Token payload:', payload);
+        console.log('Current time:', currentTime);
+        console.log('Token expires at:', payload.exp);
+        
+        if (payload.exp && payload.exp < currentTime) {
+            console.log('Token expired, removing from storage');
+            localStorage.removeItem('authToken');
+            return false;
         }
+        
+        console.log('Token is valid');
+        return true;
+    } catch (error) {
+        console.error('Error checking token:', error);
+        localStorage.removeItem('authToken');
+        return false;
     }
+}
 
-    renderMenuItems() {
-        const grid = document.getElementById('menuItemsGrid');
-        if (!grid) return;
-        if (!this.menuItems || this.menuItems.length === 0) {
-            grid.innerHTML = '<div class="text-center text-muted py-4">No menu items available</div>';
+function redirectToLogin() {
+    console.log('Redirecting to login due to authentication failure');
+    localStorage.removeItem('authToken'); // Clear invalid token
+    window.location.href = '../login.html';
+}
+
+// API request helper
+async function apiRequest(endpoint, options = {}) {
+    const token = getAuthToken();
+    
+    const defaultOptions = {
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` })
+        }
+    };
+
+    const config = {
+        ...defaultOptions,
+        ...options,
+        headers: {
+            ...defaultOptions.headers,
+            ...options.headers
+        }
+    };
+
+    try {
+        console.log(`Making API request to: ${API_BASE_URL}${endpoint}`);
+        console.log('Using token:', token ? 'Yes' : 'No');
+        
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+        
+        console.log(`Response status: ${response.status}`);
+        
+        if (response.status === 401) {
+            console.log('Authentication failed, redirecting to login');
+            redirectToLogin();
             return;
         }
-        grid.innerHTML = this.menuItems.map(item => {
-            // Use the image field from database - it contains the filename
-            const imageUrl = item.image ? `http://localhost:3000/uploads/menus/${item.image}` : '';
-            const fallbackImage = '../assets/ramen1.jpg'; // Default fallback image
-            
-            return `
-                <div class="col-6 col-sm-4 col-md-3">
-                    <div class="card menu-item" data-bs-toggle="modal" data-bs-target="#productModal"
-                        data-name="${item.name}" data-price="${item.price}" data-category="${item.category}" data-image="${imageUrl}">
-                        <img src="${imageUrl}" class="card-img-top" alt="${item.name}" 
-                             onerror="this.src='${fallbackImage}'; this.onerror=null;"
-                             style="height: 120px; object-fit: scale-down;">
-                        <div class="card-body p-2">
-                            <h6 class="card-title mb-1">${item.name}</h6>
-                            <p class="card-text text-danger mb-0">₱${item.price.toFixed(2)}</p>
-                        </div>
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`HTTP ${response.status} error:`, errorText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('API response data:', data);
+        return data;
+    } catch (error) {
+        console.error('API request failed:', error);
+        throw error;
+    }
+}
+
+// DOM Elements
+let menuItemsGrid = null;
+let cartItemsContainer = null;
+let cartTotal = null;
+let searchInput = null;
+let categoryButtons = null;
+let orderTypeButtons = null;
+let paymentMethodButtons = null;
+
+// Initialize DOM elements
+function initializeDOMElements() {
+    menuItemsGrid = document.getElementById('menuItemsGrid');
+    cartItemsContainer = document.getElementById('cartItems');
+    cartTotal = document.getElementById('cartTotal');
+    searchInput = document.getElementById('searchInput');
+    categoryButtons = document.querySelectorAll('[data-category]');
+    orderTypeButtons = document.querySelectorAll('[data-order-type]');
+    paymentMethodButtons = document.querySelectorAll('[data-payment]');
+}
+
+// Modal instance
+let menuItemModal = null;
+let paymentModal = null;
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize DOM elements
+    initializeDOMElements();
+    
+    // Check authentication
+    if (!isAuthenticated()) {
+        console.log('User not authenticated, redirecting to login');
+        redirectToLogin();
+        return;
+    }
+
+    console.log('User authenticated, loading POS system');
+    await loadMenuItems();
+    setupEventListeners();
+    setupModals();
+    updateCart();
+});
+
+// Setup Bootstrap modals
+function setupModals() {
+    const menuItemModalElement = document.getElementById('menuItemModal');
+    const paymentModalElement = document.getElementById('paymentModal');
+    
+    if (menuItemModalElement) {
+        menuItemModal = new bootstrap.Modal(menuItemModalElement, {
+            backdrop: true,
+            keyboard: true,
+            focus: true
+        });
+    }
+    
+    if (paymentModalElement) {
+        paymentModal = new bootstrap.Modal(paymentModalElement, {
+            backdrop: true,
+            keyboard: true,
+            focus: true
+        });
+    }
+}
+
+// Load menu items from API
+async function loadMenuItems() {
+    try {
+        const response = await apiRequest('/menu/all');
+        console.log('API Response:', response);
+        
+        if (response && response.success) {
+            menuItems = response.data || [];
+        } else {
+            menuItems = [];
+        }
+        
+        console.log('Menu items loaded:', menuItems.length);
+        if (menuItems.length > 0) {
+            console.log('Sample menu item:', menuItems[0]);
+            console.log('Sample menu item image:', menuItems[0].image);
+        }
+        
+        renderMenuItems();
+    } catch (error) {
+        console.error('Failed to load menu items:', error);
+        menuItems = [];
+        renderMenuItems();
+        // Don't show error alert for now to avoid blocking the page
+    }
+}
+
+// Setup Event Listeners
+function setupEventListeners() {
+    // Search Input
+            searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value.toLowerCase();
+        renderMenuItems();
+            });
+
+    // Category Buttons
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', () => {
+        categoryButtons.forEach(btn => {
+                btn.classList.remove('btn-danger');
+                btn.classList.add('btn-outline-danger');
+            });
+            button.classList.remove('btn-outline-danger');
+            button.classList.add('btn-danger');
+            selectedCategory = button.dataset.category;
+            renderMenuItems();
+        });
+    });
+
+    // Order Type Buttons
+    orderTypeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            orderTypeButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            const orderTypeMap = {
+                'Dine-in': 'dine-in',
+                'Takeout': 'takeout',
+                'Pickup': 'takeout'
+            };
+            orderType = orderTypeMap[button.dataset.orderType] || 'dine-in';
+        });
+    });
+
+    // Payment Method Buttons
+    paymentMethodButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            paymentMethodButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            const paymentMap = {
+                'Cash': 'cash',
+                'GCash': 'gcash',
+                'Maya': 'paymaya'
+            };
+            paymentMethod = paymentMap[button.dataset.payment] || 'cash';
+        });
+    });
+
+    // Modal quantity controls
+    const decreaseBtn = document.getElementById('decreaseQuantity');
+    const increaseBtn = document.getElementById('increaseQuantity');
+    const quantityInput = document.getElementById('modalQuantity');
+
+    if (decreaseBtn) {
+        decreaseBtn.addEventListener('click', () => {
+            const currentValue = parseInt(quantityInput.value) || 1;
+            if (currentValue > 1) {
+                quantityInput.value = currentValue - 1;
+                updateModalTotal();
+            }
+        });
+    }
+
+    if (increaseBtn) {
+        increaseBtn.addEventListener('click', () => {
+            const currentValue = parseInt(quantityInput.value) || 1;
+            quantityInput.value = currentValue + 1;
+            updateModalTotal();
+        });
+    }
+
+    if (quantityInput) {
+        quantityInput.addEventListener('input', () => {
+            updateModalTotal();
+        });
+    }
+
+    // Add-ons selection
+    document.querySelectorAll('.addon-card input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            handleAddonSelection(e.target);
+            updateModalTotal();
+        });
+    });
+
+
+
+    // Add to cart button
+    const addToCartBtn = document.getElementById('addToCartBtn');
+    if (addToCartBtn) {
+        addToCartBtn.addEventListener('click', handleAddToCart);
+    }
+
+    // Checkout Button
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', handleCheckout);
+    }
+
+    // Confirm Order Button
+    const confirmOrderBtn = document.getElementById('confirmOrderBtn');
+    if (confirmOrderBtn) {
+        confirmOrderBtn.addEventListener('click', handlePaymentConfirm);
+    }
+
+    // Sidebar Toggle
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const closeSidebar = document.getElementById('closeSidebar');
+    
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('show');
+        });
+    }
+
+    if (closeSidebar) {
+        closeSidebar.addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.remove('show');
+        });
+    }
+}
+
+// Format category for display
+function formatCategory(category) {
+    const categoryMap = {
+        'ramen': 'Ramen',
+        'rice bowls': 'Rice Bowls',
+        'side dishes': 'Side Dishes',
+        'sushi': 'Sushi',
+        'party trays': 'Party Trays',
+        'add-ons': 'Add-ons',
+        'drinks': 'Drinks'
+    };
+    return categoryMap[category] || category;
+}
+
+// Render Menu Items
+function renderMenuItems() {
+    if (!menuItemsGrid) {
+        console.error('Menu items grid not found');
+        return;
+    }
+    
+    const filteredItems = menuItems.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(searchQuery);
+        const matchesCategory = selectedCategory === 'All' || formatCategory(item.category) === selectedCategory;
+        // Hide add-ons category from the main menu display
+        const isNotAddOn = item.category.toLowerCase() !== 'add-ons';
+        return matchesSearch && matchesCategory && isNotAddOn;
+    });
+
+    console.log('Rendering menu items:', filteredItems.length);
+    console.log('Filtered out add-ons from main menu display');
+    
+    menuItemsGrid.innerHTML = filteredItems.map(item => {
+        // Use the image directly from backend data
+        const backendImage = item.image;
+        const imageUrl = getImageUrl(backendImage);
+        console.log(`Rendering ${item.name} with backend image: ${backendImage} -> ${imageUrl}`);
+        
+        return `
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card h-100 menu-item-card" onclick="openModal('${item._id}', '${item.name}', ${item.price}, '${item.category}', '${backendImage}')">
+                    <img src="${imageUrl}" class="card-img-top" alt="${item.name}" style="height: 150px; object-fit: cover;" onerror="this.src='../assets/ramen1.jpg'">
+                    <div class="card-body p-2">
+                        <h6 class="card-title mb-1">${item.name}</h6>
+                        <p class="card-text text-danger fw-bold mb-0">₱${item.price.toFixed(2)}</p>
                     </div>
                 </div>
-            `;
-        }).join('');
+            </div>
+        `;
+    }).join('');
+}
+
+// Helper function to get correct image URL from backend data
+function getImageUrl(imagePath) {
+    console.log('Processing image path from backend:', imagePath);
+    
+    if (!imagePath) {
+        console.log('No image path provided, using default');
+        return '../assets/ramen1.jpg';
     }
-
-    setupEventListeners() {
-        // Product modal events
-        const productModal = document.getElementById('productModal');
-        if (productModal) {
-            productModal.addEventListener('show.bs.modal', (event) => {
-                this.handleModalShow(event);
-            });
-        }
-
-        // Quantity controls
-        const decrementBtn = document.getElementById('decrementQuantity');
-        const incrementBtn = document.getElementById('incrementQuantity');
-        const quantityInput = document.getElementById('productQuantity');
-
-        if (decrementBtn && incrementBtn && quantityInput) {
-            decrementBtn.addEventListener('click', () => this.decrementQuantity());
-            incrementBtn.addEventListener('click', () => this.incrementQuantity());
-            quantityInput.addEventListener('change', () => this.validateQuantity());
-        }
-
-        // Add to cart button
-        const addToCartBtn = document.getElementById('addToCartBtn');
-        if (addToCartBtn) {
-            addToCartBtn.addEventListener('click', () => this.addToCart());
-        }
-
-        // Order type buttons
-        document.querySelectorAll('[data-order-type]').forEach(btn => {
-            btn.addEventListener('click', (e) => this.setOrderType(e.target.dataset.orderType));
-        });
-
-        // Payment method buttons
-        document.querySelectorAll('[data-payment-method]').forEach(btn => {
-            btn.addEventListener('click', (e) => this.setPaymentMethod(e.target.dataset.paymentMethod));
-        });
-
-        // Checkout button
-        const checkoutBtn = document.getElementById('checkoutBtn');
-        if (checkoutBtn) {
-            checkoutBtn.addEventListener('click', () => this.processCheckout());
-        }
-
-        // Sidebar toggle
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const closeSidebar = document.getElementById('closeSidebar');
-        const sidebar = document.querySelector('.sidebar');
-
-        if (sidebarToggle && closeSidebar && sidebar) {
-            sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('show'));
-            closeSidebar.addEventListener('click', () => sidebar.classList.remove('show'));
-        }
-
-        // Cart item controls
-        this.setupCartItemControls();
+    
+    // If it's already a full URL, return as is
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        console.log('Full URL detected:', imagePath);
+        return imagePath;
     }
-
-    setupSearchFunctionality() {
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                this.filterMenuItems(e.target.value);
-            });
-        }
+    
+    // If it starts with /uploads/, it's a backend uploaded image
+    if (imagePath.startsWith('/uploads/')) {
+        const fullUrl = `http://localhost:3000${imagePath}`;
+        console.log('Backend uploaded image:', fullUrl);
+        return fullUrl;
     }
-
-    setupCategoryFilter() {
-        const categoryButtons = document.querySelectorAll('.category-container .btn');
-        categoryButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                // Remove active class from all buttons
-                categoryButtons.forEach(b => b.classList.remove('btn-danger'));
-                categoryButtons.forEach(b => b.classList.add('btn-outline-danger'));
-                
-                // Add active class to clicked button
-                e.target.classList.remove('btn-outline-danger');
-                e.target.classList.add('btn-danger');
-                
-                const category = e.target.textContent.trim();
-                this.filterByCategory(category);
-            });
-        });
+    
+    // If it's a relative path from backend (../assets/...), use it directly
+    if (imagePath.startsWith('../assets/')) {
+        console.log('Using backend asset path:', imagePath);
+        return imagePath;
     }
-
-    setupCartItemControls() {
-        // Delegate event listeners for cart item controls
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('.cart-item-quantity-btn')) {
-                const itemId = e.target.closest('.cart-item').dataset.itemId;
-                const action = e.target.closest('.cart-item-quantity-btn').dataset.action;
-                
-                if (action === 'decrease') {
-                    this.decreaseCartItemQuantity(itemId);
-                } else if (action === 'increase') {
-                    this.increaseCartItemQuantity(itemId);
-                }
-            }
-            
-            if (e.target.closest('.cart-item-remove')) {
-                const itemId = e.target.closest('.cart-item').dataset.itemId;
-                this.removeFromCart(itemId);
-            }
-        });
+    
+    // If it's just a filename (like uploaded images), it's a backend uploaded image
+    if (!imagePath.includes('/') && imagePath.includes('.')) {
+        const fullUrl = `http://localhost:3000/uploads/menus/${imagePath}`;
+        console.log('Backend uploaded filename, using uploads path:', fullUrl);
+        return fullUrl;
     }
+    
+    // If it's just a filename without extension, assume it's in assets
+    if (!imagePath.includes('/')) {
+        const assetPath = `../assets/${imagePath}`;
+        console.log('Backend filename, using assets path:', assetPath);
+        return assetPath;
+    }
+    
+    // If it's any other path from backend, try to use it as is
+    console.log('Using backend path as is:', imagePath);
+    return imagePath;
+}
 
-    handleModalShow(event) {
-        const button = event.relatedTarget;
-        const name = button.getAttribute('data-name');
-        const price = button.getAttribute('data-price');
-        const image = button.getAttribute('data-image');
-        const category = button.getAttribute('data-category');
+// Open Modal
+function openModal(itemId, itemName, itemPrice, itemCategory, itemImage) {
+    console.log('Opening modal with backend image:', itemImage);
+    
+    currentModalItem = {
+        id: itemId,
+        name: itemName,
+        price: itemPrice,
+        category: itemCategory,
+        image: itemImage
+    };
+
+    // Reset modal state
+    resetModalState();
+
+    // Update modal content using backend image
+    document.getElementById('menuItemModalLabel').textContent = itemName;
+    document.getElementById('modalItemImage').src = getImageUrl(itemImage);
+    document.getElementById('modalItemPrice').textContent = `₱${itemPrice.toFixed(2)}`;
+    document.getElementById('modalQuantity').value = '1';
+
+    // Show/hide sections based on category
+    toggleModalSections(itemCategory);
+
+    // Update total
+    updateModalTotal();
+
+    // Show modal
+    if (menuItemModal) {
+        menuItemModal.show();
+    }
+}
+
+// Reset modal state
+function resetModalState() {
+    // Reset add-ons
+    document.querySelectorAll('.addon-card input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    selectedAddons = [];
+
+
+
+    // Reset add-ons selection
+    this.selectedAddons = [];
+}
+
+// Toggle modal sections and load add-ons
+function toggleModalSections(category) {
+    const addOnsSection = document.getElementById('addOnsSection');
+    const addOnsGrid = document.getElementById('addOnsGrid');
+
+    if (category.toLowerCase() === 'ramen') {
+        if (addOnsSection) addOnsSection.classList.remove('d-none');
         
-        // Set modal content
-        document.getElementById('productModalTitle').textContent = name;
-        document.getElementById('productModalPrice').textContent = `₱${price}`;
-        
-        // Handle image with fallback
-        const modalImage = document.getElementById('productModalImage');
-        const fallbackImage = '../assets/ramen1.jpg';
-        
-        // Use the image URL passed from the card (which should be the full backend URL)
-        modalImage.src = image || fallbackImage;
-        modalImage.alt = name;
-        modalImage.onerror = function() {
-            console.log('Image failed to load:', image); // Debug log
-            this.src = fallbackImage;
-            this.onerror = null;
-        };
-        
-        // Show/hide add-ons based on category
-        const addonsSection = document.getElementById('addonsSection');
-        if (category === 'Ramen') {
-            addonsSection.classList.remove('d-none');
-        } else {
-            addonsSection.classList.add('d-none');
-        }
-        
-        // Reset form
-        document.getElementById('productQuantity').value = 1;
-        document.getElementById('extraNoodles').checked = false;
-        document.getElementById('extraChashu').checked = false;
-        document.getElementById('extraEgg').checked = false;
-        document.getElementById('specialInstructions').value = '';
-        
-        // Store current item data
-        this.currentModalItem = {
-            name,
-            price: parseFloat(price),
-            image,
-            category
-        };
+        // Load add-ons from menu data
+        loadAddOnsFromMenu();
+            } else {
+        if (addOnsSection) addOnsSection.classList.add('d-none');
     }
+}
 
-    decrementQuantity() {
-        const quantityInput = document.getElementById('productQuantity');
-        let value = parseInt(quantityInput.value);
-        if (value > 1) {
-            quantityInput.value = value - 1;
-        }
-    }
+// Load add-ons from menu data
+function loadAddOnsFromMenu() {
+    const addOnsGrid = document.getElementById('addOnsGrid');
+    if (!addOnsGrid) return;
 
-    incrementQuantity() {
-        const quantityInput = document.getElementById('productQuantity');
-        let value = parseInt(quantityInput.value);
-        quantityInput.value = value + 1;
-    }
+    // Filter menu items to get only add-ons
+    const addOns = menuItems.filter(item => item.category.toLowerCase() === 'add-ons');
+    
+    console.log('Loading add-ons from menu:', addOns);
 
-    validateQuantity() {
-        const quantityInput = document.getElementById('productQuantity');
-        let value = parseInt(quantityInput.value);
-        if (value < 1) {
-            quantityInput.value = 1;
-        }
-    }
-
-    addToCart() {
-        if (!this.currentModalItem) return;
-
-        const quantity = parseInt(document.getElementById('productQuantity').value);
-        const specialInstructions = document.getElementById('specialInstructions').value;
-        // Get selected add-ons
-        const selectedAddons = [];
-        Object.keys(this.addons).forEach(addonKey => {
-            const checkbox = document.getElementById(addonKey);
-            if (checkbox && checkbox.checked) {
-                // Find backend menu _id for this add-on by name
-                const backendAddon = this.menuItems.find(item => item.name === this.addons[addonKey].name && item.category.toLowerCase() === 'add-ons');
-                if (backendAddon) {
-                    selectedAddons.push({
-                        menuItem: backendAddon._id,
-                        quantity: 1,
-                        price: backendAddon.price
-                    });
-                } else {
-                    // fallback: use name/price only if not found
-                    selectedAddons.push({
-                        name: this.addons[addonKey].name,
-                        price: this.addons[addonKey].price
-                    });
-                }
-            }
-        });
-        // Find backend menu _id for main item
-        const backendMenuItem = this.menuItems.find(item => item.name === this.currentModalItem.name);
-        let menuItemId = backendMenuItem ? backendMenuItem._id : null;
-        let itemPrice = this.currentModalItem.price;
-        selectedAddons.forEach(addon => {
-            itemPrice += addon.price || 0;
-        });
-        const cartItem = {
-            id: Date.now() + Math.random(),
-            name: this.currentModalItem.name,
-            price: itemPrice,
-            quantity: quantity,
-            addons: selectedAddons,
-            specialInstructions: specialInstructions,
-            total: itemPrice * quantity,
-            menuItemId: menuItemId // store backend _id
-        };
-        // Check if item already exists in cart
-        const existingItemIndex = this.cart.findIndex(item => 
-            item.name === cartItem.name && 
-            JSON.stringify(item.addons) === JSON.stringify(cartItem.addons) &&
-            item.specialInstructions === cartItem.specialInstructions
-        );
-        if (existingItemIndex !== -1) {
-            // Update existing item quantity
-            this.cart[existingItemIndex].quantity += quantity;
-            this.cart[existingItemIndex].total = this.cart[existingItemIndex].price * this.cart[existingItemIndex].quantity;
-        } else {
-            // Add new item
-            this.cart.push(cartItem);
-        }
-        this.updateCartDisplay();
-        this.updateTotal();
-        // Close modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById('productModal'));
-        modal.hide();
-        // Show success message
-        this.showNotification('Item added to cart!', 'success');
-    }
-
-    removeFromCart(itemId) {
-        this.cart = this.cart.filter(item => item.id !== parseInt(itemId));
-        this.updateCartDisplay();
-        this.updateTotal();
-        this.showNotification('Item removed from cart!', 'info');
-    }
-
-    decreaseCartItemQuantity(itemId) {
-        const item = this.cart.find(item => item.id === parseInt(itemId));
-        if (item && item.quantity > 1) {
-            item.quantity--;
-            item.total = item.price * item.quantity;
-            this.updateCartDisplay();
-            this.updateTotal();
-        } else if (item && item.quantity === 1) {
-            this.removeFromCart(itemId);
-        }
-    }
-
-    increaseCartItemQuantity(itemId) {
-        const item = this.cart.find(item => item.id === parseInt(itemId));
-        if (item) {
-            item.quantity++;
-            item.total = item.price * item.quantity;
-            this.updateCartDisplay();
-            this.updateTotal();
-        }
-    }
-
-    updateCartDisplay() {
-        const cartContainer = document.getElementById('cartItems');
-        if (!cartContainer) return;
-
-        if (this.cart.length === 0) {
-            cartContainer.innerHTML = '<div class="text-center text-muted py-4">Cart is empty</div>';
-            return;
-        }
-
-        cartContainer.innerHTML = this.cart.map(item => `
-            <div class="border rounded p-2 mb-2 cart-item" data-item-id="${item.id}">
-                <div class="d-flex justify-content-between">
-                    <div class="d-flex flex-column justify-content-between">
-                        <strong class="mb-1">${item.name}</strong>
-                        ${item.addons.length > 0 ? `<small class="text-muted">${item.addons.map(addon => addon.name).join(', ')}</small>` : ''}
-                        ${item.specialInstructions ? `<small class="text-muted">Note: ${item.specialInstructions}</small>` : ''}
-                        <div class="d-flex align-items-center">
-                            <button class="btn btn-sm btn-outline-danger me-1 px-2 py-1 cart-item-quantity-btn" data-action="decrease">
-                                <i class="fas fa-minus" style="font-size: 0.7rem;"></i>
-                            </button>
-                            <span class="mx-1">${item.quantity}</span>
-                            <button class="btn btn-sm btn-outline-danger ms-1 px-2 py-1 cart-item-quantity-btn" data-action="increase">
-                                <i class="fas fa-plus" style="font-size: 0.7rem;"></i>
-                            </button>
+    if (addOns.length > 0) {
+        addOnsGrid.innerHTML = addOns.map(addon => `
+            <div class="col-6">
+                <div class="card addon-card" data-addon="${addon._id}" data-price="${addon.price}">
+                    <div class="card-body p-2 text-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="addon_${addon._id}">
+                            <label class="form-check-label" for="addon_${addon._id}">
+                                <img src="${getImageUrl(addon.image)}" class="img-fluid mb-1" style="height: 40px; object-fit: cover;" alt="${addon.name}">
+                                <small>${addon.name}</small>
+                                <div class="text-danger small">+₱${addon.price.toFixed(2)}</div>
+                            </label>
                         </div>
-                    </div>
-                    <div class="text-end d-flex flex-column justify-content-between align-items-end">
-                        <span class="text-danger">₱${item.total.toFixed(2)}</span>
-                        <a href="#" class="text-danger small cart-item-remove"><i class="fas fa-trash-alt"></i></a>
                     </div>
                 </div>
             </div>
         `).join('');
-    }
 
-    updateTotal() {
-        const subtotal = this.cart.reduce((sum, item) => sum + item.total, 0);
-        const total = subtotal;
-
-        this.currentOrder.subtotal = subtotal;
-        this.currentOrder.total = total;
-
-        // Update display
-        const totalElement = document.querySelector('.cart-footer h5.text-danger');
-        if (totalElement) {
-            totalElement.textContent = `₱${total.toFixed(2)}`;
-        }
-
-        // Update order number
-        const orderNumberElement = document.querySelector('.card-header .text-muted');
-        if (orderNumberElement) {
-            orderNumberElement.textContent = this.currentOrder.id;
-        }
-    }
-
-    setOrderType(type) {
-        // Map button type to backend value
-        let backendType = type;
-        if (type === 'Takeout' || type === 'takeout') backendType = 'takeout';
-        if (type === 'Pickup' || type === 'pickup') backendType = 'pickup';
-        if (type === 'Dine-in' || type === 'dine-in') backendType = 'dine-in';
-        this.currentOrder.orderType = backendType;
-        // Update button states
-        document.querySelectorAll('[data-order-type]').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.orderType === type) {
-                btn.classList.add('active');
-            }
-        });
-    }
-
-    setPaymentMethod(method) {
-        this.currentOrder.paymentMethod = method;
-        
-        // Update button states
-        document.querySelectorAll('[data-payment-method]').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.paymentMethod === method) {
-                btn.classList.add('active');
-            }
-        });
-    }
-
-    filterMenuItems(searchTerm) {
-        const menuItems = document.querySelectorAll('.menu-item');
-        const term = searchTerm.toLowerCase();
-
-        menuItems.forEach(item => {
-            const name = item.querySelector('.card-title').textContent.toLowerCase();
-            const category = item.dataset.category.toLowerCase();
-            
-            if (name.includes(term) || category.includes(term)) {
-                item.closest('.col-6').style.display = '';
-            } else {
-                item.closest('.col-6').style.display = 'none';
-            }
-        });
-    }
-
-    filterByCategory(category) {
-        const menuItems = document.querySelectorAll('.menu-item');
-        
-        menuItems.forEach(item => {
-            const itemCategory = item.dataset.category;
-            
-            if (category === 'All' || itemCategory === category) {
-                item.closest('.col-6').style.display = '';
-            } else {
-                item.closest('.col-6').style.display = 'none';
-            }
-        });
-    }
-
-    async processCheckout() {
-        if (this.cart.length === 0) {
-            this.showNotification('Cart is empty!', 'warning');
-            return;
-        }
-        // For simplicity, treat the first cart item as the main menu item, others as add-ons (or adjust as needed)
-        const mainItem = this.cart[0];
-        if (!mainItem.menuItemId) {
-            this.showNotification('Menu item ID missing for main item!', 'warning');
-            return;
-        }
-        // Prepare addOns array for backend (skip main item)
-        const addOns = this.cart.slice(1).map(item => ({
-            menuItem: item.menuItemId,
-            quantity: item.quantity
-        })).filter(addon => addon.menuItem); // only include if menuItemId exists
-        // Prepare order data for backend
-        const orderData = {
-            menuItem: mainItem.menuItemId,
-            quantity: mainItem.quantity,
-            addOns: addOns,
-            paymentMethod: this.currentOrder.paymentMethod,
-            serviceType: this.currentOrder.orderType
-        };
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:3000/api/v1/sales/new-sale', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(orderData)
+        // Re-attach event listeners for new add-on checkboxes
+        document.querySelectorAll('.addon-card input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                handleAddonSelection(e.target);
+                updateModalTotal();
             });
-            const data = await response.json();
-            if (response.ok) {
-                this.showOrderConfirmation({
-                    id: data.orderID || data._id || '',
-                    subtotal: mainItem.price * mainItem.quantity,
-                    total: data.totalAmount || mainItem.price * mainItem.quantity
                 });
             } else {
-                this.showNotification(data.message || 'Checkout failed', 'warning');
-            }
-        } catch (err) {
-            this.showNotification('Error connecting to backend for checkout', 'warning');
-        }
-    }
-
-    showOrderConfirmation(orderData) {
-        const modal = `
-            <div class="modal fade" id="orderConfirmationModal" tabindex="-1">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Order Confirmation</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        // If no add-ons in menu, show default ones
+        addOnsGrid.innerHTML = `
+            <div class="col-6">
+                <div class="card addon-card" data-addon="extraNoodles" data-price="50">
+                    <div class="card-body p-2 text-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="extraNoodles">
+                            <label class="form-check-label" for="extraNoodles">
+                                <i class="fas fa-utensils mb-1 d-block"></i>
+                                <small>Extra Noodles</small>
+                                <div class="text-danger small">+₱50</div>
+                            </label>
                         </div>
-                        <div class="modal-body">
-                            <div class="text-center mb-3">
-                                <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
-                                <h4 class="mt-2">Order Successful!</h4>
-                                <p class="text-muted">Order ID: ${orderData.id}</p>
-                            </div>
-                            <div class="border rounded p-3">
-                                <h6>Order Summary:</h6>
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Subtotal:</span>
-                                    <span>₱${orderData.subtotal.toFixed(2)}</span>
-                                </div>
-                                <div class="d-flex justify-content-between fw-bold">
-                                    <span>Total:</span>
-                                    <span>₱${orderData.total.toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-danger" onclick="posSystem.printReceipt()">Print Receipt</button>
+            <div class="col-6">
+                <div class="card addon-card" data-addon="extraChashu" data-price="80">
+                    <div class="card-body p-2 text-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="extraChashu">
+                            <label class="form-check-label" for="extraChashu">
+                                <i class="fas fa-drumstick-bite mb-1 d-block"></i>
+                                <small>Extra Chashu</small>
+                                <div class="text-danger small">+₱80</div>
+                            </label>
                         </div>
                     </div>
                 </div>
             </div>
         `;
+    }
+}
 
-        // Remove existing modal if any
-        const existingModal = document.getElementById('orderConfirmationModal');
-        if (existingModal) {
-            existingModal.remove();
+// Handle addon selection
+function handleAddonSelection(checkbox) {
+    const addonId = checkbox.id;
+    const addonCard = checkbox.closest('.addon-card');
+    const addonPrice = parseFloat(addonCard.dataset.price);
+    const addonName = addonCard.querySelector('small').textContent;
+    
+    // Extract the actual ObjectId from the checkbox ID
+    // Checkbox ID format: "addon_6879a1f70355e876dc25c9d9" -> extract "6879a1f70355e876dc25c9d9"
+    const actualAddonId = addonId.startsWith('addon_') ? addonId.substring(6) : addonId;
+
+    console.log('Addon selection:', { 
+        checkboxId: addonId, 
+        actualId: actualAddonId, 
+        name: addonName, 
+        price: addonPrice, 
+        checked: checkbox.checked 
+    });
+
+    if (checkbox.checked) {
+        selectedAddons.push({
+            id: actualAddonId, // Store the actual ObjectId
+            checkboxId: addonId, // Keep checkbox ID for UI operations
+            name: addonName,
+            price: addonPrice
+        });
+    } else {
+        selectedAddons = selectedAddons.filter(addon => addon.checkboxId !== addonId);
+    }
+    
+    console.log('Current selected addons:', selectedAddons);
+}
+
+
+
+// Update modal total
+function updateModalTotal() {
+    if (!currentModalItem) return;
+
+    const basePrice = currentModalItem.price;
+    const quantity = parseInt(document.getElementById('modalQuantity').value) || 1;
+    const addonsTotal = selectedAddons.reduce((sum, addon) => sum + addon.price, 0);
+    const total = (basePrice + addonsTotal) * quantity;
+
+    const totalElement = document.getElementById('modalTotalPrice');
+    if (totalElement) {
+        totalElement.textContent = `₱${total.toFixed(2)}`;
+    }
+}
+
+// Handle Add to Cart
+function handleAddToCart() {
+    if (!currentModalItem) return;
+
+    const quantity = parseInt(document.getElementById('modalQuantity').value) || 1;
+
+    const cartItem = {
+        ...currentModalItem,
+        quantity: quantity,
+        addons: [...selectedAddons],
+        total: parseFloat(document.getElementById('modalTotalPrice').textContent.replace('₱', ''))
+    };
+
+    cartItems.push(cartItem);
+    updateCart();
+
+    // Close modal
+    if (menuItemModal) {
+        menuItemModal.hide();
+    }
+
+    // Show notification
+    Swal.fire({
+        icon: 'success',
+        title: 'Added to Cart!',
+        text: `${cartItem.name} has been added to your cart.`,
+        timer: 1500,
+        showConfirmButton: false
+    });
+}
+
+// Update Cart
+function updateCart() {
+    if (cartItems.length === 0) {
+        cartItemsContainer.innerHTML = '<div class="text-center text-muted py-4">Your cart is empty</div>';
+    } else {
+        cartItemsContainer.innerHTML = cartItems.map((item, index) => `
+            <div class="cart-item border-bottom pb-2 mb-2">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">${item.name}</h6>
+                        <small class="text-muted">
+                            Qty: ${item.quantity} × ₱${item.price.toFixed(2)}
+                            ${item.addons.length > 0 ? `<br>Add-ons: ${item.addons.map(a => a.name).join(', ')}` : ''}
+                        </small>
+                        </div>
+                    <div class="text-end">
+                        <span class="fw-bold">₱${item.total.toFixed(2)}</span>
+                        <button class="btn btn-sm btn-outline-danger ms-2" onclick="removeCartItem(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                            </div>
+                    </div>
+        `).join('');
+    }
+
+    const total = cartItems.reduce((sum, item) => sum + item.total, 0);
+    cartTotal.textContent = `₱${total.toFixed(2)}`;
+}
+
+// Remove Cart Item
+function removeCartItem(index) {
+    cartItems.splice(index, 1);
+    updateCart();
+}
+
+// Handle Checkout
+function handleCheckout() {
+    if (cartItems.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Cart is empty',
+            text: 'Please add items to cart first',
+            confirmButtonColor: '#dc3545'
+        });
+        return;
+    }
+
+    const orderTypeIcon = document.querySelector(`[data-order-type="${orderType === 'dine-in' ? 'Dine-in' : 'Takeout'}"] i`).className;
+    const paymentMethodIcon = document.querySelector(`[data-payment="${paymentMethod === 'cash' ? 'Cash' : paymentMethod === 'gcash' ? 'GCash' : 'Maya'}"] i`).className;
+    const total = cartItems.reduce((sum, item) => sum + item.total, 0);
+
+    document.getElementById('orderTypeIcon').className = orderTypeIcon;
+    document.getElementById('orderTypeText').textContent = orderType === 'dine-in' ? 'Dine-in' : 'Takeout';
+    document.getElementById('paymentMethodIcon').className = paymentMethodIcon;
+    document.getElementById('paymentMethodText').textContent = paymentMethod === 'cash' ? 'Cash' : paymentMethod === 'gcash' ? 'GCash' : 'Maya';
+    document.getElementById('paymentTotal').textContent = `₱${total.toFixed(2)}`;
+
+    if (paymentModal) {
+        paymentModal.show();
+    }
+}
+
+// Handle Payment Confirm
+async function handlePaymentConfirm() {
+    try {
+        // Process each cart item as a separate sale
+        const orderPromises = cartItems.map(async (item) => {
+            const orderData = {
+                menuItem: item.id,
+                quantity: item.quantity,
+                addOns: item.addons.map(addon => ({
+                    menuItem: addon.id, // This is now the actual ObjectId
+                    quantity: 1
+                })),
+                paymentMethod: paymentMethod,
+                serviceType: orderType
+            };
+
+            console.log('Sending individual order data:', orderData);
+            console.log('Add-ons being sent:', orderData.addOns);
+
+            return await apiRequest('/sales/new-sale', {
+                method: 'POST',
+                body: JSON.stringify(orderData)
+            });
+        });
+
+        const responses = await Promise.all(orderPromises);
+        console.log('All order responses:', responses);
+        console.log('Successfully processed orders:', responses.length);
+
+        // Handle successful order
+        Swal.fire({
+            title: 'Order Completed!',
+            text: `Successfully processed ${responses.length} items!`,
+            icon: 'success',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#dc3545'
+        }).then(() => {
+            cartItems = [];
+            updateCart();
+            if (paymentModal) {
+                paymentModal.hide();
+            }
+        });
+
+    } catch (error) {
+        console.error('Error processing order:', error);
+        
+        // Handle different types of errors
+        let errorMessage = 'Failed to process order. Please try again.';
+        
+        if (error.message && error.message.includes('401')) {
+            errorMessage = 'Authentication required. Please log in again.';
+        } else if (error.message && error.message.includes('400')) {
+            errorMessage = 'Invalid order data. Please check your cart.';
+        } else if (error.message && error.message.includes('500')) {
+            errorMessage = 'Server error. Please try again later.';
         }
 
-        // Add modal to DOM
-        document.body.insertAdjacentHTML('beforeend', modal);
-
-        // Show modal
-        const newModal = new bootstrap.Modal(document.getElementById('orderConfirmationModal'));
-        newModal.show();
-
-        // Clear cart after successful order
-        this.clearCart();
+        Swal.fire({
+            icon: 'error',
+            title: 'Order Failed',
+            text: errorMessage,
+            confirmButtonColor: '#dc3545'
+        });
     }
-
-    clearCart() {
-        this.cart = [];
-        this.currentOrder = {
-            id: this.generateOrderId(),
-            items: [],
-            orderType: 'dine-in',
-            paymentMethod: 'cash',
-            total: 0,
-            subtotal: 0,
-            discount: 0
-        };
-        this.updateCartDisplay();
-        this.updateTotal();
-    }
-
-    printReceipt() {
-        // In a real application, this would generate and print a receipt
-        const receiptWindow = window.open('', '_blank');
-        receiptWindow.document.write(`
-            <html>
-                <head>
-                    <title>Receipt</title>
-                    <style>
-                        body { font-family: monospace; margin: 20px; }
-                        .header { text-align: center; margin-bottom: 20px; }
-                        .item { margin: 5px 0; }
-                        .total { border-top: 1px solid #000; margin-top: 20px; padding-top: 10px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h2>RamenXpress</h2>
-                        <p>Order #${this.currentOrder.id}</p>
-                        <p>${new Date().toLocaleString()}</p>
-                    </div>
-                    <div class="items">
-                        ${this.cart.map(item => `
-                            <div class="item">
-                                <div>${item.name} x${item.quantity}</div>
-                                <div>₱${item.total.toFixed(2)}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="total">
-                        <div>Subtotal: ₱${this.currentOrder.subtotal.toFixed(2)}</div>
-                        <div><strong>Total: ₱${this.currentOrder.total.toFixed(2)}</strong></div>
-                    </div>
-                </body>
-            </html>
-        `);
-        receiptWindow.document.close();
-        receiptWindow.print();
-    }
-
-    showNotification(message, type = 'info') {
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `alert alert-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info'} alert-dismissible fade show position-fixed`;
-        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-        notification.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-
-        // Add to page
-        document.body.appendChild(notification);
-
-        // Auto remove after 3 seconds
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.remove();
-            }
-        }, 3000);
-    }
-
-    startMenuAutoRefresh() {
-        this._lastMenuIds = (this.menuItems || []).map(item => item._id);
-        setInterval(async () => {
-            const oldIds = this._lastMenuIds;
-            await this.loadMenuItems();
-            const newIds = (this.menuItems || []).map(item => item._id);
-            // If new menu item(s) detected, show notification
-            if (newIds.length > oldIds.length) {
-                this.showNotification('New menu item(s) available!', 'info');
-            }
-            this._lastMenuIds = newIds;
-            this.renderMenuItems(); // ensure UI updates
-        }, 10000); // 10 seconds
-    }
-}
-
-// Initialize POS system when DOM is loaded
-let posSystem;
-document.addEventListener('DOMContentLoaded', function() {
-    posSystem = new POSSystem();
-});
-
-// Global functions for HTML onclick handlers
-function setOrderType(type) {
-    if (posSystem) posSystem.setOrderType(type);
-}
-
-function setPaymentMethod(method) {
-    if (posSystem) posSystem.setPaymentMethod(method);
-}
-
-function printReceipt() {
-    if (posSystem) posSystem.printReceipt();
 } 

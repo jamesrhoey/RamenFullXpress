@@ -2,6 +2,13 @@
 if (!user.role || user.role !== 'admin') {
   window.location.href = 'pos.html';
 }
+
+// Pagination variables
+let allIngredients = [];
+let filteredIngredients = [];
+let currentPage = 1;
+const itemsPerPage = 10;
+
 // Fetch inventory from backend and render in table
 const API_URL = 'http://localhost:3000/api/v1/inventory/all';
 const CREATE_URL = 'http://localhost:3000/api/v1/inventory/create';
@@ -24,10 +31,31 @@ function getStatusBadge(status, calculatedStatus, isOverridden) {
   return badge;
 }
 
-function renderIngredientsTable(ingredients) {
+function renderIngredientsTableWithPagination(ingredients) {
   const tbody = document.getElementById('ingredientsTableBody');
   if (!tbody) return;
-  tbody.innerHTML = ingredients.map(ingredient => `
+
+  const totalPages = Math.ceil(ingredients.length / itemsPerPage);
+  
+  // Calculate start and end indices for current page
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentIngredients = ingredients.slice(startIndex, endIndex);
+  
+  if (currentIngredients.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center text-muted">
+          <i class="fas fa-inbox fa-2x mb-2"></i>
+          <div>No ingredients found</div>
+        </td>
+      </tr>
+    `;
+    updateInventoryPagination(0, 0);
+    return;
+  }
+
+  tbody.innerHTML = currentIngredients.map(ingredient => `
     <tr>
       <td>${ingredient.name}</td>
       <td>${ingredient.stocks}</td>
@@ -48,6 +76,48 @@ function renderIngredientsTable(ingredients) {
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', (e) => handleDelete(e.target.closest('button').dataset.id));
   });
+
+  // Update pagination controls
+  updateInventoryPagination(totalPages, ingredients.length);
+}
+
+function updateInventoryPagination(totalPages, totalItems) {
+  const prevBtn = document.getElementById('prevPage');
+  const nextBtn = document.getElementById('nextPage');
+  const pageInfo = document.getElementById('pageInfo');
+  
+  if (!prevBtn || !nextBtn || !pageInfo) return;
+
+  const startItem = totalItems > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
+  // Update page info
+  pageInfo.textContent = `Page ${currentPage} of ${totalPages} (Showing ${startItem} to ${endItem} of ${totalItems} ingredients)`;
+
+  // Update button states
+  prevBtn.disabled = currentPage === 1;
+  nextBtn.disabled = currentPage === totalPages;
+
+  // Update button styles
+  if (currentPage === 1) {
+    prevBtn.classList.add('disabled');
+  } else {
+    prevBtn.classList.remove('disabled');
+  }
+
+  if (currentPage === totalPages) {
+    nextBtn.classList.add('disabled');
+  } else {
+    nextBtn.classList.remove('disabled');
+  }
+}
+
+function changeInventoryPage(page) {
+  const totalPages = Math.ceil(filteredIngredients.length / itemsPerPage);
+  if (page >= 1 && page <= totalPages) {
+    currentPage = page;
+    renderIngredientsTableWithPagination(filteredIngredients);
+  }
 }
 
 async function fetchInventory() {
@@ -57,6 +127,21 @@ async function fetchInventory() {
     if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="text-danger">You must be logged in to view inventory.</td></tr>';
     return;
   }
+
+  // Show loading state
+  if (tbody) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <div class="mt-2">Loading ingredients...</div>
+        </td>
+      </tr>
+    `;
+  }
+
   try {
     const response = await fetch(API_URL, {
       headers: {
@@ -66,7 +151,15 @@ async function fetchInventory() {
     if (!response.ok) throw new Error('Failed to fetch inventory');
     const data = await response.json();
     const ingredients = Array.isArray(data) ? data : data.data || [];
-    renderIngredientsTable(ingredients);
+    
+    // Store all ingredients and initialize filtered ingredients
+    allIngredients = ingredients;
+    filteredIngredients = [...ingredients];
+    
+    // Reset to first page
+    currentPage = 1;
+    
+    renderIngredientsTableWithPagination(filteredIngredients);
   } catch (error) {
     console.error('Error fetching inventory:', error);
     if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="text-danger">Failed to load inventory data.</td></tr>';
@@ -77,6 +170,18 @@ async function fetchInventory() {
 let addIngredientModal;
 document.addEventListener('DOMContentLoaded', () => {
   fetchInventory();
+
+  // Add pagination event listeners
+  const prevBtn = document.getElementById('prevPage');
+  const nextBtn = document.getElementById('nextPage');
+  
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => changeInventoryPage(currentPage - 1));
+  }
+  
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => changeInventoryPage(currentPage + 1));
+  }
 
   // Bootstrap modal instance for add
   const modalEl = document.getElementById('addIngredientModal');
@@ -413,7 +518,17 @@ async function handleDelete(id) {
           const data = await response.json();
           throw new Error(data.error || 'Failed to delete ingredient');
         }
-        fetchInventory();
+        
+        // Refresh inventory and maintain current page if possible
+        await fetchInventory();
+        
+        // If current page is now empty, go to previous page
+        const totalPages = Math.ceil(filteredIngredients.length / itemsPerPage);
+        if (currentPage > totalPages && totalPages > 0) {
+          currentPage = totalPages;
+          renderIngredientsTableWithPagination(filteredIngredients);
+        }
+        
         Swal.fire('Deleted!', 'Ingredient has been deleted.', 'success');
       } catch (err) {
         Swal.fire('Error', err.message, 'error');

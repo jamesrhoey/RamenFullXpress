@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../services/socket_service.dart';
 
 class InvoicePage extends StatefulWidget {
   final Map<String, dynamic> order;
@@ -10,9 +11,10 @@ class InvoicePage extends StatefulWidget {
 }
 
 class _InvoicePageState extends State<InvoicePage> {
-  late final Map<String, dynamic> order;
+  late Map<String, dynamic> order;
   late final NumberFormat currencyFormat;
   late final DateFormat dateFormat;
+  late final OrderStatusUpdateCallback _orderStatusUpdateHandler;
 
   @override
   void initState() {
@@ -20,6 +22,26 @@ class _InvoicePageState extends State<InvoicePage> {
     order = widget.order;
     currencyFormat = NumberFormat.currency(symbol: '₱');
     dateFormat = DateFormat('MMM dd, yyyy hh:mm a');
+    // Listen for real-time order status updates
+    SocketService().connect();
+    _orderStatusUpdateHandler = (data) {
+      if (!mounted) return;
+      if (data['orderId'] == order['id'] || data['orderId'] == order['_id']) {
+        setState(() {
+          order = Map<String, dynamic>.from(data['order']);
+        });
+      }
+    };
+    SocketService().onOrderStatusUpdate = _orderStatusUpdateHandler;
+  }
+
+  @override
+  void dispose() {
+    // Remove the order status update handler to prevent setState after dispose
+    if (SocketService().onOrderStatusUpdate == _orderStatusUpdateHandler) {
+      SocketService().onOrderStatusUpdate = null;
+    }
+    super.dispose();
   }
 
   String _formatDate(dynamic dateValue) {

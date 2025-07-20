@@ -3,10 +3,13 @@ import 'invoice_page.dart';
 import '../services/cart_service.dart';
 import '../services/order_service.dart';
 import '../services/api_service.dart';
+import '../services/menu_service.dart';
 import '../models/cart_item.dart';
 import '../models/menu_item.dart';
 import '../models/delivery_address.dart';
 import '../models/payment_method.dart';
+import 'edit_payment_method_page.dart';
+import 'paymentmethod_page.dart';
 
 class PaymentPage extends StatefulWidget {
   final Map<String, dynamic>? orderData;
@@ -27,6 +30,8 @@ class _PaymentPageState extends State<PaymentPage> {
   final CartService _cartService = CartService();
   final OrderService _orderService = OrderService();
   final ApiService _apiService = ApiService();
+  final MenuService _menuService = MenuService();
+  List<MenuItem> _addOns = [];
 
   // API Data
   List<DeliveryAddress> deliveryAddresses = [];
@@ -53,13 +58,6 @@ class _PaymentPageState extends State<PaymentPage> {
   }
 
 
-
-  final List<Map<String, dynamic>> availableAddons = [
-    {'name': 'Extra Egg', 'price': 30.0},
-    {'name': 'Extra Noodles', 'price': 40.0},
-    {'name': 'Chashu', 'price': 50.0},
-    {'name': 'Seaweed', 'price': 20.0},
-  ];
 
   void removeItem(String name) {
     setState(() {
@@ -113,6 +111,7 @@ class _PaymentPageState extends State<PaymentPage> {
   void initState() {
     super.initState();
     _loadData();
+    _loadAddOns();
   }
 
   @override
@@ -204,9 +203,22 @@ class _PaymentPageState extends State<PaymentPage> {
     }
   }
 
+  Future<void> _loadAddOns() async {
+    try {
+      final addOns = await _menuService.getMenuItemsByCategory('add-ons');
+      setState(() {
+        _addOns = addOns;
+      });
+    } catch (e) {
+      print('❌ Error loading add-ons: $e');
+    }
+  }
+
   void showEditItemModal(Map<String, dynamic> item) {
     int tempQuantity = item['quantity'];
     List<Map<String, dynamic>> tempAddons = List<Map<String, dynamic>>.from(item['addons'] ?? []);
+    PaymentMethod? tempPaymentMethod = selectedPaymentMethod;
+    DeliveryAddress? tempAddress = selectedAddress;
     
     showModalBottomSheet(
       context: context,
@@ -390,10 +402,10 @@ class _PaymentPageState extends State<PaymentPage> {
                           const SizedBox(height: 16),
                           Expanded(
                             child: ListView.builder(
-                              itemCount: availableAddons.length,
+                              itemCount: _addOns.length,
                               itemBuilder: (context, index) {
-                                final addon = availableAddons[index];
-                                final isSelected = tempAddons.any((a) => a['name'] == addon['name']);
+                                final addon = _addOns[index];
+                                final isSelected = tempAddons.any((a) => a['name'] == addon.name);
                                 
                                 return Container(
                                   margin: const EdgeInsets.only(bottom: 12),
@@ -422,7 +434,7 @@ class _PaymentPageState extends State<PaymentPage> {
                                       size: 24,
                                     ),
                                     title: Text(
-                                      addon['name'],
+                                      addon.name,
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: isSelected 
@@ -432,7 +444,7 @@ class _PaymentPageState extends State<PaymentPage> {
                                       ),
                                     ),
                                     subtitle: Text(
-                                      '+₱${addon['price'].toStringAsFixed(0)}',
+                                      '+₱${addon.price.toStringAsFixed(0)}',
                                       style: const TextStyle(
                                         fontSize: 14,
                                         color: Color(0xFFD32D43),
@@ -442,9 +454,9 @@ class _PaymentPageState extends State<PaymentPage> {
                                     onTap: () {
                                       setModalState(() {
                                         if (isSelected) {
-                                          tempAddons.removeWhere((a) => a['name'] == addon['name']);
+                                          tempAddons.removeWhere((a) => a['name'] == addon.name);
                                         } else {
-                                          tempAddons.add(addon);
+                                          tempAddons.add({'name': addon.name, 'price': addon.price});
                                         }
                                       });
                                     },
@@ -1170,8 +1182,14 @@ class _PaymentPageState extends State<PaymentPage> {
                         ],
                         const SizedBox(height: 12),
                         TextButton.icon(
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/edit-payment-method');
+                          onPressed: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const PaymentmethodPage(),
+                              ),
+                            );
+                            await _loadPaymentMethods();
                           },
                           icon: const Icon(Icons.add, color: Color(0xFFD32D43)),
                           label: const Text(
@@ -1505,10 +1523,7 @@ class _PaymentPageState extends State<PaymentPage> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.asset(
-                      image,
-                      fit: BoxFit.cover,
-                    ),
+                    child: _buildItemImage(image),
                   ),
                 ),
                 const SizedBox(width: 16),

@@ -20,6 +20,19 @@ const deliveryAddressRoutes = require('./routes/deliveryAddressRoutes');
 
 const app = express();
 
+// Socket.io setup
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require('socket.io');
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }
+});
+app.set('io', io); // Make io accessible in controllers
+
 // CORS configuration
 app.use(cors({
   origin: '*',
@@ -57,7 +70,34 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'RamenXpress API is running' });
 });
 
-app.listen(port, () => {
+// Test sales endpoint without authentication
+app.post('/api/v1/sales/test-order', async (req, res) => {
+  try {
+    console.log('Test order received:', req.body);
+    
+    // Simulate successful order processing
+    const orderId = Date.now().toString();
+    
+    res.status(201).json({
+      success: true,
+      message: 'Test order processed successfully',
+      orderDetails: {
+        orderId: orderId,
+        items: req.body.items || [],
+        total: req.body.total || 0
+      }
+    });
+  } catch (error) {
+    console.error('Test order error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Test order failed',
+      error: error.message
+    });
+  }
+});
+
+server.listen(port, () => {
     console.log(`Server is running on port ${port}`);
     console.log(`Health check available at http://localhost:${port}/health`);
 });

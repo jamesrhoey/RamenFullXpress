@@ -1,5 +1,8 @@
 // Mobile Order Management JavaScript
 
+// Remove the ES6 import for socket.io-client
+// import { io } from "socket.io-client";
+
 const API_BASE_URL = "http://localhost:3000/api/v1";
 const authToken = localStorage.getItem("token"); // For admin/cashier authentication
 
@@ -12,27 +15,35 @@ document.addEventListener("DOMContentLoaded", function () {
     setInterval(loadMobileOrders, 5000); // every 5 seconds
 });
 
-// Load mobile orders from backend
-async function loadMobileOrders() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/mobile-orders/all`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${authToken}`
-            }
-        });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const orders = await response.json();
-        loadedOrders = orders; // Store for modal use
-        displayOrders(orders);
-    } catch (error) {
-        console.error("Error loading mobile orders:", error);
-        showNotification("Failed to load orders. Please check your connection.", "error");
-    }
+// Add order status filter buttons
+function renderOrderStatusFilters(currentStatus) {
+    const statuses = [
+        { key: 'all', label: 'All' },
+        { key: 'pending', label: 'Pending' },
+        { key: 'preparing', label: 'Preparing' },
+        { key: 'ready', label: 'Ready' },
+        { key: 'delivered', label: 'Delivered' },
+        { key: 'cancelled', label: 'Cancelled' }
+    ];
+    const container = document.getElementById('orderStatusFilters');
+    if (!container) return;
+    container.innerHTML = '';
+    statuses.forEach(status => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-sm me-2 mb-2 ' + (currentStatus === status.key ? 'btn-primary' : 'btn-outline-primary');
+        btn.textContent = status.label;
+        btn.onclick = () => {
+            window.currentOrderStatusFilter = status.key;
+            displayOrders(window.lastLoadedOrders || loadedOrders, status.key);
+            renderOrderStatusFilters(status.key);
+        };
+        container.appendChild(btn);
+    });
 }
 
-// Display orders in the table
-function displayOrders(orders) {
+// Update displayOrders to accept a status filter
+function displayOrders(orders, statusFilter = window.currentOrderStatusFilter || 'all') {
+    window.lastLoadedOrders = orders;
     const tbody = document.getElementById("ordersTableBody");
     tbody.innerHTML = "";
 
@@ -48,15 +59,24 @@ function displayOrders(orders) {
         return;
     }
 
-    // Debug: Log first order to see customer data structure
-    if (orders.length > 0) {
-        console.log('Sample order customer data:', orders[0].customerId);
+    // Filter orders by status
+    let filteredOrders = orders;
+    if (statusFilter && statusFilter !== 'all') {
+        filteredOrders = orders.filter(order => order.status === statusFilter);
     }
 
-    orders.forEach(order => {
+    // Separate delivered and non-delivered orders (if not filtering for delivered)
+    let nonDelivered = filteredOrders;
+    let delivered = [];
+    if (statusFilter === 'all') {
+        nonDelivered = filteredOrders.filter(order => order.status !== 'delivered');
+        delivered = filteredOrders.filter(order => order.status === 'delivered');
+    }
+
+    // Show non-delivered orders first
+    nonDelivered.forEach(order => {
         const orderDate = new Date(order.createdAt).toLocaleString();
-        const statusBadge = getStatusBadge(order.status); // ensure this is order.status
-        // Infer payment status if missing
+        const statusBadge = getStatusBadge(order.status);
         let paymentStatus = order.paymentStatus;
         if (!paymentStatus) {
             if (order.paymentMethod && order.paymentMethod.toLowerCase() !== 'cash on delivery') {
@@ -83,13 +103,77 @@ function displayOrders(orders) {
         `;
         tbody.appendChild(row);
     });
+
+    // If there are delivered orders, add a separator row
+    if (statusFilter === 'all' && delivered.length > 0) {
+        const sepRow = document.createElement("tr");
+        sepRow.innerHTML = `<td colspan="7" class="text-center text-success fw-bold bg-light">Delivered Orders</td>`;
+        tbody.appendChild(sepRow);
+    }
+
+    // Show delivered orders below
+    if (statusFilter === 'all') {
+        delivered.forEach(order => {
+            const orderDate = new Date(order.createdAt).toLocaleString();
+            const statusBadge = getStatusBadge(order.status);
+            let paymentStatus = order.paymentStatus;
+            if (!paymentStatus) {
+                if (order.paymentMethod && order.paymentMethod.toLowerCase() !== 'cash on delivery') {
+                    paymentStatus = 'paid';
+                } else {
+                    paymentStatus = 'pending';
+                }
+            }
+            const paymentBadge = getPaymentBadge(paymentStatus);
+            const row = document.createElement("tr");
+            const customerName = getCustomerDisplayName(order);
+            const isUpdateDisabled = order.status === 'delivered' || order.status === 'cancelled';
+            row.innerHTML = `
+                <td>#${order.orderId || order._id}</td>
+                <td>${customerName}</td>
+                <td>${orderDate}</td>
+                <td>₱${order.total ? order.total.toFixed(2) : "0.00"}</td>
+                <td>${paymentBadge}</td>
+                <td>${statusBadge}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetails('${order._id}')">View</button>
+                    <button class="btn btn-sm btn-outline-success" onclick="updateOrderStatus('${order._id}')" ${isUpdateDisabled ? 'disabled' : ''}>Update</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+}
+
+// Call this after loading orders
+function afterOrdersLoaded() {
+    renderOrderStatusFilters(window.currentOrderStatusFilter || 'all');
+}
+
+// Load mobile orders from backend
+async function loadMobileOrders() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/mobile-orders/all`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${authToken}`
+            }
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const orders = await response.json();
+        loadedOrders = orders; // Store for modal use
+        displayOrders(orders);
+        afterOrdersLoaded();
+    } catch (error) {
+        console.error("Error loading mobile orders:", error);
+        showNotification("Failed to load orders. Please check your connection.", "error");
+    }
 }
 
 // Status badge
 function getStatusBadge(status) {
     const map = {
         pending: '<span class="badge bg-secondary">Pending</span>',
-        processing: '<span class="badge bg-warning text-dark">Processing</span>',
         preparing: '<span class="badge bg-warning text-dark">Preparing</span>',
         ready: '<span class="badge bg-info">Ready</span>',
         delivered: '<span class="badge bg-success">Delivered</span>',
@@ -164,7 +248,7 @@ function showSuccessModal(message, status) {
     let color = 'success';
     let iconColor = 'success';
     switch ((status || '').toLowerCase()) {
-        case 'processing':
+        case 'preparing':
         case 'preparing':
             color = 'warning';
             iconColor = 'warning text-dark';
@@ -243,7 +327,7 @@ window.viewOrderDetails = async function(orderId) {
     paymentStatusElement.className = 'badge';
     // Set status classes
     switch(order.status) {
-        case 'processing':
+        case 'preparing':
         case 'preparing':
             orderStatusElement.classList.add('bg-warning', 'text-dark');
             break;
@@ -376,9 +460,6 @@ window.updateOrderStatus = function(orderId) {
     const currentStatusSpan = document.getElementById('updateModalCurrentStatus');
     currentStatusSpan.className = 'badge';
     switch(order.status) {
-        case 'processing':
-            currentStatusSpan.classList.add('bg-warning', 'text-dark');
-            break;
         case 'preparing':
             currentStatusSpan.classList.add('bg-warning', 'text-dark');
             break;
@@ -439,3 +520,32 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 }); 
+
+// --- Socket.IO Real-Time Order Status Updates ---
+// If using modules, you may need: import { io } from 'socket.io-client';
+// If not, ensure <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script> is in your HTML
+
+const socket = io('http://localhost:3000'); // Change to your backend URL/port if needed
+
+socket.on('connect', () => {
+  console.log('Connected to Socket.IO server');
+});
+
+socket.on('orderStatusUpdate', (data) => {
+  console.log('Order status update received:', data);
+  // Call your UI update function here
+  // Example:
+  // updateOrderStatusInUI(data.orderId, data.status);
+});
+
+function updateOrderStatusInUI(orderId, status) {
+  // Example: Find the order element by data-order-id and update its status
+  const orderElem = document.querySelector(`[data-order-id='${orderId}']`);
+  if (orderElem) {
+    const statusElem = orderElem.querySelector('.order-status');
+    if (statusElem) {
+      statusElem.textContent = status;
+      // Optionally update color, icon, etc.
+    }
+  }
+} 

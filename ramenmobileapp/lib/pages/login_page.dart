@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -28,9 +29,12 @@ class _LoginPageState extends State<LoginPage> {
       });
 
       try {
-        
+        final email = _emailController.text.trim();
+        final password = _passwordController.text;
+        final api = ApiService();
+        await api.login(email, password);
         if (mounted) {
-      Navigator.pushReplacementNamed(context, '/home');
+          Navigator.pushReplacementNamed(context, '/home');
         }
       } catch (e) {
         if (mounted) {

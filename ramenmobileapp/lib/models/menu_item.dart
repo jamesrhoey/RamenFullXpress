@@ -28,11 +28,11 @@ class MenuItem {
 
   factory MenuItem.fromJson(Map<String, dynamic> json) {
     return MenuItem(
-      id: json['_id'] ?? json['id'],
-      name: json['name'],
-      price: json['price'].toDouble(),
-      image: json['image'],
-      category: json['category'],
+      id: json['_id']?.toString() ?? json['id']?.toString(),
+      name: json['name']?.toString() ?? '',
+      price: (json['price'] ?? 0).toDouble(),
+      image: json['image']?.toString() ?? '',
+      category: json['category']?.toString() ?? '',
       availableAddOns: (json['availableAddOns'] as List?)
           ?.map((addon) => AddOn.fromJson(addon))
           .toList() ?? [],
@@ -58,8 +58,8 @@ class AddOn {
 
   factory AddOn.fromJson(Map<String, dynamic> json) {
     return AddOn(
-      name: json['name'],
-      price: json['price'].toDouble(),
+      name: json['name']?.toString() ?? '',
+      price: (json['price'] ?? 0).toDouble(),
     );
   }
 } 

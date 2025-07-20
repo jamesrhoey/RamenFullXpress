@@ -5,7 +5,7 @@ class MenuService {
   final ApiService _apiService = ApiService();
   
   // Example categories
-  List<String> categories = ['All', 'Ramen', 'Rice Bowl', 'Sides', 'Drinks'];
+  List<String> categories = ['All', 'Ramen', 'Rice Bowl', 'Sides', 'Drinks', 'add-ons'];
 
   // Fallback menu items if API fails
   final List<MenuItem> _fallbackMenuItems = [
@@ -61,6 +61,42 @@ class MenuService {
     ),
   ];
 
+  // Fallback add-ons if API fails
+  final List<MenuItem> _fallbackAddOns = [
+    MenuItem(
+      id: 'addon1',
+      name: 'Extra Egg',
+      price: 20.0,
+      image: 'assets/side1.jpg',
+      category: 'add-ons',
+      availableAddOns: [],
+    ),
+    MenuItem(
+      id: 'addon2',
+      name: 'Extra Noodles',
+      price: 30.0,
+      image: 'assets/side2.jpg',
+      category: 'add-ons',
+      availableAddOns: [],
+    ),
+    MenuItem(
+      id: 'addon3',
+      name: 'Extra Chashu',
+      price: 50.0,
+      image: 'assets/side3.jpg',
+      category: 'add-ons',
+      availableAddOns: [],
+    ),
+    MenuItem(
+      id: 'addon4',
+      name: 'Extra Seaweed',
+      price: 15.0,
+      image: 'assets/side4.jpg',
+      category: 'add-ons',
+      availableAddOns: [],
+    ),
+  ];
+
   Future<List<MenuItem>> getMenuItemsByCategory(String category) async {
     try {
       if (category == 'All') {
@@ -70,11 +106,13 @@ class MenuService {
     } catch (e) {
       print('Error fetching menu items: $e');
       // Return fallback data if API fails
-    if (category == 'All') {
+      if (category == 'All') {
         return _fallbackMenuItems;
-    }
+      } else if (category == 'add-ons') {
+        return _fallbackAddOns;
+      }
       return _fallbackMenuItems.where((item) => item.category == category).toList();
-  }
+    }
   }
 
   Future<List<MenuItem>> searchMenuItems(String query) async {

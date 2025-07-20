@@ -204,7 +204,7 @@ class ApiService {
         print('🔑 Auth token: ${_authToken!.substring(0, 20)}...');
       }
       
-      final response = await _dio.post('/mobile-orders', data: orderData);
+      final response = await _dio.post('/mobile-orders/add', data: orderData);
       if (response.statusCode == 201) {
         return Order.fromJson(response.data);
       }
@@ -251,6 +251,7 @@ class ApiService {
       print('🔑 Auth token: ${_authToken != null ? 'Present' : 'Missing'}');
       
       final response = await _dio.get('/mobile-orders/my-orders');
+      print('Raw API response: ${response.data}');
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
         return data.map((item) => Order.fromJson(item)).toList();

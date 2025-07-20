@@ -94,12 +94,17 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadAddOns() async {
     try {
+      print('🔍 Loading add-ons...');
       final addOns = await _menuService.getMenuItemsByCategory('add-ons');
+      print('✅ Loaded ${addOns.length} add-ons');
+      for (var addon in addOns) {
+        print('  - ${addon.name}: ₱${addon.price}');
+      }
       setState(() {
         _addOns = addOns;
       });
     } catch (e) {
-      print('Error loading add-ons: $e');
+      print('❌ Error loading add-ons: $e');
     }
   }
 
@@ -185,6 +190,12 @@ class _HomePageState extends State<HomePage> {
   void _showAddOnsModal(BuildContext context, MenuItem item) {
     List<Map<String, dynamic>> selectedAddOns = [];
     double totalPrice = item.price;
+    
+    print('🔍 Opening modal for: ${item.name}');
+    print('📦 Current add-ons count: ${_addOns.length}');
+    for (var addon in _addOns) {
+      print('  - ${addon.name}: ₱${addon.price}');
+    }
 
     showModalBottomSheet(
       context: context,
@@ -299,7 +310,47 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      ..._addOns.map((addOn) {
+                      Text(
+                        _addOns.isNotEmpty 
+                          ? 'Available add-ons: ${_addOns.length}'
+                          : 'Using default add-ons (${_addOns.isNotEmpty ? _addOns.length : 4})',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Show add-ons or fallback add-ons if none are loaded
+                      ...(_addOns.isNotEmpty ? _addOns : [
+                        MenuItem(
+                          id: 'fallback1',
+                          name: 'Extra Egg',
+                          price: 20.0,
+                          image: 'assets/side1.jpg',
+                          category: 'add-ons',
+                        ),
+                        MenuItem(
+                          id: 'fallback2',
+                          name: 'Extra Noodles',
+                          price: 30.0,
+                          image: 'assets/side2.jpg',
+                          category: 'add-ons',
+                        ),
+                        MenuItem(
+                          id: 'fallback3',
+                          name: 'Extra Chashu',
+                          price: 50.0,
+                          image: 'assets/side3.jpg',
+                          category: 'add-ons',
+                        ),
+                        MenuItem(
+                          id: 'fallback4',
+                          name: 'Extra Seaweed',
+                          price: 15.0,
+                          image: 'assets/side4.jpg',
+                          category: 'add-ons',
+                        ),
+                      ]).map((addOn) {
                         bool isSelected = selectedAddOns.any(
                           (a) => a['name'] == addOn.name,
                         );
