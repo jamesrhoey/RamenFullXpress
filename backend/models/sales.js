@@ -9,7 +9,7 @@ const salesSchema = new mongoose.Schema({
     menuItem: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Menu',
-        required: true
+        required: false
     },
     quantity: {
         type: Number,
@@ -24,7 +24,7 @@ const salesSchema = new mongoose.Schema({
         menuItem: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Menu',
-            required: true
+            required: false
         },
         quantity: {
             type: Number,

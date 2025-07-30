@@ -76,42 +76,34 @@ exports.createMobileOrder = async (req, res) => {
     // Create corresponding sales record for each item
     try {
       for (const item of items) {
-        // Find the menu item in the database
-        const menuItem = await Menu.findById(item.menuItem.id);
-        if (menuItem) {
-          // Process add-ons for sales record
-          const processedAddOns = item.selectedAddOns.map(addOn => ({
-            menuItem: addOn.id || addOn.name, // Use ID if available, otherwise name
-            quantity: 1,
-            price: addOn.price
-          }));
+        // Generate sales order ID
+        const totalSales = await Sales.countDocuments();
+        const salesOrderID = (totalSales + 1).toString().padStart(4, '0');
 
-          // Generate sales order ID
-          const totalSales = await Sales.countDocuments();
-          const salesOrderID = (totalSales + 1).toString().padStart(4, '0');
+        // Map delivery method to service type
+        const serviceType = deliveryMethod === 'Delivery' ? 'pickup' : 'pickup';
 
-          // Map delivery method to service type
-          const serviceType = deliveryMethod === 'Delivery' ? 'pickup' : 'pickup';
+        // Calculate total amount for this item
+        const itemTotal = (item.menuItem.price * item.quantity) + 
+                         item.selectedAddOns.reduce((sum, addOn) => sum + addOn.price, 0);
 
-          // Create sales record
-          const salesRecord = new Sales({
-            orderID: salesOrderID,
-            menuItem: item.menuItem.id,
-            quantity: item.quantity,
-            price: item.menuItem.price,
-            addOns: processedAddOns,
-            paymentMethod: paymentMethod.toLowerCase(),
-            serviceType: serviceType,
-            totalAmount: (item.menuItem.price * item.quantity) + 
-                        item.selectedAddOns.reduce((sum, addOn) => sum + addOn.price, 0),
-            mobileOrderId: savedOrder._id,
-            mobileOrderReference: savedOrder.orderId,
-            isFromMobileOrder: true
-          });
+        // Create sales record without requiring menu item lookup
+        const salesRecord = new Sales({
+          orderID: salesOrderID,
+          menuItem: null, // Set to null since we don't have valid ObjectId
+          quantity: item.quantity,
+          price: item.menuItem.price,
+          addOns: [], // Skip add-ons for now to avoid ObjectId issues
+          paymentMethod: paymentMethod.toLowerCase(),
+          serviceType: serviceType,
+          totalAmount: itemTotal,
+          mobileOrderId: savedOrder._id,
+          mobileOrderReference: savedOrder.orderId,
+          isFromMobileOrder: true
+        });
 
-          await salesRecord.save();
-          console.log('💰 Created sales record for mobile order item:', salesOrderID);
-        }
+        await salesRecord.save();
+        console.log('💰 Created sales record for mobile order item:', salesOrderID);
       }
     } catch (salesError) {
       console.error('⚠️ Warning: Failed to create sales record:', salesError);
@@ -230,47 +222,39 @@ exports.syncMobileOrdersToSales = async (req, res) => {
           // Check if sales record already exists for this mobile order
           const existingSales = await Sales.findOne({ 
             mobileOrderId: mobileOrder._id,
-            menuItem: item.menuItem.id 
+            mobileOrderReference: mobileOrder.orderId
           });
 
           if (!existingSales) {
-            // Find the menu item in the database
-            const menuItem = await Menu.findById(item.menuItem.id);
-            if (menuItem) {
-              // Process add-ons for sales record
-              const processedAddOns = item.selectedAddOns.map(addOn => ({
-                menuItem: addOn.id || addOn.name,
-                quantity: 1,
-                price: addOn.price
-              }));
+            // Generate sales order ID
+            const totalSales = await Sales.countDocuments();
+            const salesOrderID = (totalSales + 1).toString().padStart(4, '0');
 
-              // Generate sales order ID
-              const totalSales = await Sales.countDocuments();
-              const salesOrderID = (totalSales + 1).toString().padStart(4, '0');
+            // Map delivery method to service type
+            const serviceType = mobileOrder.deliveryMethod === 'Delivery' ? 'pickup' : 'pickup';
 
-              // Map delivery method to service type
-              const serviceType = mobileOrder.deliveryMethod === 'Delivery' ? 'pickup' : 'pickup';
+            // Calculate total amount for this item
+            const itemTotal = (item.menuItem.price * item.quantity) + 
+                             item.selectedAddOns.reduce((sum, addOn) => sum + addOn.price, 0);
 
-              // Create sales record
-              const salesRecord = new Sales({
-                orderID: salesOrderID,
-                menuItem: item.menuItem.id,
-                quantity: item.quantity,
-                price: item.menuItem.price,
-                addOns: processedAddOns,
-                paymentMethod: mobileOrder.paymentMethod.toLowerCase(),
-                serviceType: serviceType,
-                totalAmount: (item.menuItem.price * item.quantity) + 
-                            item.selectedAddOns.reduce((sum, addOn) => sum + addOn.price, 0),
-                mobileOrderId: mobileOrder._id, // Reference to mobile order
-                mobileOrderReference: mobileOrder.orderId,
-                isFromMobileOrder: true
-              });
+            // Create sales record without requiring menu item lookup
+            const salesRecord = new Sales({
+              orderID: salesOrderID,
+              menuItem: null, // Set to null since we don't have valid ObjectId
+              quantity: item.quantity,
+              price: item.menuItem.price,
+              addOns: [], // Skip add-ons for now to avoid ObjectId issues
+              paymentMethod: mobileOrder.paymentMethod.toLowerCase(),
+              serviceType: serviceType,
+              totalAmount: itemTotal,
+              mobileOrderId: mobileOrder._id, // Reference to mobile order
+              mobileOrderReference: mobileOrder.orderId,
+              isFromMobileOrder: true
+            });
 
-              await salesRecord.save();
-              syncedCount++;
-              console.log(`💰 Synced mobile order ${mobileOrder.orderId} item to sales record ${salesOrderID}`);
-            }
+            await salesRecord.save();
+            syncedCount++;
+            console.log(`💰 Synced mobile order ${mobileOrder.orderId} item to sales record ${salesOrderID}`);
           }
         }
       } catch (error) {
