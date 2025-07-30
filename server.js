@@ -79,8 +79,6 @@ const connectWithRetry = () => {
   mongoose.connect(Mongoose_URI, {
     serverSelectionTimeoutMS: 10000, // 10 second timeout
     socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
-    bufferCommands: false, // Disable mongoose buffering
-    bufferMaxEntries: 0, // Disable mongoose buffering
     maxPoolSize: 10, // Maintain up to 10 socket connections
     serverApi: {
       version: '1',
