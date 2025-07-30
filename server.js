@@ -58,16 +58,69 @@ app.use(mapper + 'payment-methods', paymentMethodRoutes);
 app.use(mapper + 'delivery-addresses', deliveryAddressRoutes);
 app.use('/uploads/menus', express.static(path.join(__dirname, 'uploads/menus')));
 
-mongoose.connect(Mongoose_URI)
+// MongoDB connection with retry mechanism
+const connectWithRetry = () => {
+  console.log('🔄 Attempting to connect to MongoDB...');
+  
+  // Validate MongoDB URI format
+  if (!Mongoose_URI) {
+    console.error('❌ MONGO_URI environment variable is not set');
+    return;
+  }
+  
+  // Check if URI has the correct format
+  if (!Mongoose_URI.startsWith('mongodb://') && !Mongoose_URI.startsWith('mongodb+srv://')) {
+    console.error('❌ Invalid MongoDB URI format. Must start with mongodb:// or mongodb+srv://');
+    return;
+  }
+  
+  console.log('🔗 MongoDB URI format appears valid');
+  
+  mongoose.connect(Mongoose_URI, {
+    serverSelectionTimeoutMS: 10000, // 10 second timeout
+    socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+    bufferCommands: false, // Disable mongoose buffering
+    bufferMaxEntries: 0, // Disable mongoose buffering
+    maxPoolSize: 10, // Maintain up to 10 socket connections
+    serverApi: {
+      version: '1',
+      strict: true,
+      deprecationErrors: true,
+    }
+  })
   .then(() => {
     console.log('✅ MongoDB Connected successfully');
     console.log('🔗 Database URL:', Mongoose_URI ? 'Set' : 'Not set');
+    console.log('🗄️ Database name:', mongoose.connection.name);
+    console.log('🔌 Connection state:', mongoose.connection.readyState);
+    
+    // Test the connection with a simple query
+    mongoose.connection.db.admin().ping()
+      .then(() => console.log('✅ Database ping successful'))
+      .catch(err => console.error('❌ Database ping failed:', err));
   })
   .catch(err => {
     console.error('❌ MongoDB Connection Error:', err);
     console.error('🔗 Database URL:', Mongoose_URI ? 'Set' : 'Not set');
     console.error('💥 Server will continue but database operations will fail');
+    
+    // Log more details about the connection string (without sensitive info)
+    if (Mongoose_URI) {
+      const uriParts = Mongoose_URI.split('@');
+      if (uriParts.length > 1) {
+        const hostPart = uriParts[1].split('/')[0];
+        console.error('🌐 Trying to connect to host:', hostPart);
+      }
+    }
+    
+    // Retry connection after 10 seconds
+    console.log('🔄 Retrying connection in 10 seconds...');
+    setTimeout(connectWithRetry, 10000);
   });
+};
+
+// Start the connection
+connectWithRetry();
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -115,6 +168,40 @@ app.post('/api/v1/sales/test-order', async (req, res) => {
       success: false,
       message: 'Test order failed',
       error: error.message
+    });
+  }
+});
+
+// Test MongoDB connection endpoint
+app.get('/test-mongo', (req, res) => {
+  try {
+    console.log('🧪 Testing MongoDB connection...');
+    
+    // Check if MONGO_URI is set
+    if (!Mongoose_URI) {
+      return res.status(500).json({
+        error: 'MONGO_URI environment variable is not set',
+        connectionState: mongoose.connection.readyState
+      });
+    }
+    
+    // Log connection string format (without sensitive data)
+    const uriParts = Mongoose_URI.split('@');
+    const hostInfo = uriParts.length > 1 ? uriParts[1].split('/')[0] : 'unknown';
+    
+    res.json({
+      connectionState: mongoose.connection.readyState,
+      mongoUriSet: !!Mongoose_URI,
+      hostInfo: hostInfo,
+      connectionName: mongoose.connection.name,
+      readyState: mongoose.connection.readyState,
+      // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+      readyStateText: ['disconnected', 'connected', 'connecting', 'disconnecting'][mongoose.connection.readyState]
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+      connectionState: mongoose.connection.readyState
     });
   }
 });
