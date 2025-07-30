@@ -59,12 +59,37 @@ app.use(mapper + 'delivery-addresses', deliveryAddressRoutes);
 app.use('/uploads/menus', express.static(path.join(__dirname, 'uploads/menus')));
 
 mongoose.connect(Mongoose_URI)
-  .then(() => console.log('MongoDB Connected'))
-  .catch(err => console.log(err));
+  .then(() => {
+    console.log('✅ MongoDB Connected successfully');
+    console.log('🔗 Database URL:', Mongoose_URI ? 'Set' : 'Not set');
+  })
+  .catch(err => {
+    console.error('❌ MongoDB Connection Error:', err);
+    console.error('🔗 Database URL:', Mongoose_URI ? 'Set' : 'Not set');
+    console.error('💥 Server will continue but database operations will fail');
+  });
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'RamenXpress API is running' });
+  const healthInfo = {
+    status: 'OK',
+    message: 'RamenXpress API is running',
+    timestamp: new Date().toISOString(),
+    environment: {
+      NODE_ENV: process.env.NODE_ENV || 'not set',
+      PORT: process.env.PORT || 'not set',
+      MONGO_URI: process.env.MONGO_URI ? 'set' : 'not set',
+      JWT_SECRET: process.env.JWT_SECRET ? 'set' : 'not set'
+    },
+    database: 'checking...'
+  };
+  
+  // Check database connection
+  mongoose.connection.readyState === 1 
+    ? healthInfo.database = 'connected'
+    : healthInfo.database = 'disconnected';
+  
+  res.json(healthInfo);
 });
 
 // Test sales endpoint without authentication
