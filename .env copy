@@ -1,3 +1,0 @@
-MONGO_URI=mongodb://localhost:27017/ramenxpressApp
-PORT = 3000
-JWT_TOKEN = 'your keys dragon ball'

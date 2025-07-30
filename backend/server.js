@@ -58,6 +58,43 @@ app.use(mapper + 'payment-methods', paymentMethodRoutes);
 app.use(mapper + 'delivery-addresses', deliveryAddressRoutes);
 app.use('/uploads/menus', express.static(path.join(__dirname, 'uploads/menus')));
 
+// Serve static files from frontend directory
+app.use(express.static(path.join(__dirname, '../frontend')));
+
+// Serve frontend files
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/login.html'));
+});
+
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/login.html'));
+});
+
+app.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/register.html'));
+});
+
+// Serve other frontend pages
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/html/dashboard.html'));
+});
+
+app.get('/inventory', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/html/inventory.html'));
+});
+
+app.get('/pos', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/html/pos.html'));
+});
+
+app.get('/mobile-order', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/html/mobileOrder.html'));
+});
+
+app.get('/reports', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/html/reports.html'));
+});
+
 // MongoDB connection with retry mechanism
 const connectWithRetry = () => {
   console.log('🔄 Attempting to connect to MongoDB...');

@@ -15,9 +15,7 @@ async function handleLogin(event) {
     }
 
     try {
-        // Use the configuration system to get the correct API URL
-        const apiUrl = typeof getApiUrl === 'function' ? getApiUrl() : 'https://ramen-27je.onrender.com/api/v1';
-        const response = await fetch(`${apiUrl}/auth/login`, {
+        const response = await fetch('https://ramen-27je.onrender.com/api/v1/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
@@ -30,13 +28,14 @@ async function handleLogin(event) {
             // Store token with consistent key name
             localStorage.setItem('authToken', data.token);
             console.log('Login successful, token stored:', data.token ? 'Yes' : 'No');
-            // Redirect based on role
+            
+            // Redirect to backend with role-based routing
             if (data.user.role === 'admin') {
-                window.location.href = 'html/dashboard.html';
+                window.location.href = 'https://ramen-27je.onrender.com/dashboard';
             } else if (data.user.role === 'cashier') {
-                window.location.href = 'html/pos.html';
+                window.location.href = 'https://ramen-27je.onrender.com/pos';
             } else {
-                window.location.href = 'html/dashboard.html';
+                window.location.href = 'https://ramen-27je.onrender.com/dashboard';
             }
         } else {
             errorMessage.textContent = data.message || 'Login failed.';

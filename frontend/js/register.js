@@ -27,9 +27,9 @@ async function handleRegister(event) {
         if (response.ok) {
             successMessage.textContent = data.message || 'Registration successful! You can now login.';
             successMessage.style.display = 'block';
-            // Optionally redirect to login after a short delay
+            // Redirect to backend login after a short delay
             setTimeout(() => {
-                window.location.href = 'login.html';
+                window.location.href = 'https://ramen-27je.onrender.com/login';
             }, 1500);
         } else {
             errorMessage.textContent = data.message || 'Registration failed.';

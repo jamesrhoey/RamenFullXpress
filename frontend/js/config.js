@@ -3,7 +3,7 @@ const API_CONFIG = {
   // Development mode - set to true to use local backend
   DEV_MODE: false,
   
-  // Production API
+  // Production API (your backend)
   BASE_URL: 'https://ramen-27je.onrender.com/api/v1',
   
   // Local API (for development)
@@ -16,6 +16,9 @@ const API_CONFIG = {
   // Upload URLs
   UPLOAD_BASE: 'https://ramen-27je.onrender.com',
   LOCAL_UPLOAD_BASE: 'http://localhost:3000',
+  
+  // Main application URL
+  MAIN_APP_URL: 'https://ramen-27je.onrender.com'
 };
 
 // Helper function to get the correct URL based on dev mode
@@ -31,7 +34,11 @@ function getUploadUrl() {
   return API_CONFIG.DEV_MODE ? API_CONFIG.LOCAL_UPLOAD_BASE : API_CONFIG.UPLOAD_BASE;
 }
 
+function getMainAppUrl() {
+  return API_CONFIG.MAIN_APP_URL;
+}
+
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { API_CONFIG, getApiUrl, getSocketUrl, getUploadUrl };
+  module.exports = { API_CONFIG, getApiUrl, getSocketUrl, getUploadUrl, getMainAppUrl };
 } 
