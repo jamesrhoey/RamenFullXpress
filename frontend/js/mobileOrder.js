@@ -3,7 +3,7 @@
 // Remove the ES6 import for socket.io-client
 // import { io } from "socket.io-client";
 
-const API_BASE_URL = "http://localhost:3000/api/v1";
+const API_BASE_URL = "https://ramen-27je.onrender.com/api/v1";
 const authToken = localStorage.getItem("authToken"); // For admin/cashier authentication
 
 let loadedOrders = [];
@@ -525,7 +525,7 @@ document.addEventListener('DOMContentLoaded', function () {
 // If using modules, you may need: import { io } from 'socket.io-client';
 // If not, ensure <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script> is in your HTML
 
-const socket = io('http://localhost:3000'); // Change to your backend URL/port if needed
+const socket = io('https://ramen-27je.onrender.com'); // Production Socket.IO URL
 
 socket.on('connect', () => {
   console.log('Connected to Socket.IO server');

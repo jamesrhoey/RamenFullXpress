@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Fetch both sales and mobile orders
   Promise.allSettled([
-  fetch('http://localhost:3000/api/v1/sales/all-sales', {
+          fetch('https://ramen-27je.onrender.com/api/v1/sales/all-sales', {
     headers: {
       'Authorization': `Bearer ${token}`
     }
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       return response.json();
     }),
-    fetch('http://localhost:3000/api/v1/mobile-orders/all', {
+            fetch('https://ramen-27je.onrender.com/api/v1/mobile-orders/all', {
       headers: {
         'Authorization': `Bearer ${token}`
       }

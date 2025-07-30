@@ -12,13 +12,23 @@ class SocketService {
 
   void connect() {
     if (socket != null && socket!.connected) return;
-    socket = IO.io('http://localhost:3000', <String, dynamic>{
+    
+    // Production Socket.IO URL
+    const String productionSocketUrl = 'https://ramen-27je.onrender.com';
+    const String developmentSocketUrl = 'http://localhost:3000';
+    
+    // Set this to false for production, true for local development
+    const bool useLocalhost = false;
+    
+    final String socketUrl = useLocalhost ? developmentSocketUrl : productionSocketUrl;
+    
+    socket = IO.io(socketUrl, <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': true,
     });
 
     socket?.on('connect', (_) {
-      print('Connected to Socket.IO server');
+      print('Connected to Socket.IO server at $socketUrl');
     });
 
     socket?.on('orderStatusUpdate', (data) {

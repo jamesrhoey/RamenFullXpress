@@ -15,7 +15,9 @@ async function handleLogin(event) {
     }
 
     try {
-        const response = await fetch('http://localhost:3000/api/v1/auth/login', {
+        // Use the configuration system to get the correct API URL
+        const apiUrl = typeof getApiUrl === 'function' ? getApiUrl() : 'https://ramen-27je.onrender.com/api/v1';
+        const response = await fetch(`${apiUrl}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })

@@ -10,11 +10,11 @@ let currentPage = 1;
 const itemsPerPage = 10;
 
 // Fetch inventory from backend and render in table
-const API_URL = 'http://localhost:3000/api/v1/inventory/all';
-const CREATE_URL = 'http://localhost:3000/api/v1/inventory/create';
-const UPDATE_URL = 'http://localhost:3000/api/v1/inventory/update/';
-const DELETE_URL = 'http://localhost:3000/api/v1/inventory/delete/';
-const ADD_MENU_URL = 'http://localhost:3000/api/v1/menu/newMenu';
+const API_URL = 'https://ramen-27je.onrender.com/api/v1/inventory/all';
+const CREATE_URL = 'https://ramen-27je.onrender.com/api/v1/inventory/create';
+const UPDATE_URL = 'https://ramen-27je.onrender.com/api/v1/inventory/update/';
+const DELETE_URL = 'https://ramen-27je.onrender.com/api/v1/inventory/delete/';
+const ADD_MENU_URL = 'https://ramen-27je.onrender.com/api/v1/menu/newMenu';
 
 function getStatusBadge(status, calculatedStatus, isOverridden) {
   let badgeClass = 'bg-success';
@@ -395,7 +395,7 @@ async function openEditModal(id) {
     return;
   }
   try {
-    const res = await fetch(`http://localhost:3000/api/v1/inventory/${id}`, {
+    const res = await fetch(`https://ramen-27je.onrender.com/api/v1/inventory/${id}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const ingredient = await res.json();

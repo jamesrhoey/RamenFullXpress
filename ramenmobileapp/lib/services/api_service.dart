@@ -12,23 +12,37 @@ import '../models/delivery_address.dart';
 class ApiService {
   // Dynamic base URL based on platform
   static String get baseUrl {
-    // For web, use localhost
-    if (kIsWeb) {
+    // Production API URL
+    const String productionUrl = 'https://ramen-27je.onrender.com/api/v1';
+    
+    // For development, you can switch to localhost
+    const String developmentUrl = 'http://localhost:3000/api/v1';
+    
+    // Set this to false for production, true for local development
+    const bool useLocalhost = false;
+    
+    if (useLocalhost) {
+      // For web, use localhost
+      if (kIsWeb) {
+        return 'http://localhost:3000/api/v1';
+      }
+      
+      // For Android emulator
+      if (Platform.isAndroid) {
+        return 'http://10.0.2.2:3000/api/v1';
+      }
+      
+      // For iOS simulator
+      if (Platform.isIOS) {
+        return 'http://localhost:3000/api/v1';
+      }
+      
+      // Default fallback
       return 'http://localhost:3000/api/v1';
+    } else {
+      // Use production URL for all platforms
+      return productionUrl;
     }
-    
-    // For Android emulator
-    if (Platform.isAndroid) {
-      return 'http://10.0.2.2:3000/api/v1';
-    }
-    
-    // For iOS simulator
-    if (Platform.isIOS) {
-      return 'http://localhost:3000/api/v1';
-    }
-    
-    // Default fallback
-    return 'http://localhost:3000/api/v1';
   }
   
   static final ApiService _instance = ApiService._internal();

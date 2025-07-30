@@ -1,51 +1,72 @@
+require('dotenv').config();
+const mongoose = require('mongoose');
+const Menu = require('./models/menu');
 const fs = require('fs');
-const { MongoClient } = require('mongodb');
+const path = require('path');
 
-const uri = 'mongodb://localhost:27017';
-const dbName = 'ramenxpressApp';
-const collectionName = 'menus'; // Use the correct collection for the Menu model
-const jsonFilePath = './sample_menu.json';
+// Read sample menu data from JSON file
+const sampleMenuPath = path.join(__dirname, 'sample_menu.json');
+const sampleMenu = JSON.parse(fs.readFileSync(sampleMenuPath, 'utf8'));
 
-async function main() {
-  let client;
+// Connect to MongoDB Atlas (production)
+mongoose.connect(process.env.MONGO_URI, {
+  serverSelectionTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
+  maxPoolSize: 10,
+  serverApi: {
+    version: '1',
+    strict: true,
+    deprecationErrors: true,
+  }
+})
+.then(() => console.log('✅ Connected to MongoDB Atlas'))
+.catch(err => {
+  console.error('❌ MongoDB Connection Error:', err);
+  process.exit(1);
+});
+
+async function populateMenu() {
   try {
-    // Read and parse the JSON file
-    const data = fs.readFileSync(jsonFilePath, 'utf8');
-    const menuItems = JSON.parse(data);
+    console.log('🗄️ Starting menu population...');
+    
+    // Clear existing menu items
+    await Menu.deleteMany({});
+    console.log('🧹 Cleared existing menu data');
 
-    if (!Array.isArray(menuItems)) {
-      throw new Error('Parsed menu data is not an array. Please check sample_menu.json format.');
-    }
-
-    // Map ingredients to match the Menu schema
-    const mappedMenuItems = menuItems.map(item => ({
-      ...item,
-      category: item.category ? item.category.toLowerCase() : '', // match enum in schema
+    // Map menu items to match the Menu schema
+    const mappedMenuItems = sampleMenu.map(item => ({
+      name: item.name,
+      category: item.category ? item.category.toLowerCase() : 'ramen',
+      price: item.price,
+      image: item.image,
       ingredients: Array.isArray(item.ingredients)
         ? item.ingredients.map(ing => ({
             inventoryItem: ing.name,
-            quantity: ing.quantity
+            quantity: ing.quantity,
+            unit: ing.unit
           }))
         : []
     }));
 
-    // Connect to MongoDB
-    client = new MongoClient(uri);
-    await client.connect();
-    const db = client.db(dbName);
-    const collection = db.collection(collectionName);
-
-    // Remove existing documents to avoid duplicates
-    await collection.deleteMany({});
-
     // Insert menu items
-    const result = await collection.insertMany(mappedMenuItems);
-    console.log(`Inserted ${result.insertedCount} menu items into '${collectionName}' collection.`);
-  } catch (err) {
-    console.error('Error populating menu:', err.message);
-  } finally {
-    if (client) await client.close();
+    const result = await Menu.insertMany(mappedMenuItems);
+    console.log(`✅ Successfully added ${result.length} menu items`);
+
+    // Display the added items
+    console.log('\n📋 Added menu items:');
+    result.forEach(item => {
+      console.log(`- ${item.name}: ₱${item.price} (${item.category})`);
+    });
+
+    console.log('\n🎉 Menu population completed successfully!');
+    mongoose.connection.close();
+    console.log('🔌 Database connection closed');
+  } catch (error) {
+    console.error('❌ Error populating menu:', error);
+    mongoose.connection.close();
+    process.exit(1);
   }
 }
 
-main();
+// Run the population script
+populateMenu();

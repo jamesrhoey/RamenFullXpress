@@ -9,7 +9,7 @@ let currentModalItem = null;
 let selectedAddons = [];
 
 // API Base URL
-const API_BASE_URL = 'http://localhost:3000/api/v1';
+const API_BASE_URL = 'https://ramen-27je.onrender.com/api/v1';
 
 // Authentication utilities
 function getAuthToken() {
@@ -389,7 +389,7 @@ function getImageUrl(imagePath) {
     
     // If it starts with /uploads/, it's a backend uploaded image
     if (imagePath.startsWith('/uploads/')) {
-        const fullUrl = `http://localhost:3000${imagePath}`;
+        const fullUrl = `https://ramen-27je.onrender.com${imagePath}`;
         console.log('Backend uploaded image:', fullUrl);
         return fullUrl;
     }
@@ -402,7 +402,7 @@ function getImageUrl(imagePath) {
     
     // If it's just a filename (like uploaded images), it's a backend uploaded image
     if (!imagePath.includes('/') && imagePath.includes('.')) {
-        const fullUrl = `http://localhost:3000/uploads/menus/${imagePath}`;
+        const fullUrl = `https://ramen-27je.onrender.com/uploads/menus/${imagePath}`;
         console.log('Backend uploaded filename, using uploads path:', fullUrl);
         return fullUrl;
     }
