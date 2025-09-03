@@ -12,7 +12,7 @@
 </head>
 <body class="bg-light">
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-danger sticky-top ">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-danger fixed-top">
     <div class="container-fluid">
       <button class="navbar-toggler" type="button" id="sidebarToggle">
         <span class="navbar-toggler-icon"></span>
@@ -37,10 +37,10 @@
     </div>
   </nav>
 
-  <div class="container-fluid">
-    <div class="row min-vh-100">
+  <div class="container-fluid p-0">
+    <div class="row g-0">
       <!-- Sidebar -->
-      <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-dark text-white p-3 collapse position-fixed h-100" style="z-index: 1000;">
+      <nav id="sidebarMenu" class="bg-dark text-white p-3">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h4 class="fw-bold mb-0">Menu</h4>
           <button class="btn-close btn-close-white d-md-none" id="closeSidebar"></button>
@@ -65,7 +65,7 @@
       </nav>
 
       <!-- Main Content -->
-      <main class="col-md-9 col-lg-10 ms-sm-auto px-md-4 py-4">
+      <main class="main-content">
         <!-- Top Cards -->
         <div class="row g-3 mb-4">
           <div class="col-12 col-sm-6 col-lg-4">
@@ -165,28 +165,51 @@
   }
 </script>
 <script>
-  // Sidebar toggle for mobile
-  const sidebarToggle = document.getElementById('sidebarToggle');
-  const sidebarMenu = document.getElementById('sidebarMenu');
-  const closeSidebar = document.getElementById('closeSidebar');
+  // Sidebar toggle functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarMenu = document.getElementById('sidebarMenu');
+    const closeSidebar = document.getElementById('closeSidebar');
+    const body = document.body;
 
-  if (sidebarToggle && sidebarMenu) {
-    sidebarToggle.addEventListener('click', () => {
-      sidebarMenu.classList.toggle('show');
-    });
-  }
-  
-  if (closeSidebar && sidebarMenu) {
-    closeSidebar.addEventListener('click', () => {
-      sidebarMenu.classList.remove('show');
-    });
-  }
-  
-  // Close sidebar when clicking outside on mobile
-  document.addEventListener('click', (e) => {
-    if (window.innerWidth < 768 && sidebarMenu && !sidebarMenu.contains(e.target) && !sidebarToggle.contains(e.target)) {
-      sidebarMenu.classList.remove('show');
+    // Toggle sidebar on button click
+    if (sidebarToggle && sidebarMenu) {
+      sidebarToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        sidebarMenu.classList.toggle('show');
+        body.classList.toggle('sidebar-open');
+      });
     }
+    
+    // Close sidebar on close button click
+    if (closeSidebar && sidebarMenu) {
+      closeSidebar.addEventListener('click', function() {
+        sidebarMenu.classList.remove('show');
+        body.classList.remove('sidebar-open');
+      });
+    }
+    
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(e) {
+      if (window.innerWidth < 768 && 
+          sidebarMenu && 
+          sidebarMenu.classList.contains('show') && 
+          !sidebarMenu.contains(e.target) && 
+          !sidebarToggle.contains(e.target)) {
+        sidebarMenu.classList.remove('show');
+        body.classList.remove('sidebar-open');
+      }
+    });
+
+    // Handle window resize
+    function handleResize() {
+      if (window.innerWidth >= 768) {
+        sidebarMenu.classList.remove('show');
+        body.classList.remove('sidebar-open');
+      }
+    }
+
+    window.addEventListener('resize', handleResize);
   });
 </script>
 </html>

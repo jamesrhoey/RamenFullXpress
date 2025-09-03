@@ -894,37 +894,28 @@ async function editMenuItem(id) {
         }
 
         try {
-          let updateResponse;
-          
-          if (useFormData) {
-            // Send as FormData for file upload
-            console.log('Sending FormData for edit menu...');
-            formData.append('name', name);
-            formData.append('price', parseFloat(price));
-            formData.append('category', category);
-            formData.append('ingredients', JSON.stringify([])); // For now, we'll keep existing ingredients
-            
-            updateResponse = await fetch(`${MENU_UPDATE_URL}${id}`, {
-              method: 'PUT',
-              body: formData
-            });
+          const formData = new FormData();
+          formData.append('name', name);
+          formData.append('price', parseFloat(price));
+          formData.append('category', category);
+
+          // Handle image: either a file or a URL string
+          if (fileInput.files && fileInput.files[0]) {
+            formData.append('image', fileInput.files[0]);
+            console.log('Appending image file to FormData:', fileInput.files[0].name);
           } else {
-            // Send as JSON for URL input
-            console.log('Sending JSON for edit menu...');
-            updateResponse = await fetch(`${MENU_UPDATE_URL}${id}`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                name,
-                price: parseFloat(price),
-                category,
-                image,
-                ingredients: [] // For now, we'll keep existing ingredients
-              })
-            });
+            formData.append('image', image);
+            console.log('Appending image URL to FormData:', image);
           }
+
+          // TODO: Add logic to gather updated ingredients from the form
+          formData.append('ingredients', JSON.stringify([]));
+
+          console.log('Sending FormData for menu update...');
+          const updateResponse = await fetch(`${MENU_UPDATE_URL}${id}`, {
+            method: 'PUT',
+            body: formData, // FormData sets its own Content-Type header
+          });
 
           if (!updateResponse.ok) {
             const errorData = await updateResponse.json();
@@ -940,26 +931,16 @@ async function editMenuItem(id) {
     });
 
     if (result.isConfirmed) {
-      // Store that Menu tab should be active after reload
       localStorage.setItem('activeInventoryTab', 'menu-tab');
       
-      // Add a small delay to ensure everything is ready before showing SweetAlert
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Show success message and wait for user to click OK
-      console.log('About to show SweetAlert for edit menu...');
-      const successResult = await Swal.fire({
+      await Swal.fire({
         title: 'Success',
         text: 'Menu item updated successfully!',
         icon: 'success',
         confirmButtonText: 'OK'
-      });
-      console.log('SweetAlert result for edit:', successResult);
-      // Only reload if user clicked OK
-      if (successResult.isConfirmed) {
-        console.log('User confirmed edit, reloading page...');
+      }).then(() => {
         window.location.reload();
-      }
+      });
     }
   } catch (error) {
     Swal.fire('Error', error.message, 'error');
