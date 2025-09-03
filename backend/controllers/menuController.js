@@ -164,7 +164,11 @@ const createMenu = async (req, res) => {
 // Update menu item
 const updateMenu = async (req, res) => {
   try {
-    const { name, price, category, image, ingredients } = req.body;
+    const { name, price, category, ingredients } = req.body;
+    let image = req.body.image;
+    if (req.file) {
+      image = req.file.filename; // Store only the filename
+    }
     
     // Parse ingredients if it's a JSON string
     let parsedIngredients = ingredients;

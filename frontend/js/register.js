@@ -18,7 +18,7 @@ async function handleRegister(event) {
     }
 
     try {
-        const response = await fetch('https://ramen-27je.onrender.com/api/v1/auth/register', {
+        const response = await fetch(`${getApiUrl()}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password, role })
@@ -27,9 +27,9 @@ async function handleRegister(event) {
         if (response.ok) {
             successMessage.textContent = data.message || 'Registration successful! You can now login.';
             successMessage.style.display = 'block';
-            // Redirect to backend login after a short delay
+            // Optionally redirect to login after a short delay
             setTimeout(() => {
-                window.location.href = 'https://ramen-27je.onrender.com/login';
+                window.location.href = 'login.html';
             }, 1500);
         } else {
             errorMessage.textContent = data.message || 'Registration failed.';

@@ -86,10 +86,10 @@ const customerAuthMiddleware = async (req, res, next) => {
   }
 };
 
-// Generate JWT token for customer
-const generateCustomerToken = (customerId, email) => {
+// Generate JWT token for customer (updated to handle different identifiers)
+const generateCustomerToken = (customerId, identifier) => {
   return jwt.sign(
-    { customerId, email },
+    { customerId, identifier },
     process.env.JWT_SECRET,
     { expiresIn: '7d' }
   );

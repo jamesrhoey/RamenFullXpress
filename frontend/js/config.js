@@ -1,7 +1,7 @@
 // API Configuration
 const API_CONFIG = {
   // Development mode - set to true to use local backend
-  DEV_MODE: false,
+  DEV_MODE: true,
   
   // Production API (your backend)
   BASE_URL: 'https://ramen-27je.onrender.com/api/v1',

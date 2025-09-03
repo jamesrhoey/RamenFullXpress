@@ -15,34 +15,44 @@ async function handleLogin(event) {
     }
 
     try {
-        const response = await fetch('https://ramen-27je.onrender.com/api/v1/auth/login', {
+        console.log('Sending login request:', { username, password });
+        const response = await fetch(`${getApiUrl()}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
         const data = await response.json();
+        console.log('Response data:', data);
         if (response.ok) {
-            // Add the token to the user object
-            data.user.token = data.token;
-            localStorage.setItem('user', JSON.stringify(data.user));
-            // Store token with consistent key name
-            localStorage.setItem('authToken', data.token);
-            console.log('Login successful, token stored:', data.token ? 'Yes' : 'No');
+            // Handle the response format: { success: true, data: { user: {...}, token: "..." } }
+            const user = data.data.user;
+            const token = data.data.token;
             
-            // Redirect to backend with role-based routing
-            if (data.user.role === 'admin') {
-                window.location.href = 'https://ramen-27je.onrender.com/dashboard';
-            } else if (data.user.role === 'cashier') {
-                window.location.href = 'https://ramen-27je.onrender.com/pos';
+            // Add the token to the user object
+            user.token = token;
+            localStorage.setItem('user', JSON.stringify(user));
+            // Store token with consistent key name
+            localStorage.setItem('authToken', token);
+            console.log('Login successful, token stored:', token ? 'Yes' : 'No');
+            // Redirect based on role
+            if (user.role === 'admin') {
+                window.location.href = 'html/dashboard.html';
+            } else if (user.role === 'cashier') {
+                window.location.href = 'html/pos.html';
             } else {
-                window.location.href = 'https://ramen-27je.onrender.com/dashboard';
+                window.location.href = 'html/dashboard.html';
             }
         } else {
             errorMessage.textContent = data.message || 'Login failed.';
             errorMessage.style.display = 'block';
         }
     } catch (err) {
-        errorMessage.textContent = 'Server error. Please try again later.';
+        console.error('Login error:', err);
+        errorMessage.textContent = `Server error: ${err.message}. Please check if the backend is running.`;
         errorMessage.style.display = 'block';
     }
     return false;

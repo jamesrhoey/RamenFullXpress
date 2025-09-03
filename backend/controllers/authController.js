@@ -2,78 +2,295 @@ const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-
+// User registration (for admin/cashier)
 exports.register = async (req, res) => {
   try {
     const { username, password, role } = req.body;
-    if (!username || !password || !role) {
-      return res.status(400).json({ message: 'All fields are required.' });
+
+    // Validate required fields
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Username and password are required'
+      });
     }
-    if (!['admin', 'cashier'].includes(role)) {
-      return res.status(400).json({ message: 'Role must be admin or cashier.' });
-    }
+
+    // Check if user already exists
     const existingUser = await User.findOne({ username });
+    
     if (existingUser) {
-      return res.status(409).json({ message: 'Username already exists.' });
+      return res.status(400).json({
+        success: false,
+        message: 'User with this username already exists'
+      });
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, password: hashedPassword, role });
+
+    // Hash password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Create new user
+    const user = new User({
+      username,
+      password: hashedPassword,
+      role: role || 'cashier'
+    });
+
     await user.save();
-    res.status(201).json({ message: 'User registered successfully.' });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error.' });
+
+    console.log(`✅ User registered: ${username}`);
+
+    res.status(201).json({
+      success: true,
+      message: 'User registered successfully',
+      data: {
+        user: {
+          id: user._id,
+          username: user.username,
+          role: user.role
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error registering user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
   }
 };
 
+// User login (for admin/cashier)
 exports.login = async (req, res) => {
   try {
-    console.log('🔐 Login attempt received:', { username: req.body.username });
-    
     const { username, password } = req.body;
+
+    // Validate required fields
     if (!username || !password) {
-      console.log('❌ Missing username or password');
-      return res.status(400).json({ message: 'All fields are required.' });
+      return res.status(400).json({
+        success: false,
+        message: 'Username and password are required'
+      });
     }
-    
-    console.log('🔍 Looking up user in database...');
+
+    // Find user by username
     const user = await User.findOne({ username });
     if (!user) {
-      console.log('❌ User not found:', username);
-      return res.status(401).json({ message: 'Invalid credentials.' });
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid username or password'
+      });
     }
-    
-    console.log('🔐 Comparing passwords...');
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      console.log('❌ Password mismatch for user:', username);
-      return res.status(401).json({ message: 'Invalid credentials.' });
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
+      });
     }
-    
-    console.log('✅ Password verified, generating token...');
-    const jwtSecret = process.env.JWT_SECRET || 'secretkey';
-    console.log('🔑 JWT Secret available:', jwtSecret ? 'Yes' : 'No');
-    
+
+    // Generate JWT token
     const token = jwt.sign(
-      { userId: user._id, username: user.username, role: user.role },
-      jwtSecret,
-      { expiresIn: '1d' }
+      { 
+        userId: user._id, 
+        username: user.username,
+        role: user.role 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
     );
-    
-    console.log('✅ Login successful for user:', username);
-    res.json({ token, user: { username: user.username, role: user.role } });
-  } catch (err) {
-    console.error('💥 Login error:', err);
-    console.error('💥 Error stack:', err.stack);
-    console.error('💥 Environment variables:', {
-      NODE_ENV: process.env.NODE_ENV,
-      JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not set',
-      MONGO_URI: process.env.MONGO_URI ? 'Set' : 'Not set'
+
+    res.json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        user: {
+          id: user._id,
+          username: user.username,
+          role: user.role
+        },
+        token
+      }
     });
+
+  } catch (error) {
+    console.error('Error logging in user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
+  }
+};
+
+// Get user profile
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).select('-password');
     
-    res.status(500).json({ 
-      message: 'Server error.', 
-      error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error',
-      timestamp: new Date().toISOString()
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error getting user profile:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
+  }
+};
+
+// Update user profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const { username, email } = req.body;
+    const userId = req.user.userId;
+
+    // Check if email is already taken by another user
+    if (email) {
+      const existingUser = await User.findOne({ 
+        email, 
+        _id: { $ne: userId } 
+      });
+      
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email is already taken by another user'
+        });
+      }
+    }
+
+    // Check if username is already taken by another user
+    if (username) {
+      const existingUser = await User.findOne({ 
+        username, 
+        _id: { $ne: userId } 
+      });
+      
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: 'Username is already taken by another user'
+        });
+      }
+    }
+
+    // Update user
+    const updateData = {};
+    if (username) updateData.username = username;
+    if (email) updateData.email = email;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: {
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          role: user.role
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
+  }
+};
+
+// Change password
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.userId;
+
+    // Validate required fields
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password and new password are required'
+      });
+    }
+
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password is incorrect'
+      });
+    }
+
+    // Hash new password
+    const saltRounds = 10;
+    const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update password
+    user.password = hashedNewPassword;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
     });
   }
 };

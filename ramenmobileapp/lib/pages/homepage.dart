@@ -13,7 +13,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   String selectedCategory = 'All';
   final TextEditingController _searchController = TextEditingController();
   String searchQuery = '';
@@ -32,12 +32,113 @@ class _HomePageState extends State<HomePage> {
   // Add-ons state
   List<MenuItem> _addOns = [];
 
+  // Sweet Alert state
+  late AnimationController _alertController;
+  late Animation<double> _alertScaleAnimation;
+  late Animation<double> _alertOpacityAnimation;
+
   @override
   void initState() {
     super.initState();
     _loadCart();
     _loadMenuItems();
     _loadAddOns();
+    
+    // Initialize alert animations
+    _alertController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _alertScaleAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _alertController,
+      curve: Curves.elasticOut,
+    ));
+    _alertOpacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _alertController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _alertController.dispose();
+    super.dispose();
+  }
+
+  void _showSweetAlertMessage(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return AnimatedBuilder(
+          animation: _alertController,
+          builder: (context, child) {
+            return Opacity(
+              opacity: _alertOpacityAnimation.value,
+              child: Center(
+                child: Transform.scale(
+                  scale: _alertScaleAnimation.value,
+                  child: Container(
+                    margin: const EdgeInsets.all(40),
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.check_circle,
+                          color: Color(0xFFD32D43),
+                          size: 48,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          message,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Color(0xFF1A1A1A),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+    
+    _alertController.forward();
+    
+    // Auto-hide after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        _alertController.reverse().then((_) {
+          Navigator.of(context).pop();
+        });
+      }
+    });
   }
 
   Future<void> _loadCart() async {
@@ -465,12 +566,7 @@ class _HomePageState extends State<HomePage> {
                             }, selectedAddOns);
                             if (context.mounted) {
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('${item.name} added to cart'),
-                                  backgroundColor: const Color(0xFFD32D43),
-                                ),
-                              );
+                              _showSweetAlertMessage('${item.name} added to cart');
                             }
                           },
                           child: AnimatedContainer(
@@ -542,21 +638,23 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            automaticallyImplyLeading: false,
-            floating: true,
-            pinned: true,
-            expandedHeight: 120,
-            backgroundColor: Colors.white,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                color: Colors.white,
-                padding: const EdgeInsets.only(top: 60, left: 16, right: 16),
-                child: Row(
-                  children: [
-                    const Text(
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                automaticallyImplyLeading: false,
+                floating: true,
+                pinned: true,
+                expandedHeight: 120,
+                backgroundColor: Colors.white,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.only(top: 60, left: 16, right: 16),
+                    child: Row(
+                      children: [
+                        const Text(
                       'RamenXpress',
                       style: TextStyle(
                         color: Color(0xFF1A1A1A),
@@ -576,14 +674,19 @@ class _HomePageState extends State<HomePage> {
                             color: Color(0xFF1A1A1A),
                           ),
                         ),
-                        if (cartItemCount > 0)
+                        // Show notification badge if there are unread notifications
+                        // You can replace this with actual unread notification count
+                        if (true) // Change this to check for unread notifications
                           Positioned(
                             right: 8,
                             top: 8,
-                            child: Image.asset(
-                              'assets/notif.png',
-                              width: 24,
-                              height: 24,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFD32D43),
+                                shape: BoxShape.circle,
+                              ),
                             ),
                           ),
                       ],
@@ -775,7 +878,9 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      bottomNavigationBar: Container(
+      ],
+    ),
+    bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
@@ -827,6 +932,7 @@ class _HomePageState extends State<HomePage> {
           type: BottomNavigationBarType.fixed,
         ),
       ),
+      floatingActionButton: null,
     );
   }
 }

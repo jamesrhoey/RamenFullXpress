@@ -10,38 +10,20 @@ import '../models/payment_method.dart';
 import '../models/delivery_address.dart';
 
 class ApiService {
-  // Dynamic base URL based on platform
+  // Dynamic base URL based on build configuration
   static String get baseUrl {
-    // Production API URL
-    const String productionUrl = 'https://ramen-27je.onrender.com/api/v1';
+    // Check if we're in debug mode (development)
+    const bool isDebug = bool.fromEnvironment('dart.vm.product') == false;
     
-    // For development, you can switch to localhost
-    const String developmentUrl = 'http://localhost:3000/api/v1';
-    
-    // Set this to false for production, true for local development
-    const bool useLocalhost = false;
-    
-    if (useLocalhost) {
-      // For web, use localhost
-      if (kIsWeb) {
-        return 'http://localhost:3000/api/v1';
-      }
-      
-      // For Android emulator
+    if (isDebug) {
+      // Development mode - use localhost
       if (Platform.isAndroid) {
         return 'http://10.0.2.2:3000/api/v1';
       }
-      
-      // For iOS simulator
-      if (Platform.isIOS) {
-        return 'http://localhost:3000/api/v1';
-      }
-      
-      // Default fallback
       return 'http://localhost:3000/api/v1';
     } else {
-      // Use production URL for all platforms
-      return productionUrl;
+      // Production mode - use hardcoded production URL
+      return 'https://ramenb.onrender.com/api/v1';
     }
   }
   

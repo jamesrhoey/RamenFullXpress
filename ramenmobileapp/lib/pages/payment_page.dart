@@ -995,8 +995,15 @@ class _PaymentPageState extends State<PaymentPage> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: TextButton.icon(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/address');
+                        onPressed: () async {
+                          final result = await Navigator.pushNamed(context, '/address');
+                          if (result == true) {
+                            // Refresh delivery addresses in payment page
+                            await _loadDeliveryAddresses();
+                            setState(() {
+                              // Trigger UI update with new addresses
+                            });
+                          }
                         },
                         icon: const Icon(Icons.add, color: Color(0xFFD32D43)),
                         label: const Text(

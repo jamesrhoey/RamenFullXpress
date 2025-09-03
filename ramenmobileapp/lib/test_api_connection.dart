@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
 class ApiConnectionTest {
-  static const String baseUrl = 'http://10.0.2.2:3000/api/v1';
+  static const String baseUrl = 'https://ramenb.onrender.com/api/v1';
   
   static Future<void> testConnection() async {
     final dio = Dio(BaseOptions(

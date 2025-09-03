@@ -253,8 +253,14 @@ class _ProfilePageState extends State<ProfilePage> {
                       _buildMenuItem(
                         Icons.location_on_outlined,
                         'Delivery Addresses',
-                        () {
-                          Navigator.pushNamed(context, '/address');
+                        () async {
+                          final result = await Navigator.pushNamed(context, '/address');
+                          if (result == true) {
+                            // Refresh the profile page if needed
+                            setState(() {
+                              // Trigger a refresh of any data that might have changed
+                            });
+                          }
                         },
                       ),
                       _buildMenuItem(

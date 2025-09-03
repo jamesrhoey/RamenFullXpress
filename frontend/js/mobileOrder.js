@@ -3,10 +3,45 @@
 // Remove the ES6 import for socket.io-client
 // import { io } from "socket.io-client";
 
-const API_BASE_URL = "https://ramen-27je.onrender.com/api/v1";
+const API_BASE_URL = getApiUrl();
 const authToken = localStorage.getItem("authToken"); // For admin/cashier authentication
 
 let loadedOrders = [];
+
+// Helper function to get correct image URL from backend data
+function getImageUrl(imagePath) {
+  if (!imagePath) {
+    return '../assets/ramen1.jpg'; // Default image
+  }
+  
+  // If it's already a full URL, return as is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  
+  // If it starts with /uploads/, it's a backend uploaded image
+  if (imagePath.startsWith('/uploads/')) {
+    return `${getUploadUrl()}${imagePath}`;
+  }
+  
+  // If it's a relative path from backend (../assets/...), use it directly
+  if (imagePath.startsWith('../assets/')) {
+    return imagePath;
+  }
+  
+  // If it's just a filename (like uploaded images), it's a backend uploaded image
+  if (!imagePath.includes('/') && imagePath.includes('.')) {
+    return `${getUploadUrl()}/uploads/menus/${imagePath}`;
+  }
+  
+  // If it's just a filename without extension, assume it's in assets
+  if (!imagePath.includes('/')) {
+    return `../assets/${imagePath}`;
+  }
+  
+  // If it's any other path from backend, try to use it as is
+  return imagePath;
+}
 
 document.addEventListener("DOMContentLoaded", function () {
     loadMobileOrders();
@@ -397,7 +432,7 @@ window.viewOrderDetails = async function(orderId) {
                 <td>
                     <div class="d-flex align-items-center">
                         <div class="item-image me-3">
-                            <img src="../assets/${image}" alt="${name}" class="menu-item-img">
+                            <img src="${getImageUrl(image)}" alt="${name}" class="menu-item-img" onerror="this.src='../assets/ramen1.jpg'">
                         </div>
                         <div>
                             <div class="fw-semibold">${name}</div>  
@@ -525,7 +560,7 @@ document.addEventListener('DOMContentLoaded', function () {
 // If using modules, you may need: import { io } from 'socket.io-client';
 // If not, ensure <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script> is in your HTML
 
-const socket = io('https://ramen-27je.onrender.com'); // Production Socket.IO URL
+const socket = io(getSocketUrl()); // Using config system for socket URL
 
 socket.on('connect', () => {
   console.log('Connected to Socket.IO server');

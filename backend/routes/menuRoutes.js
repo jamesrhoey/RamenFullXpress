@@ -29,7 +29,7 @@ router.get('/:id', menuController.getMenuById);
 router.post('/newMenu', upload.single('image'), menuController.createMenu);
 
 // Update menu item
-router.put('/updateMenu/:id', menuController.updateMenu);
+router.put('/updateMenu/:id', upload.single('image'), menuController.updateMenu);
 
 // Delete menu item
 router.delete('/deleteMenu/:id', menuController.deleteMenu);

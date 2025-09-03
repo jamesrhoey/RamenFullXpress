@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-// Customer Schema based on registration page
+// Customer Schema with email and Google authentication support
 const customerSchema = new mongoose.Schema({
   firstName: {
     type: String,
@@ -16,20 +16,65 @@ const customerSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: [true, 'Email is required'],
+    required: function() {
+      return !this.googleId; // Email is required if not using Google auth
+    },
     unique: true,
+    sparse: true, // Allows multiple null values
+    lowercase: true,
     trim: true,
-    lowercase: true
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
   },
   phone: {
     type: String,
-    required: [true, 'Phone number is required'],
+    required: function() {
+      return !this.googleId; // Phone is required if not using Google auth
+    },
+    unique: true,
+    sparse: true, // Allows multiple null values
     trim: true
   },
   password: {
     type: String,
-    required: [true, 'Password is required'],
+    required: function() {
+      return !this.googleId; // Password is required if not using Google auth
+    },
     minlength: [6, 'Password must be at least 6 characters long']
+  },
+  // Google OAuth fields
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true // Allows multiple null values
+  },
+  googleEmail: {
+    type: String,
+    lowercase: true,
+    trim: true
+  },
+  // Verification status
+  isEmailVerified: {
+    type: Boolean,
+    default: false
+  },
+  isPhoneVerified: {
+    type: Boolean,
+    default: function() {
+      return !!this.googleId; // Google users are considered phone verified
+    }
+  },
+  // Authentication method
+  authMethod: {
+    type: String,
+    enum: ['email', 'phone', 'google'],
+    default: 'phone'
+  },
+  // Email verification token
+  emailVerificationToken: {
+    type: String
+  },
+  emailVerificationExpires: {
+    type: Date
   }
 }, {
   timestamps: true
@@ -44,8 +89,10 @@ customerSchema.virtual('fullName').get(function() {
 customerSchema.set('toJSON', {
   virtuals: true,
   transform: function(doc, ret) {
-    // Remove password from JSON output
+    // Remove sensitive fields from JSON output
     delete ret.password;
+    delete ret.emailVerificationToken;
+    delete ret.emailVerificationExpires;
     return ret;
   }
 });

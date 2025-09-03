@@ -8,8 +8,8 @@ let paymentMethod = 'cash';
 let currentModalItem = null;
 let selectedAddons = [];
 
-// API Base URL
-const API_BASE_URL = 'https://ramen-27je.onrender.com/api/v1';
+// API Base URL - using config system
+const API_BASE_URL = getApiUrl();
 
 // Authentication utilities
 function getAuthToken() {
@@ -389,7 +389,7 @@ function getImageUrl(imagePath) {
     
     // If it starts with /uploads/, it's a backend uploaded image
     if (imagePath.startsWith('/uploads/')) {
-        const fullUrl = `https://ramen-27je.onrender.com${imagePath}`;
+        const fullUrl = `${getUploadUrl()}${imagePath}`;
         console.log('Backend uploaded image:', fullUrl);
         return fullUrl;
     }
@@ -402,7 +402,7 @@ function getImageUrl(imagePath) {
     
     // If it's just a filename (like uploaded images), it's a backend uploaded image
     if (!imagePath.includes('/') && imagePath.includes('.')) {
-        const fullUrl = `https://ramen-27je.onrender.com/uploads/menus/${imagePath}`;
+        const fullUrl = `${getUploadUrl()}/uploads/menus/${imagePath}`;
         console.log('Backend uploaded filename, using uploads path:', fullUrl);
         return fullUrl;
     }
@@ -436,7 +436,9 @@ function openModal(itemId, itemName, itemPrice, itemCategory, itemImage) {
 
     // Update modal content using backend image
     document.getElementById('menuItemModalLabel').textContent = itemName;
-    document.getElementById('modalItemImage').src = getImageUrl(itemImage);
+    const modalImage = document.getElementById('modalItemImage');
+    modalImage.src = getImageUrl(itemImage);
+    modalImage.onerror = function() { this.src = '../assets/ramen1.jpg'; };
     document.getElementById('modalItemPrice').textContent = `₱${itemPrice.toFixed(2)}`;
     document.getElementById('modalQuantity').value = '1';
 
@@ -499,7 +501,7 @@ function loadAddOnsFromMenu() {
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="addon_${addon._id}">
                             <label class="form-check-label" for="addon_${addon._id}">
-                                <img src="${getImageUrl(addon.image)}" class="img-fluid mb-1" style="height: 40px; object-fit: cover;" alt="${addon.name}">
+                                <img src="${getImageUrl(addon.image)}" class="img-fluid mb-1" style="height: 40px; object-fit: cover;" alt="${addon.name}" onerror="this.src='../assets/ramen1.jpg'">
                                 <small>${addon.name}</small>
                                 <div class="text-danger small">+₱${addon.price.toFixed(2)}</div>
                             </label>

@@ -13,14 +13,17 @@ class SocketService {
   void connect() {
     if (socket != null && socket!.connected) return;
     
-    // Production Socket.IO URL
-    const String productionSocketUrl = 'https://ramen-27je.onrender.com';
-    const String developmentSocketUrl = 'http://localhost:3000';
+    // Check if we're in debug mode (development)
+    const bool isDebug = bool.fromEnvironment('dart.vm.product') == false;
     
-    // Set this to false for production, true for local development
-    const bool useLocalhost = false;
-    
-    final String socketUrl = useLocalhost ? developmentSocketUrl : productionSocketUrl;
+    String socketUrl;
+    if (isDebug) {
+      // Development mode - use localhost
+      socketUrl = 'http://localhost:3000';
+    } else {
+      // Production mode - use hardcoded production URL
+      socketUrl = 'https://ramenb.onrender.com';
+    }
     
     socket = IO.io(socketUrl, <String, dynamic>{
       'transports': ['websocket'],

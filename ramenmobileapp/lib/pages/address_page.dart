@@ -58,6 +58,8 @@ class _AddressPageState extends State<AddressPage> {
               backgroundColor: Colors.green,
             ),
           );
+          // Refresh the address list but stay on this page
+          await _fetchAddresses();
         }
       } catch (e) {
         if (mounted) {
@@ -85,6 +87,8 @@ class _AddressPageState extends State<AddressPage> {
           _addresses[index] = editedAddress;
         }
       });
+      // Refresh the address list but stay on this page
+      await _fetchAddresses();
     }
   }
 
@@ -126,11 +130,13 @@ class _AddressPageState extends State<AddressPage> {
             backgroundColor: Colors.green,
           ),
         );
+        // Refresh the address list but stay on this page
+        await _fetchAddresses();
       }
     }
   }
 
-  void _setDefaultAddress(DeliveryAddress address) {
+  Future<void> _setDefaultAddress(DeliveryAddress address) async {
     setState(() {
       // Remove default from all addresses
       for (var addr in _addresses) {
@@ -146,6 +152,9 @@ class _AddressPageState extends State<AddressPage> {
         backgroundColor: Colors.green,
       ),
     );
+    
+    // Refresh the address list but stay on this page
+    await _fetchAddresses();
   }
 
   @override
@@ -154,11 +163,11 @@ class _AddressPageState extends State<AddressPage> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/profile',
-            (route) => false,
-          ),
+          onPressed: () async {
+            // Refresh the current page data before going back
+            await _fetchAddresses();
+            Navigator.pop(context, true); // Pass true to indicate refresh needed
+          },
         ),
         title: const Text(
           'Delivery Addresses',
