@@ -1,111 +1,132 @@
-/* Sidebar Styles */
-#sidebarMenu {
-  position: fixed;
-  top: 56px; /* Height of navbar */
-  left: 0;
-  height: calc(100vh - 56px); /* Full viewport height minus navbar */
-  width: 250px;
-  overflow-y: auto;
-  z-index: 1000;
-  transition: transform 0.3s ease-in-out;
-  transform: translateX(-100%);
-  background-color: #343a40; /* Match your sidebar background */
-}
-
-/* Show sidebar on larger screens */
-@media (min-width: 768px) {
-  #sidebarMenu {
-    transform: translateX(0);
-  }
-  
-  /* Push main content to the right */
-  .main-content {
-    margin-left: 250px;
-    padding-top: 56px; /* Height of navbar */
-  }
-}
-
-/* Mobile styles */
-@media (max-width: 767.98px) {
-  #sidebarMenu {
-    top: 56px;
-    transform: translateX(-100%);
-    width: 280px;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  #sidebarMenu.show {
-    transform: translateX(0);
-  }
-  
-  .main-content {
-    padding-top: 56px;
-    width: 100%;
-    margin-left: 0 !important;
-  }
-}
-
-/* Ensure content is scrollable but sidebar stays fixed */
+/* Global Reset and Base Styles */
 html, body {
   height: 100%;
   overflow-x: hidden;
   margin: 0;
   padding: 0;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: auto;
 }
 
-/* Fixed navbar */
-.navbar {
-  position: fixed !important;
-  top: 0 !important;
-  right: 0 !important;
-  left: 0 !important;
-  z-index: 1050 !important;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  width: 100% !important;
-  margin: 0 !important;
-  height: 56px !important;
+/* Hide scrollbars but keep scroll functionality */
+html {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
 }
 
-/* Main content adjustments */
-.main-content {
-  margin-top: 56px !important; /* Height of navbar */
-  margin-left: 250px !important; /* Width of sidebar */
-  padding: 1.5rem !important;
-  min-height: calc(100vh - 56px) !important;
-  transition: all 0.3s ease-in-out !important;
-  position: relative !important;
-  z-index: 1 !important;
-  width: calc(100% - 250px) !important;
-  background-color: #f8f9fa;
+html::-webkit-scrollbar {
+  display: none; /* WebKit */
 }
 
-/* Adjust for mobile */
-@media (max-width: 767.98px) {
-  .main-content {
-    margin-left: 0 !important;
-    width: 100% !important;
-    padding: 1rem !important;
-  }
-  
-  #sidebarMenu {
-    top: 56px !important;
-    width: 280px !important;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .navbar-toggler {
-    z-index: 1051;
-  }
-}
-
-/* Ensure content doesn't get hidden behind fixed elements */
 body {
-  padding-top: 56px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
 }
 
-/* Ensure content doesn't get hidden behind fixed elements */
-.container-fluid {
+body::-webkit-scrollbar {
+  display: none; /* WebKit */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
   padding-top: 0;
+}
+
+/* Fixed Navbar Styles */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1040;
+  height: 56px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Main Content Adjustment for Fixed Navbar */
+main {
+  margin-top: 0px;
+  min-height: calc(100vh - 56px);
+  background-color: #f8f9fa;
+  padding-top: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Sidebar Styles */
+#sidebarMenu {
+  min-height: calc(100vh - 56px);
+  background-color: #343a40;
+  position: sticky;
+  top: 56px;
+  z-index: 1020;
+  padding-top: 1rem;
+}
+
+/* Mobile Sidebar Overlay */
+@media (max-width: 767.98px) {
+  #sidebarMenu {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1030;
+    background-color: #343a40;
+  }
+  
+  #sidebarMenu:not(.show) {
+    display: none !important;
+  }
+  
+  #sidebarMenu.show {
+    display: block !important;
+  }
+}
+
+/* Sidebar Overlay for Mobile */
+@media (max-width: 767.98px) {
+  body.sidebar-open::before {
+    content: '';
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1030;
+    transition: opacity 0.3s ease;
+  }
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 767.98px) {
+  .navbar-brand {
+    font-size: 1rem;
+  }
+  
+  .dashboard-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .welcome-text {
+    font-size: 0.9rem;
+  }
+  
+  .summary-card {
+    margin-bottom: 1rem;
+  }
+  
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+  
+  .modal-dialog {
+    margin: 0.5rem;
+  }
 }
 
 /* Pagination Styling for Inventory */
@@ -191,4 +212,87 @@ body {
   background-color: #dc3545;
   border-color: #dc3545;
   color: white;
+}
+
+/* Dashboard Header Styling */
+.main-content h2 {
+  color: #2c3e50;
+  font-weight: 700;
+  font-size: 2rem;
+  margin-bottom: 0;
+}
+
+.main-content .text-muted {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* Dashboard Welcome Section */
+.dashboard-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 15px;
+  padding: 1.5rem;
+  color: white;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-header h2 {
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-header .welcome-text {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+}
+
+/* Modal Backdrop Adjustment */
+.modal-backdrop {
+  z-index: 1040;
+}
+
+/* Ensure modal is above the backdrop */
+.modal {
+  z-index: 1050;
+}
+
+/* Responsive Sidebar and Main Content */
+@media (max-width: 767.98px) {
+  #sidebarMenu {
+    width: 100%;
+    transform: translateX(-100%);
+  }
+  #sidebarMenu.show {
+    transform: translateX(0);
+  }
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media (min-width: 768px) {
+  #sidebarMenu {
+    width: 250px;
+    transform: translateX(0);
+  }
+  .main-content {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+  }
+}
+
+/* Optimize for Performance - Simplified approach */
+#sidebarMenu, .navbar {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Remove will-change and contain properties that might cause lag */
+.main-content {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }

@@ -27,9 +27,7 @@ const customerSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    required: function() {
-      return !this.googleId; // Phone is required if not using Google auth
-    },
+    required: false, // Phone is now optional
     unique: true,
     sparse: true, // Allows multiple null values
     trim: true
@@ -53,28 +51,25 @@ const customerSchema = new mongoose.Schema({
     trim: true
   },
   // Verification status
-  isEmailVerified: {
+  emailVerified: {
     type: Boolean,
     default: false
   },
-  isPhoneVerified: {
+  phoneVerified: {
     type: Boolean,
-    default: function() {
-      return !!this.googleId; // Google users are considered phone verified
-    }
+    default: false // Phone verification is now optional
+  },
+  emailVerifiedAt: {
+    type: Date
+  },
+  phoneVerifiedAt: {
+    type: Date
   },
   // Authentication method
   authMethod: {
     type: String,
     enum: ['email', 'phone', 'google'],
-    default: 'phone'
-  },
-  // Email verification token
-  emailVerificationToken: {
-    type: String
-  },
-  emailVerificationExpires: {
-    type: Date
+    default: 'email'
   }
 }, {
   timestamps: true
@@ -91,8 +86,6 @@ customerSchema.set('toJSON', {
   transform: function(doc, ret) {
     // Remove sensitive fields from JSON output
     delete ret.password;
-    delete ret.emailVerificationToken;
-    delete ret.emailVerificationExpires;
     return ret;
   }
 });

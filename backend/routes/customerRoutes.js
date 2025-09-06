@@ -6,21 +6,13 @@ const { customerAuthMiddleware } = require('../middleware/customerAuthMiddleware
 // Public routes (no authentication required)
 
 // Email-based authentication
-router.post('/register-email', customerController.registerWithEmail);
-router.post('/login-email', customerController.loginWithEmail);
-router.post('/verify-email', customerController.verifyEmail);
-router.post('/resend-email-verification', customerController.resendEmailVerification);
+router.post('/register', customerController.registerWithEmail);
+router.post('/verify-email', customerController.verifyEmailRegistration);
+router.post('/login', customerController.loginWithEmail);
 
 // Google authentication
 router.post('/google-signin', customerController.googleSignIn);
 
-// Phone-based authentication (existing)
-router.post('/register', customerController.register);
-router.post('/login', customerController.login);
-
-// Phone verification routes (no authentication required)
-router.post('/verify-phone', customerController.verifyPhone);
-router.post('/resend-phone-verification', customerController.resendPhoneVerification);
 
 // Protected routes (require authentication)
 router.use(customerAuthMiddleware);

@@ -1,55 +1,63 @@
 const mongoose = require('mongoose');
 
 const otpSchema = new mongoose.Schema({
-  phone: {
+  email: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
+    lowercase: true
   },
-  otp: {
+  code: {
     type: String,
-    required: true
+    required: true,
+    length: 6
+  },
+  type: {
+    type: String,
+    enum: ['email'],
+    default: 'email'
   },
   purpose: {
     type: String,
-    enum: ['phone_verification', 'password_reset', 'order_update'],
+    enum: ['registration', 'login', 'password_reset', 'email_verification'],
     required: true
+  },
+  isUsed: {
+    type: Boolean,
+    default: false
   },
   expiresAt: {
     type: Date,
     required: true,
     default: () => new Date(Date.now() + 10 * 60 * 1000) // 10 minutes from now
   },
-  isUsed: {
-    type: Boolean,
-    default: false
-  },
   attempts: {
     type: Number,
     default: 0,
-    max: 3 // Maximum 3 attempts
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
+    max: 3
   }
+}, {
+  timestamps: true
 });
 
-// Index for faster queries
-otpSchema.index({ phone: 1, purpose: 1 });
-otpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // Auto-delete expired OTPs
+// Index for faster lookups
+otpSchema.index({ email: 1, type: 1, isUsed: 1 });
+otpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL index
 
-// Static method to generate OTP
-otpSchema.statics.generateOTP = function() {
-  return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+// Static method to find valid OTP
+otpSchema.statics.findValidOTP = function(email, code, purpose) {
+  return this.findOne({
+    email,
+    code,
+    type: 'email',
+    purpose,
+    isUsed: false,
+    expiresAt: { $gt: new Date() },
+    attempts: { $lt: 3 }
+  });
 };
 
-// Instance method to check if OTP is valid
-otpSchema.methods.isValid = function() {
-  return !this.isUsed && this.attempts < 3 && this.expiresAt > new Date();
-};
-
-// Instance method to mark as used
+// Instance method to mark OTP as used
 otpSchema.methods.markAsUsed = function() {
   this.isUsed = true;
   return this.save();

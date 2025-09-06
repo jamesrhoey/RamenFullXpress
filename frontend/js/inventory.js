@@ -167,6 +167,56 @@ function changeInventoryPage(page) {
   }
 }
 
+// Function to update summary cards
+function updateSummaryCards(ingredients, menuItems = []) {
+  if (!ingredients || !Array.isArray(ingredients)) {
+    console.warn('Invalid ingredients data for summary cards');
+    return;
+  }
+
+  const totalIngredients = ingredients.length;
+  const outOfStock = ingredients.filter(ingredient => 
+    ingredient.status === 'out of stock' || ingredient.stocks <= 0
+  ).length;
+  const lowStock = ingredients.filter(ingredient => 
+    ingredient.status === 'low stock' || (ingredient.stocks > 0 && ingredient.stocks <= 10)
+  ).length;
+  const totalMenu = menuItems.length;
+
+  // Update the summary card values with updated selectors for 4 cards
+  // Order: 1. Total Ingredients, 2. Total Menu, 3. Out of Stock, 4. Low Stock
+  const totalElement = document.querySelector('.col-12.col-sm-6.col-lg-3:nth-child(1) .fs-5.fw-bold');
+  const totalMenuElement = document.querySelector('.col-12.col-sm-6.col-lg-3:nth-child(2) .fs-5.fw-bold');
+  const outOfStockElement = document.querySelector('.col-12.col-sm-6.col-lg-3:nth-child(3) .fs-5.fw-bold');
+  const lowStockElement = document.querySelector('.col-12.col-sm-6.col-lg-3:nth-child(4) .fs-5.fw-bold');
+
+  if (totalElement) {
+    totalElement.textContent = totalIngredients;
+  } else {
+    console.warn('Total ingredients element not found');
+  }
+
+  if (totalMenuElement) {
+    totalMenuElement.textContent = totalMenu;
+  } else {
+    console.warn('Total menu element not found');
+  }
+  
+  if (outOfStockElement) {
+    outOfStockElement.textContent = outOfStock;
+  } else {
+    console.warn('Out of stock element not found');
+  }
+  
+  if (lowStockElement) {
+    lowStockElement.textContent = lowStock;
+  } else {
+    console.warn('Low stock element not found');
+  }
+
+  console.log('Summary cards updated:', { totalIngredients, outOfStock, lowStock, totalMenu });
+}
+
 async function fetchInventory() {
   const token = localStorage.getItem('authToken');
   const tbody = document.getElementById('ingredientsTableBody');
@@ -206,10 +256,27 @@ async function fetchInventory() {
     // Reset to first page
     currentPage = 1;
     
+    // Fetch menu items for summary cards
+    try {
+      const menuResponse = await fetch(MENU_API_URL);
+      const menuData = await menuResponse.json();
+      const menuItems = Array.isArray(menuData) ? menuData : menuData.data || [];
+      
+      // Update summary cards with both ingredients and menu data
+      updateSummaryCards(ingredients, menuItems);
+    } catch (menuError) {
+      console.warn('Failed to fetch menu items for summary cards:', menuError);
+      // Update summary cards with just ingredients data
+      updateSummaryCards(ingredients, []);
+    }
+    
     renderIngredientsTableWithPagination(filteredIngredients);
   } catch (error) {
     console.error('Error fetching inventory:', error);
     if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="text-danger">Failed to load inventory data.</td></tr>';
+    
+    // Update summary cards with error state
+    updateSummaryCards([]);
   }
 }
 
@@ -217,6 +284,9 @@ async function fetchInventory() {
 let addIngredientModal;
 let addMenuModal;
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize summary cards with loading state
+  updateSummaryCards([]);
+  
   fetchInventory();
   initializeTabListeners();
 
@@ -701,6 +771,10 @@ async function fetchMenuItems() {
     if (response.ok) {
       allMenuItems = data.data || data;
       filteredMenuItems = [...allMenuItems];
+      
+      // Update summary cards with menu data
+      updateSummaryCards(allIngredients, allMenuItems);
+      
       renderMenuTableWithPagination(filteredMenuItems);
     } else {
       throw new Error(data.message || 'Failed to fetch menu items');
